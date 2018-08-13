@@ -1,0 +1,167 @@
+﻿@using BlueStone.Utility
+@using BlueStone.Smoke.Entity
+@using BlueStone.Smoke.Backend.Models
+
+@model TopicInfo
+@{
+    ViewBag.Title = LangHelper.GetText("内容维护");
+    var masterName = "Topic";
+    TopicInfo topic = Model;
+}
+@section rsHeader
+{
+    <script src="~/Content/assets/js/My97DatePicker/WdatePicker.js"></script>
+    <script src="~/Scripts/Custom/WdatePicker.helper.js"></script>
+    <!--datatable-->
+    @Styles.Render("~/Content/datatable")
+    @Scripts.Render("~/bundles/datatable")
+
+    <!--ueditor-->
+    <link href="~/Content/assets/ueditor/themes/default/css/ueditor.css" rel="stylesheet" />
+    <script src="~/Content/assets/ueditor/ueditor.config.js"></script>
+    <script src="~/Content/assets/ueditor/ueditor.all.js"></script>
+    <script src="~/Content/assets/ueditor/lang/zh-cn/zh-cn.js"></script>
+    <script type="text/javascript">
+        var _htmlContent=@((int)TopicContentType.Html);
+    </script>
+    <!-- webuploader-->
+    @Styles.Render("~/content/assets/js/uploadify/uploadify.css")
+    @Scripts.Render("~/content/assets/js/uploadify/jquery.uploadify.js")
+    @Scripts.Render("~/Scripts/Topic/TopicMaintain.js")
+
+    <link href="~/Content/assets/js/bootstrap-fileinput-4.4.3/css/fileinput.css" rel="stylesheet" />
+    <script src="~/Content/assets/js/bootstrap-fileinput-4.4.3/js/fileinput.js"></script>
+    <script src="~/Content/assets/js/bootstrap-fileinput-4.4.3/js/locales/zh.js"></script>
+    <script src="~/Content/assets/js/bootstrap-fileinput-4.4.3/js/plugins/sortable.min.js"></script>
+}
+
+<div class="row form-horizontal grayback">
+    <div class="col-xs-12 groupname"><strong>内容维护</strong></div>
+    <form id="TopicMaintainForm">
+
+        <input type="hidden" id="SysNo" name="SysNo" data-model="SysNo" value="@(topic.SysNo.GetValueOrDefault())" />
+
+        <div class="col-xs-12">
+            <div class="col-xs-12 col-sm-6 col-lg-4">
+
+                <div class="form-group">
+                    <label class="control-label  col-sm-3 col-xs-4">
+                        状态：
+
+                    </label>
+                    <span class="control-label " style="line-height:28px" id="ViewStatus">
+                        @(topic.TopicStatus.HasValue ? topic.TopicStatus.GetDescription() : "草稿")
+                    </span>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3 col-xs-4"><span class="red">*</span>标题：</label>
+                    <div class="col-sm-9 col-xs-8">
+                        <input name="Title" data-model="Title" id="Title" maxlength="100" class="form-control" data-bv-notempty="true" data-bv-notempty-message="标题不能为空。" value="@topic.Title" />
+                    </div>
+                </div>
+                <div class="form-group ">
+                    <label class="control-label col-sm-3 col-xs-4"><span class="red">*</span>类别：</label>
+                    <div class="col-sm-9 col-xs-8">
+                        @if (topic.SysNo.HasValue && topic.SysNo.Value > 0)
+                        {
+                            @Html.Partial("~/Views/UserControls/Topic/UCTopicCategoryPicker.cshtml", new PickerParamModel() { PickerID = "TopicCategorySysNo", SelectValue = topic.TopicCategorySysNo.ToString(), MasterName = masterName })
+                        }
+                        else
+                        {
+                            @Html.Partial("~/Views/UserControls/Topic/UCTopicCategoryPicker.cshtml", new PickerParamModel() { PickerID = "TopicCategorySysNo", MasterName = masterName })
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group ">
+                    <label class="control-label col-sm-3 col-xs-4">摘要：</label>
+                    <div class="col-sm-9 col-xs-8 ">
+                        <textarea name="Summary" data-model="Summary" class="form-control" maxlength="400" style="height:140px;">@(topic.Summary)</textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3 col-xs-4"></label>
+                    <div class="col-sm-9 col-xs-8">
+                        <label><input id="CbxIsTop" type="checkbox" class="colored-success" @(topic.IsTop.HasValue && topic.IsTop.Value == 1 ? " checked=checked" : "") /><span class="text cursor-pointer">是否置顶</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-12  col-sm-6 col-lg-4">
+                @*<div class="form-group ">
+                        <div class="control-label col-sm-offset-3 col-xs-offset-4 text-left col-sm-6 col-xs-12">
+                            <label><input id="CbxIsRed" type="checkbox" class="colored-success" @(topic.IsRed.HasValue && topic.IsRed.Value == 1 ? " checked=checked" : "") /><span class="text cursor-pointer">是否标红</span></label>&nbsp;
+                            <label><input id="CbxIsTop" type="checkbox" class="colored-success" @(topic.IsTop.HasValue && topic.IsTop.Value == 1 ? " checked=checked" : "") /><span class="text cursor-pointer">是否置顶</span></label>
+                        </div>
+                        <label class="control-label col-xs-offset-3 col-sm-offset-0  text-left col-sm-3 col-xs-4">
+                            状态：
+                            <span class="control-label " id="ViewStatus">
+                                @(topic.TopicStatus.HasValue ? topic.TopicStatus.GetDescription() : "草稿")
+                            </span>
+                        </label>
+                    </div>*@
+                <div class="form-group ">
+                    <label class="control-label col-sm-2 col-xs-3">封面图：</label>
+                    <div class="col-sm-9 col-xs-8">
+                        <div id="topicDefaultImageContainer">
+                            <input id="topicFile_DefaultImage" type="file" />
+                        </div>
+                        <input name="DefaultImage" data-model="DefaultImage" id="txtDefaultImage" type="hidden" value="@topic.DefaultImage" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="htmlContentContainer" class="form-group col-xs-12">
+            <label class="control-label col-xs-4  col-sm-2 col-lg-1"><span class="red">*</span>内容：</label>
+            <div class="col-xs-8 col-sm-10 col-lg-7">
+                <span class="col-xs-12 form-group green control-label text-left">注: 保存时请将HTML编辑器切换至可视模式,上传图片高度不能超过1500px,宽度在750px-900px之间。</span>
+                <div class="col-xs-12" style="padding-left:0 !important;">
+                    <script type="text/plain" id="TopicContentEditor">
+                    </script>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="bottomaction">
+    @*@if (topic.SysNo.HasValue && topic.SysNo.Value > 0)
+        {
+        <a href="/Topic/Maintain" class="btn btn-sm btn-primary "><i class="fa fa-plus"></i>@(GetText("创建"))</a>
+        }*@
+    @if (!topic.SysNo.HasValue || topic.TopicStatus != TopicStatus.Void)
+    {
+        <a id="btnSave" class="btn btn-sm btn-primary"><i class="fa fa-save right"></i> 保存</a>
+        <a id="btnSaving" class="btn btn-sm btn-primary" style="display:none;"><i class="fa fa-arrow-circle-up right"></i> 保存中...</a>
+    }
+    @if (topic.SysNo.HasValue && topic.SysNo.Value > 0)
+    {
+        if (topic.TopicStatus == TopicStatus.Init || topic.TopicStatus == TopicStatus.Offline)
+        {
+            <a id="btnPublish" class="btn btn-sm btn-primary"><i class="fa fa-arrow-up"></i>发布</a>
+        }
+        if (topic.TopicStatus == TopicStatus.Published)
+        {
+            <a id="btnOffline" class="btn btn-sm btn-primary"><i class="fa fa-arrow-down"></i>撤下</a>
+        }
+        @*if (topic.TopicStatus != TopicStatus.Void&& topic.TopicStatus!=TopicStatus.Published)
+            {
+                <a id="btnAbondon" class="btn btn-sm btn-primary"><i class="fa fa-trash-o"></i>删除</a>
+            }*@
+    }
+</div>
+
+
+
+<script type="text/javascript">
+    TopicMaintainHandler.SysNo = '@(topic.SysNo)';
+    TopicMaintainHandler = $.extend(TopicMaintainHandler, {
+        tempFileID: "@Guid.NewGuid()",
+        saveFileInfoUrl: '@Url.Action("SaveFileInfo", "Common")',
+        deleteFileUrl: '@Url.Action("DeleteFile", "Common")',
+        topicContent:'@(Html.Raw(string.IsNullOrWhiteSpace(topic.Content) ? "" : topic.Content.Replace("'", "\"").Replace("\n", "").Replace("\r", "").Replace("\t", "")))',
+        topicFileMasterType: "@FileMasterType.Topic",
+        topicDefaultImage: "@topic.DefaultImage",
+        contentFileList:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(topic.FileList))});
+    TopicMaintainHandler.ini();
+
+</script>

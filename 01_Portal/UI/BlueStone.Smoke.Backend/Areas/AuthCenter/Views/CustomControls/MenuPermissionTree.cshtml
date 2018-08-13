@@ -1,0 +1,62 @@
+﻿<div class="modal" id="CustomControl_PermissionSelectorModal">
+    <div class="modal-dialog" style="width:70%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">权限选择</h4>
+            </div>
+            <div class="modal-body">
+                <div id="customcontrol-permission-tree">
+                    @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/RoleTreeTemplate.cshtml")
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="CustomControl_PermissionSelectorModal_OKBtn">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var CustomControl_PermissionSelector = function () {
+        var permissionTreeUrl = '@Url.Action("LoadFunctionsWithPermissionForMenu", "Menu")';
+        var permission_tree = new KORoleEditTree('customcontrol-permission-tree', permissionTreeUrl);
+       // permission_tree.ReLoad({ ApplicationID: $('#Current-Application').val() });
+        //permission_tree.GetDisabled = function (node) {
+        //    if (node.MenuSysNo == 0) {
+        //        return false;
+        //    }
+        //    return true;
+        //}
+        var inited = false;
+        var callbackVal = null;
+        var $ui_modal = $("#CustomControl_PermissionSelectorModal");
+        function init() {
+            $('#CustomControl_PermissionSelectorModal_OKBtn').on('click', function (event) {
+                $ui_modal.modal('hide');
+                if (callbackVal != null) {
+                    var result = permission_tree.GetCheckedData();
+                    callbackVal(result);
+                }
+            });
+        }
+        return {
+            show: function (callback, moreParams) {
+                if (inited == false) {
+                    inited = true;
+                    init();
+                }
+                if (moreParams.ApplicationID == null) {
+                    throw new Error('PermissionSelector need ApplicationID !');
+                }
+                callbackVal = callback;
+                $ui_modal.modal({ backdrop: 'static', keyboard: false });
+                permission_tree.ReLoad({ ApplicationID: moreParams.ApplicationID, MenuSysNo: moreParams.MenuSysNo });
+            }
+        }
+    }()
+
+</script>

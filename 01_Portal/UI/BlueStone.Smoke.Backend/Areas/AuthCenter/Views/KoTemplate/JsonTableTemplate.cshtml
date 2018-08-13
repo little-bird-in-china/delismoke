@@ -1,0 +1,69 @@
+﻿<div class="row-fluid">
+    <div class="span6">
+        <div class="dataTables_length">
+            <label>
+                <select data-bind="options: pageSizeSelect,value:$root.filter.PageSize,event: { change: $root.pageSizeChange }" class="input-mini"></select>
+                每页记录数
+            </label>
+        </div>
+    </div>
+    <div class="span6"></div>
+    <div class="dataTables_processing" style="visibility: hidden;">Processing...</div>
+</div>
+<table class="table table-bordered" style="word-break: break-all;">
+    <thead>
+        <tr>
+            <th data-bind="visible:showCheckBox" width="12px"><input type="checkbox" data-bind="checked:allSelected" /></th>
+            <!-- ko foreach: columns -->
+            <th data-bind="text:cText,visible:cVisible,style:{width:cWidth}"></th>
+            <!-- /ko -->
+        </tr>
+    </thead>
+    <tbody>
+        <!-- ko foreach: data -->
+        <tr data-bind="click:$root.rowClick">
+            <td data-bind="visible:$root.showCheckBox" width="12px">
+            <input type="checkbox" data-bind="checked:_isSelected" /></td>
+            <!-- ko foreach: cells -->
+            <!--ko if : cType=='data'-->
+            <td data-bind="text:cellData"></td>
+            <!-- /ko -->
+            <!--ko if : cType=='html'-->
+            <td data-bind="html:cHtml,clickBubble: false"></td>
+            <!-- /ko -->
+            <!-- /ko -->
+        </tr>
+        <!-- /ko -->
+        <!--ko if : data().length==0 -->
+        <tr>
+            <td style="text-align:center" data-bind="attr:{colspan:columns().length+1}">没有查询到任何数据 !</td>
+        </tr>
+        <!-- /ko -->
+    </tbody>
+</table>
+<div class="row-fluid">
+    <div class="span6">
+        <div class="dataTables_info">
+            显示 <span data-bind="text:$root.StartIndex()+1"></span> 到
+            <span data-bind="text:$root.data().length+$root.StartIndex()"></span> 条记录
+            /共<span data-bind="text:$root.total"></span>条
+        </div>
+    </div>
+    <div class="span6">
+        <div class="dataTables_paginate paging_bootstrap pagination">
+            <ul>
+                <li class="prev" data-bind="css:{'disabled':$root.filter.PageIndex() <= 0}">
+                    <a href="javascript;;" data-bind="click:$root.pagePrev">← 上一页</a>
+                </li>
+                <!-- ko foreach: $root.pageItem -->
+                <li data-bind="css:{'active':$root.filter.PageIndex()==$data-1}">
+                    <a href="javascript;;" data-bind="text:$data,click:$root.pageClick.bind($data)"></a>
+                </li>
+                <!-- /ko -->
+                <li class="next" data-bind="css:{'disabled':$root.filter.PageIndex() >= $root.totalPage()-1}">
+                    <a href="javascript;;" data-bind="click:$root.pageNext">下一页 → </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

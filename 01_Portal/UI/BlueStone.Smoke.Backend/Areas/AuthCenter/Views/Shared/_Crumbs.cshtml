@@ -1,0 +1,35 @@
+﻿@using BlueStone.Utility.Web
+@using BlueStone.Utility.Web.Auth.Models
+@{
+    List<AuthMenuModel> menuItemList = AuthMgr.GetUserMenuList();
+    List<AuthPermissionModel> permissions = AuthMgr.GetUserPermissionList(ViewBag.CurrUser);
+
+    string absUrl = Request.Url.AbsolutePath;
+    AuthMenuModel curMenuItem = menuItemList.Find(f => string.Compare(f.LinkPath, absUrl, true) == 0);
+    if (curMenuItem == null)
+    {
+        curMenuItem = new AuthMenuModel
+        {
+            MenuName = "首页"
+        };
+    }
+    AuthMenuModel parentMenuItem = menuItemList.Find(f => string.Compare(f.SysNo, curMenuItem.ParentSysNo, true) == 0);
+}
+
+<section class="content-header">
+    <h1>
+        @curMenuItem.MenuName
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="javascript:;">授权中心</a></li>
+        @if (parentMenuItem != null)
+        {
+            <li><a href="javascript:;">@parentMenuItem.MenuName</a></li>
+            <li class="active">@curMenuItem.MenuName</li>
+        }
+        else
+        {
+            <li class="active">@curMenuItem.MenuName</li>
+        }
+    </ol>
+</section>

@@ -1,0 +1,227 @@
+﻿@using BlueStone.Smoke.Entity
+@model SmokeDetector
+
+@{ 
+    ViewBag.Title = Model.Code;
+    var UserType = (UserType)ViewBag.UserType;
+}
+
+@section rsHeader
+{
+}
+<input type="text" id="detector" style="display:none" value="@Model.Code" />
+<div class="body-bottom-pd">
+    <div class="weui-cells ">
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><i class="iconfont">&#xe63b;</i></div>
+            <div class="weui-cell__bd">
+                <p><label>设备编号：</label><span>@Model.Code</span></p>
+            </div>
+        </div>
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><i class="iconfont">&#xe638;</i></div>
+            <div class="weui-cell__bd">
+                <p><label>设备位置：</label><span>@(Model.AddressName + Model.Position)</span></p>
+            </div>
+        </div>
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><i class="iconfont">&#xe62c;</i></div>
+            <div class="weui-cell__bd">
+                <!--
+                    设备的状态：
+                    normal-正常绿色
+                    error-报警红色
+                    offLine-离线灰色
+                -->
+                @*@if (Model.Status == SmokeDetectorStatus.)
+                    {*@
+                @*@if (Model.Status == SmokeDetectorStatus.ActiveBeat || Model.Status == SmokeDetectorStatus.Beat || Model.Status == SmokeDetectorStatus.Start)
+                    {
+                        <p><label>设备状态：</label><em class="state normal"><i></i>@Model.StatusStr</em></p>
+                    }
+                    else if (Model.Status == SmokeDetectorStatus.TestWarning || Model.Status == SmokeDetectorStatus.Warning)
+                    {
+                        <p><label>设备状态：</label><em class="state error"><i></i>@Model.StatusStr</em></p>
+                    }
+                    else if (Model.Status == SmokeDetectorStatus.Lost)
+                    {
+                        <p><label>设备状态：</label><em class="state offLine"><i></i>@Model.StatusStr</em></p>
+                    }
+                    else
+                    {
+                        <p><label>设备状态：</label><em class="state waring"><i></i>@Model.StatusStr</em></p>
+                    }*@
+
+                @if (Model.Status == SmokeDetectorStatus.OutNet || Model.Status == SmokeDetectorStatus.Lost || Model.Status == SmokeDetectorStatus.Offline)
+                {
+                    <p style="float:left"><label>状态：</label><em class="state offLine"><i></i>@Model.StatusStr</em></p>
+                }
+                else if (Model.Status == SmokeDetectorStatus.TestWarning || Model.Status == SmokeDetectorStatus.Warning)
+                {
+                    <p style="float:left"><label>状态：</label><em class="state error"><i></i>@Model.StatusStr</em></p>
+                }
+                else if (Model.Status == SmokeDetectorStatus.LowPower)
+                {
+                    <p style="float:left"><label>状态：</label><em class="state warning"><i></i>@Model.StatusStr</em></p>
+                }
+                else
+                {
+                    <p style="float:left"><label>状态：</label><em class="state normal"><i></i>设备正常</em></p>
+                }
+
+                @*}
+                    else if (Model.Status == SmokeDetectorStatus.Offline)
+                    {
+                        <p><label>设备状态：</label><em class="state offLine"><i></i>@Model.StatusStr</em></p>
+                    }
+                    else
+                    {
+                        <p><label>设备状态：</label><em class="state error"><i></i>@Model.StatusStr</em></p>
+                    }*@
+                @if (Model.Status == SmokeDetectorStatus.TestWarning || Model.Status == SmokeDetectorStatus.Warning)
+                {
+                    <div style="float:right">
+                        <a href="javascript:;" class="clear-warning-btn" id="clear_warning">取消报警</a>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+    <div class="weui-cells mt">
+        <div class="weui-cell">
+            <div class="weui-cell__bd">
+                <p class="tit-color">报警信息</p>
+            </div>
+            <div class="weui-cell__ft"><a href="/Smoke/Notice">查看更多</a></div>
+        </div>
+    </div>
+    @if (Model.MessageList != null && Model.MessageList.Count > 0)
+    {
+        foreach (var item in Model.MessageList)
+        {
+            <div class="weui-cells nobg">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        <p>@item.StatusStr</p>
+                    </div>
+                    <div class="weui-cell__ft date-size">@item.BeginTimeStr</div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="weui-cells nobg">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <p>暂无报警信息</p>
+                </div>
+
+            </div>
+        </div>
+    }
+    @{
+        if (Model.InstallerSysNo <= 0)
+        {
+            <div class='demos-content-btn'>
+                <a href="javascript:;" id="unbundling" class="weui-btn-jiebang">删除设备</a>
+            </div>
+        }
+        else
+        {
+            if (UserType == UserType.Common)
+            {
+                <div class='demos-content-btn'>
+                    <a href="javascript:;" id="relieve" class="weui-btn-jiebang">设备解绑</a>
+                </div>
+            }
+            if (UserType == UserType.Installer)
+            {
+                <div class='demos-content-btn'>
+                    <a href="javascript:;" id="unbundling" class="weui-btn-jiebang">删除设备</a>
+                </div>
+            }
+        }
+
+    }
+
+</div>
+@section rsFooter{
+<script type="text/javascript">
+
+        $("#relieve").click(function () {
+            var code = $.trim($("#detector").val());
+            var list = [];
+            list.push(code);
+            var data = {
+                codes: list
+            }
+            $.confirm("您确定解绑设备吗?", "提示", function () {
+                $.ajax({
+                    url: "/Smoke/RelieveDetector",
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+                    traditional: true,
+                    success: function (r) {
+                        if (r.Success) {
+                            $.toast("操作成功", function () {
+                                console.log('close');
+                                window.location = "/Smoke/DeviceList"
+                            });
+                        } else {
+                            $.toast(r.Message, "forbidden");
+                        }
+                    }
+                });
+            }, function () {
+                //取消操作
+            });
+
+
+
+        })
+
+    var codee = $.trim($("#detector").val());
+    $("#unbundling").on("click", function () {
+        $.confirm("此操作为强制删除设备，您确定吗？", "删除提示", function () {
+            $.ajax({
+                url: "/Smoke/DeleteDetector",
+                type: "POST",
+                dataType: "json",
+                data: { code: codee},
+                traditional: true,
+                success: function (r) {
+                    if (r.Success) {
+                        $.toast("操作成功", function () {
+                            window.location = "/Smoke/DeviceList"
+                        });
+                    } else {
+                        $.toast(r.Message, "forbidden");
+                    }
+                }
+            });
+        }, function () {
+            //取消操作
+            return;
+        });
+    });
+
+    $("#clear_warning").click(function () {
+        var code = $.trim($("#detector").val());
+             $.confirm("确定要取消报警吗?", function () {
+                 $.get("@Url.Action("CancelWarning", "Smoke")", { code: code }, function (res) {
+                            if (res.Success) {
+                                $.toast("取消成功", function () {
+                                    window.location.reload();
+                                });
+                               
+                            } else {
+                                $.toast(res.Message, "forbidden");
+                            }
+                        }, 'json');
+                });
+        })
+</script>
+}

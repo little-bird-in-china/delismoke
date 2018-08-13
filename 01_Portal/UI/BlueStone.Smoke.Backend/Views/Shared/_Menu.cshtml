@@ -1,0 +1,194 @@
+﻿@using BlueStone.Smoke.Backend.App_Start;
+@using BlueStone.Utility.Web
+@using BlueStone.Utility.Web.Auth.Models
+@using System.Text.RegularExpressions;
+@using System.Text;
+@using BlueStone.Smoke.Entity;
+@{
+    List<AuthMenuModel> menuItemList = AuthMgr.GetUserMenuList();
+    var topLevelMenuList = menuItemList.Where(item => !menuItemList.Exists(tm => tm.SysNo == item.ParentSysNo) && item.IsDisplay == "1").ToList();
+
+    //var currentMenu = menuItemList.Find(item => string.Compare(item.LinkPath, Request.Url.AbsolutePath, true) == 0);
+
+    //if (currentMenu == null)
+    //{
+    var sb = new StringBuilder();
+    //tem.LinkPath.ToLower().StartsWith(requestUrl)
+
+
+    string rawUrl = Request.RawUrl.ToLower();
+
+    var currentMenu = menuItemList.Find(item => rawUrl.Equals(item.LinkPath.ToLower()));
+    if (currentMenu == null)
+    {
+        var tlist = menuItemList.FindAll(item => !string.IsNullOrWhiteSpace(item.LinkPath) && rawUrl.StartsWith(item.LinkPath.ToLower()));
+        tlist.Sort((i1, i2) => i2.LinkPath.Length - i1.LinkPath.Length);
+        currentMenu = tlist.Count > 0 ? tlist[0] : null;
+    } 
+    if (currentMenu == null)
+    {
+        var Reurl = Request.Url.AbsolutePath.Take(Request.Url.AbsolutePath.LastIndexOf('/'));
+        foreach (var ru in Reurl)
+        {
+            sb.Append(ru);
+        }
+        var requestUrl = sb.ToString().ToLower() + "/";
+        currentMenu = menuItemList.Find(item => item.LinkPath.ToLower().StartsWith(requestUrl, StringComparison.CurrentCultureIgnoreCase));
+        if (Request.Url.AbsolutePath.ToLower().Equals("/home/index"))
+        {
+            currentMenu = null;
+        }
+    }
+    //}
+    Func<AuthMenuModel, AuthMenuModel, string> MenuClassForActiveOpen = (itemMenu, currMenu) =>
+    {
+        if (currMenu == null) return "";
+        if (currMenu.SysCode.StartsWith(itemMenu.SysCode))
+        {
+            return "active open";
+        }
+        return "";
+    };
+
+    Func<AuthMenuModel, AuthMenuModel, string> MenuClassForActive = (itemMenu, currMenu) =>
+    {
+        if (currMenu == null) return "";
+        if (currMenu.SysCode.StartsWith(itemMenu.SysCode))
+        {
+            return "active";
+        }
+        return "";
+    };
+
+    Func<string, int, string> GetDisplyName = (realName, level) =>
+    {
+        if (level == 1)
+        {
+            if (Regex.IsMatch(realName, @"[\u4E00-\u9FA5]+$"))
+            {      //判断是否是汉字
+                return realName.Length > 2 ? realName.Substring(0, 2) : realName;
+            }
+            else
+            {
+                return realName.Length > 3 ? realName.Substring(0, 3) : realName;
+            }
+        }
+
+        return realName;
+    };
+
+    string userName = this.ViewBag.CurrUser == null ? "" : this.ViewBag.CurrUser.UserDisplayName;
+}
+
+<div class="page-sidebar menu-twocolumn" id="sidebar">
+    <!-- Sidebar Menu -->
+        @if (ViewBag.CurrUser != null && !string.IsNullOrWhiteSpace(ViewBag.CurrUser.AvatarImageUrl))
+        {
+            <div class="logo" style="background-image:url(@(System.Web.Configuration.WebConfigurationManager.AppSettings["ImageStorageServerDomain"]+ViewBag.CurrUser.AvatarImageUrl))"></div>
+        }
+        else
+        {
+            <div class="logo" style="background-image:url(/Content/assets/img/default_logo.png)"></div>
+        }
+    <ul class="nav sidebar-menu">
+        <!--Dashboard-->
+        @foreach (AuthMenuModel mItemL1 in topLevelMenuList)
+        {
+
+            List<AuthMenuModel> mItemL2List = menuItemList.FindAll(x => x.ParentSysNo == mItemL1.SysNo && x.IsDisplay == "1");
+
+            if (mItemL2List.Count == 0 && string.IsNullOrWhiteSpace(mItemL1.LinkPath))
+            {
+                continue;
+            }
+            <li class="@MenuClassForActiveOpen(mItemL1, currentMenu) level1Menu">
+                <a href="@mItemL1.LinkPath" @if (mItemL2List != null && mItemL2List.Count > 0) { @Html.Raw("class='menu-dropdown'") }>
+                    <i class="menu-icon @mItemL1.IconStyle"></i>
+                    <span class="menu-text">@GetDisplyName(mItemL1.MenuName, 1)</span>
+                    @if (mItemL2List != null && mItemL2List.Count > 0)
+                    {
+                        <i class="menu-expand"></i>
+                    }
+                </a>
+                @if (mItemL2List != null && mItemL2List.Count > 0)
+                {
+                    <ul class="submenu">
+                        <li class="tit"><a>@mItemL1.MenuName</a></li>
+                        @foreach (AuthMenuModel mItemL2 in mItemL2List)
+                        {
+
+
+                            List<AuthMenuModel> mItemL3List = null;// menuItemList.FindAll(x => x.ParentSysNo == mItemL2.SysNo && x.IsDisplay == "1");
+                            if (mItemL3List != null && mItemL3List.Count > 0)
+                            {
+                                <li class="@MenuClassForActiveOpen(mItemL2, currentMenu)">
+                                    <a href="@mItemL2.LinkPath" class="menu-dropdown">
+                                        <span class="menu-text">
+                                            @mItemL2.MenuName
+                                        </span>
+                                        <i class="menu-expand"></i>
+                                    </a>
+                                    @if (mItemL3List != null && mItemL3List.Count > 0)
+                                    {
+                                        <ul class="submenu">
+                                            @foreach (AuthMenuModel mItemL3 in mItemL3List)
+                                            {
+                                                <li class="@MenuClassForActive(mItemL2, currentMenu)">
+                                                    <a href="@mItemL3.LinkPath">
+                                                        @*<i class="@mItemL3.IconStyle"></i>*@<i class="@mItemL3.IconStyle"></i>
+                                                        @mItemL3.MenuName
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </li>
+                            }
+                            if ((mItemL3List == null || mItemL3List.Count == 0))
+                            {
+                                <li class="@MenuClassForActive(mItemL2, currentMenu)">
+                                    <a href="@mItemL2.LinkPath">
+                                        @*<i class="@mItemL2.IconStyle"></i>*@
+                                        @mItemL2.MenuName
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                }
+            </li>
+
+
+        }
+    </ul>
+    <!-- /Sidebar Menu -->
+    <div class="userinfo"><a href="/Home/EditPwd">@userName</a><a id="btnLogOut" href="javascript:;">注销</a></div>
+    <script type="text/javascript">
+        $('#btnLogOut').on('click', function () {
+            $.confirm("确定注销用户？", function (ok) {
+                if (ok) {
+                    $.ajax({
+                        url: '@Url.Action("LoginOut", "Login",new { area=""})',
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res && res.Success) {
+                                window.location.assign('@Url.Action("Index", "Home", new { area = "" })');
+                            }
+                        }
+                    });
+                }
+            });
+        });
+        //大选项卡切换事件
+        $("body").on("click", ".level1Menu", function () { 
+            var $subMenu = $(this).find("ul.submenu");
+            if ($subMenu != null && $subMenu.length > 0) {
+                var $li = $subMenu.find("li:eq(1)");
+                if ($li != null && $li.length > 0) {
+                    window.location.href = $li.find("a").attr("href");
+                }
+            }
+        })
+
+    </script>
+</div>

@@ -1,0 +1,78 @@
+﻿<div class="dataTables_wrapper form-inline dt-bootstrap">
+    <div class="row">
+        <div class="col-sm-6"></div>
+        <div class="col-sm-6"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div id="example1_length" class="dataTables_length">
+                <label>
+                    <select data-bind="options: pageSizeSelect,value:$root.filter.PageSize,event: { change: $root.pageSizeChange }" class="input-mini form-control select2"></select>
+                     &nbsp;每页记录数
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <table class="table table-bordered table-hover dataTable">
+                <thead>
+                    <tr role="row">
+                        <th class="checkbox-td" data-bind="visible:showCheckBox"><div class="icheckbox_square-blue" data-bind="css:{'checked':allSelected},click:$root.allCheckBoxClick" /></th>
+                        <!-- ko foreach: columns -->
+                        <th style="min-width:30px;text-align:center;" data-bind="click:$root.SortTable.bind($data),text:cText,visible:cVisible,style:{width:cWidth},css:{'sorting':cSortable&&!cIsSorting(),'sorting_asc':cSortable&&cIsSorting()&&cSortAscending(),'sorting_desc':cSortable&&cIsSorting()&&!cSortAscending()}"></th>
+                        <!-- /ko -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- ko foreach: data -->
+                    <tr data-bind="visible:$root.showCheckBox,click:$root.rowClick">
+                        <td class="checkbox-td">
+                            <div class="icheckbox_square-blue" data-bind="css:{'checked':_isSelected}" />
+                        </td>
+                        <!-- ko foreach: cells -->
+                        <!--ko if : cType=='data'-->
+                        <td style="text-align:center" data-bind="text:cellData"></td>
+                        <!-- /ko -->
+                        <!--ko if : cType=='html'-->
+                        <td data-bind="html:cHtml"></td>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                    </tr>
+                    <!-- /ko -->
+                    <!--ko if : data().length==0 -->
+                    <tr>
+                        <td style="text-align:center" data-bind="attr:{colspan:columns().length+1}">没有查询到任何数据 !</td>
+                    </tr>
+                    <!-- /ko -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="dataTables_info">
+                显示 <span data-bind="text:$root.StartIndex()+1"></span> 到
+                <span data-bind="text:$root.data().length+$root.StartIndex()"></span> 条记录
+                /共<span data-bind="text:$root.total"></span>条
+            </div>
+        </div>
+        <div class="col-sm-7">
+            <div class="dataTables_paginate paging_simple_numbers">
+                <ul class="pagination">
+                    <li class="paginate_button previous" data-bind="css:{'disabled':$root.filter.PageIndex() <= 0}">
+                        <a href="javascript;;" data-bind="click:$root.pagePrev">上一页</a>
+                    </li>
+                    <!-- ko foreach: $root.pageItem -->
+                    <li class="paginate_button" data-bind="css:{'active':$root.filter.PageIndex()==$data-1}">
+                        <a href="javascript;;" data-bind="text:$data,click:$root.pageClick.bind($data)"></a>
+                    </li>
+                    <!-- /ko -->
+                    <li class="paginate_button next" data-bind="css:{'disabled':$root.filter.PageIndex() >= $root.totalPage()-1}">
+                        <a href="javascript;;" data-bind="click:$root.pageNext">下一页</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

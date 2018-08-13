@@ -1,0 +1,94 @@
+﻿<form class="form-horizontal" data-bind="formVisible:$root.EditFormIsShow">
+    <div class="row">
+        <!-- ko foreach:{data:$root.ControlGroups,as:'controlGroup'} -->
+
+        <!-- ko if: $data.cType=='input' -->
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" 
+             data-bind="visible:$data.cVisible,css:{'has-error':$data.cValue.isValid!=null && !$data.cValue.isValid()}">
+            <div class="form-group">
+                <label class="col-sm-3 control-label col-xs-3 col-xs-offset-1 col-md-offset-0" data-bind="text:$data.cText"></label>
+                <div class="col-sm-6 col-xs-6">
+                    <input class="form-control" type="text" onkeyup="this.value=this.value.replace(/[<\x22]+/ig,'')"
+                    data-bind="value:$data.cValue,valueUpdate:'afterkeydown',formValid:$data.cValue,attr:{disabled:$data.cDisabled($data,$root.ControlGroups,$element)}">
+                </div>
+            </div>
+        </div>
+        <!-- /ko -->
+
+        <!-- ko if: $data.cType=='radio' -->
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12"
+             data-bind="visible:$data.cVisible,css:{'has-error':$data.cValue.isValid!=null && !$data.cValue.isValid()}">
+            <div class="form-group">
+                <label class="col-sm-3 control-label col-xs-3 col-xs-offset-1 col-md-offset-0" data-bind="text:$data.cText"></label>
+                <div class="col-sm-6 col-xs-6">
+                    <!-- ko foreach: $data.cRadioButtuns -->
+                    <label style="display:inline-block;margin-left:5px;cursor:pointer;" data-bind="click:$root.RadioClick.bind($data,controlGroup,$element)">
+                        <div class="iradio_square-blue" 
+                        data-bind="css:{'checked':$data.value==controlGroup.cValue()},attr:{disabled:$parent.cDisabled($data,$root.ControlGroups,$element)}"></div>
+                        <span style="margin-left:5px;" data-bind="text:$data.text"></span>
+                    </label>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+        <!-- /ko -->
+        
+        <!-- ko if: $data.cType=='select' -->
+        @*<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12"
+             data-bind="visible:$data.cVisible,css:{'has-error':$data.cValue.isValid!=null && !$data.cValue.isValid()}">
+            <div class="form-group">
+                <label class="col-sm-3 control-label col-xs-3 col-xs-offset-1 col-md-offset-0" data-bind="text:$data.cText"></label>
+                <div class="col-sm-6 col-xs-6">
+                    <select class="form-control" style="width: 100%;"
+                    data-bind="options:$data.cSelectOptions,optionsText: 'text',optionsValue:'value',value:'ZS', attr:{disabled:$data.cDisabled}">
+                    </select>
+                </div>
+            </div>
+        </div>*@
+        <!-- /ko -->
+
+        <!-- ko if: $data.cType=='area' -->
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12"
+             data-bind="visible:$data.cVisible,css:{'has-error':$data.cValue.isValid!=null && !$data.cValue.isValid()}">
+            <div class="form-group">
+                <label class="col-sm-3 control-label col-xs-3 col-xs-offset-1 col-md-offset-0" data-bind="text:$data.cText"></label>
+                <div class="col-sm-6 col-xs-6">
+                    <textarea class="form-control" style="resize:none" onkeyup="this.value=this.value.replace(/[<\x22]+/ig,'')"
+                     data-bind="value:$data.cValue,attr:{cols:$data.cAreaSize.cols,rows:$data.cAreaSize.rows,disabled:$data.cDisabled($data,$root.ControlGroups,$element)}">
+                    </textarea>
+                </div>
+            </div>
+        </div>
+        <!-- /ko -->
+
+        <!-- ko if: $data.cType=='checkboxs' -->
+        @*<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12"
+             data-bind="visible:$data.cVisible,css:{'has-error':$data.cValue.isValid!=null && !$data.cValue.isValid()}">
+            <div class="form-group">
+                <label class="col-sm-3 control-label col-xs-3 col-xs-offset-1 col-md-offset-0" data-bind="text:$data.cText"></label>
+                <div class="col-sm-6 col-xs-6">
+                    <!-- ko foreach: $data.cCheckboxs -->
+                    <label style="display:inline-block;margin-left:5px;cursor:pointer" data-bind="click:$root.CheckBoxClick.bind($data,controlGroup,$element)">
+                        <div class="icheckbox_square-blue"
+                        data-bind="css:{'checked':$data.cChecked}, attr:{disabled:$parent.cDisabled($data,$root.ControlGroups,$element)}"></div>
+                        <span style="margin-left:5px;" data-bind="text:$data.text"></span>
+                    </label>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>*@
+        <!-- /ko -->
+
+        <!-- /ko -->
+    </div>
+    <div class="row">
+        <div class="btn-group col-md-offset-5 col-lg-offset-5 col-sm-offset-4 col-xs-offset-4">
+            <button class="btn btn-primary" data-bind="click:$root.Buttons.SaveBtnClick,visible:$root.Buttons.SaveBtn.visible,attr:{disabled:$root.Buttons.SaveBtn.disabled}" type="button">
+                <i class="fa fa-save"></i> <span data-bind="text:$root.Buttons.SaveBtn.text"></span>
+            </button>
+            <button class="btn btn-default" type="button" data-bind="click:$root.Buttons.ResetBtnClick,visible:$root.Buttons.ResetBtn.visible">
+                <i class="fa fa-edit"></i> <span data-bind="text:$root.Buttons.ResetBtn.text"></span>
+            </button>
+        </div>
+    </div>
+</form>

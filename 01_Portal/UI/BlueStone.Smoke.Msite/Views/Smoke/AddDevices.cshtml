@@ -1,0 +1,698 @@
+﻿@using BlueStone.Smoke.Entity;
+@using BlueStone.Smoke.Msite.Models
+@model UIAddDetectorModel
+
+@{
+    ViewBag.Title = "添加设备";
+    var company = new Company();
+    int autoScan = 0;
+    int.TryParse(Request["AutoScan"], out autoScan);
+    if (Model.CompanyList.Count > 0)
+    {
+        foreach (var item in Model.CompanyList)
+        {
+            if (Model.SelectCompany == item.SysNo)
+            {
+                company = item;
+            }
+        }
+    }
+    var count = Model.List.Count;
+    AppUserInfo curentUser = UserMgr.ReadUserInfo() ?? new AppUserInfo();
+}
+@section rsHeader
+{
+    <style type="text/css">
+        .weui-btn_disabled {
+            background-color: #8B8B7A;
+            color: white;
+        }
+
+            .weui-btn_disabled:active {
+                background-color: #8B8B7A;
+            }
+    </style>
+}
+<div class="body-bottom-pd">
+    <div class="gu-form-content">
+        <div class="gu-form-con-bg">
+            <div class="weui-cells">
+                <div class="weui-cell">
+                    <i class="iconfont name">&#xe63b;</i>
+                    <div class="weui-cell__bd">
+                        <input class="weui-input" type="text" id="smokeCode" placeholder="请扫码"  readonly>
+                    </div>
+                    <i class="iconfont scanning" onclick="scanQRcode()">&#xe637;</i>
+                </div>
+            </div>
+            <div class="weui-cells gu-select" style="display:none">
+                <div class="weui-cell gu-arrow">
+                    <div class="weui-cell__hd">
+                        <i class="iconfont">
+                            &#xe63f;
+                        </i>
+                    </div>
+                    @if (Model != null && Model.CompanyList.Count > 0)
+                    {
+                        <div class="weui-cell__bd">
+                            <select class="weui-select" id="SelectCompany" name="select1">
+
+                                <option value="@Model.CompanyList[0].SysNo" @(Model.SelectCompany == Model.CompanyList[0].SysNo ? "selected='selected'" : "") data-name="@Model.CompanyList[0].Name">@Model.CompanyList[0].Name</option>
+
+                            </select>
+                        </div>
+                    }
+                    @*else
+                        {
+                            <div class="weui-cell__bd">
+                                <select class="weui-select" id="SelectCompany" name="select1" disabled="disabled">
+                                    <option value="0">还未给您分配公司</option>
+                                </select>
+                            </div>
+                        }*@
+                </div>
+            </div>
+            <div class="weui-cells gu-select" id="address_hightest" style="@(curentUser.UserType==UserType.Installer?"":"display:none")">
+                @if (Model.FirstAddress != null && company.Name != Model.FirstAddress.Name)
+                {
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd">
+                            <i class="iconfont">&#xe63e;</i>
+                        </div>
+                        <div class="weui-cell__bd ">
+                            <select class="weui-select" id='heightest_select' name="select1" disabled="disabled">
+                                <option value="@Model.FirstAddress.SysNo">@Model.FirstAddress.Name</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+
+
+            </div>
+            @if (Model.FirstAddress != null && Model.FirstAddress.AreaAddress != null && Model.FirstAddress.AreaAddress != "")
+            {
+                <div class="weui-cells" id="address_company"  style="@(curentUser.UserType==UserType.Installer?"":"display:none")">
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd"><i class="iconfont">&#xe638;</i></div>
+                        <div class="weui-cell__bd">
+                            <p id="address_CompanyAddress">@Model.FirstAddress.AreaAddress</p>
+
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (Model.FirstAddress == null || Model.FirstAddress.SysNo == 0)
+            {
+                <div class="weui-cells" id="address_company"  style="@(curentUser.UserType==UserType.Installer?"":"display:none")">
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd"><i class="iconfont">&#xe638;</i></div>
+                        <div class="weui-cell__bd">
+                            <p id="address_CompanyAddress">地址</p>
+
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="weui-cells" id="address_company" style="display:none">
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd"><i class="iconfont">&#xe638;</i></div>
+                        <div class="weui-cell__bd">
+                            <p id="address_CompanyAddress">地址</p>
+
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="weui-cells weui-cells_form" id="active_addressInfo"  >
+                @if (Model.List.Count > 0)
+                {
+                    for (int i = 0; i < Model.List.Count; i++)
+                    {
+                        @Html.Raw("<div id='s_" + i + "'>")
+                        <div class='weui-cell gu-arrow' style='border-bottom: 1px solid #3e4855;'>
+                            <div class='weui-cell__hd'>
+                            </div>
+                            <div class='weui-cell__bd'>
+                                <select class="weui-select selects" onchange='addhtml(@(i+1))' id='@("sl"+(i+1))'>
+                                    <option value='0'>请选择</option>
+                                    @foreach (var item in Model.List[i].ItemList)
+                                    {
+                                        <option @(item.Code == Model.List[i].SelectCode ? "selected='selected'" : "") value="@item.SysNo">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        if (i == Model.List.Count - 1)
+                        {
+                            <div id='s_@(i+1)'>
+
+                            </div>
+                        }
+
+                    }
+                    for (int j = 0; j < Model.List.Count; j++)
+                    {
+                        @Html.Raw("</div>")
+                    }
+                }
+
+            </div>
+            <div class="weui-cells weui-cells_form" id="addressform">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        <input class="weui-input" id="memo" type="text" onkeyup="this.value=this.value.replace(/[<\x22]+/ig,'')" placeholder="设备备注">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class='demos-content-padded'>
+        <a href="javascript:;" id='show-toast' class="weui-btn weui-btn_disabled">确认添加</a>
+        @*<a href="javascript:;" id='show-toast' class="weui-btn ">确认添加</a>*@
+    </div>
+</div>
+
+@section rsFooter{
+    <script>
+            //$("#start").cityPicker({
+            //    title: "选择所在地",
+            //    onChange: function (picker, values, displayValues) {
+            //        console.log(values, displayValues);
+            //    }
+        //});
+
+            var addressList = [];
+            var endid = '@(Model.List.Count>0?("sl"+ Model.List.Count):"heightest_select")';
+            //$("#SelectCompany").change(function () {
+            function initCompany() {
+                //endid = "";
+                var data = {
+                    companySysNo: $.trim($("#SelectCompany").val())
+                };
+                if (data.companySysNo == 0) {
+                    document.getElementById("address_hightest").innerHTML = "";
+                    document.getElementById("active_addressInfo").innerHTML = "";
+                    $("#address_company").show();
+                    $("#address_CompanyAddress").text("地址");
+                    return;
+                }
+                $.showLoading();
+                $.ajax({
+                    url: "/Smoke/LoadCompanyAddress",
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+                    success: function (r) {
+                        if (r.Success) {
+                            $.hideLoading();
+                            addressList = r.Data;
+                            var dataList = [];
+                            var firstAddressList = [];
+                            for (var i = 0; i < addressList.length; i++) {
+                                if (addressList[i].ParentSysNo == null || addressList[i].ParentSysNo==0) {
+                                    dataList.push(addressList[i]);
+                                };
+                            }
+                            var html = "";
+                            for (var j = 0; j < dataList.length; j++) {
+                                html = html + " <option  value=" + dataList[j].SysNo + ">" + dataList[j].Name + "</option>"
+                            }
+                            var companyName = $("#SelectCompany option:checked").text();
+                            if (companyName != dataList[0].Name) {
+                                document.getElementById("address_hightest").innerHTML =
+                                    "<div class='weui-cell'>" +
+                                    "<div class='weui-cell__hd'>" +
+                                    "<i class='iconfont'>&#xe63e;</i>" +
+                                    "</div>" +
+                                    " <div class='weui-cell__bd'>" +
+                                    "<select class='weui-select' id='heightest_select' onchange='selectaddress()' disabled='disabled' >" +
+                                    html +
+                                    "</select>" +
+                                    //"<p>" + dataList[0].Name + "</p>" +
+                                    "</div >" +
+                                    "</div >";
+                            } else {
+                                document.getElementById("address_hightest").innerHTML =
+                                    "<div class='weui-cell'>" +
+                                    "<div class='weui-cell__hd'>" +
+                                    "<i class='iconfont'>&#xe63e;</i>" +
+                                    "</div>" +
+                                    " <div class='weui-cell__bd'>" +
+                                    "<select class='weui-select' id='heightest_select' onchange='selectaddress()' disabled='disabled' >" +
+                                    html +
+                                    "</select>" +
+                                    //"<p>" + dataList[0].Name + "</p>" +
+                                    "</div >" +
+                                    "</div >";
+                            }
+
+                            if (dataList[0].AreaAddress == null || dataList[0].AreaAddress == "") {
+                                $("#address_company").hide();
+                            } else {
+                                $("#address_company").show();
+                                $("#address_CompanyAddress").text(dataList[0].AreaAddress);
+                            }
+
+                            var firstAddressList = [];
+                            for (var k = 0; k < addressList.length; k++) {
+                                if (addressList[k].ParentSysNo == dataList[0].SysNo) {
+                                    firstAddressList.push(addressList[k]);
+                                };
+                            }
+                            if (firstAddressList.length == 0) {
+                                var data = {
+                                    addressSysNo: dataList[0].SysNo,
+                                    companySysNo: $.trim($("#SelectCompany").val())
+                                };
+                                $.showLoading();
+                                $.ajax({
+                                    url: "/Smoke/LoadSubsetAddress",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: data,
+                                    success: function (r) {
+                                        $.hideLoading();
+                                        if (r.Success) {
+                                            firstAddressList = r.Data;
+                                            if (firstAddressList.length > 0) {
+                                                var html2 = ""
+                                                for (var n = 0; n < firstAddressList.length; n++) {
+                                                    html2 = html2 + " <option  value=" + firstAddressList[n].SysNo + ">" + firstAddressList[n].Name + "</option>"
+                                                }
+                                                document.getElementById("active_addressInfo").innerHTML =
+                                                    "<div class='weui-cell gu-arrow' style='border-bottom: 1px solid #3e4855;'>" +
+                                                    "<div class='weui-cell__hd'>" +
+                                                    "</div>" +
+                                                    "<div class='weui-cell__bd '>" +
+                                                    "<select class='weui-select selects' onchange='addhtml(1)'  id='sl1' >" +
+                                                    "<option value='0' >请选择</option>" +
+                                                    html2 +
+                                                    "</select>" +
+                                                    "</div>" +
+                                                    "</div>" +
+                                                    "</div>" +
+                                                    "<div id='s_1'>" +
+                                                    "</div>";
+                                            } else {
+                                                document.getElementById("active_addressInfo").innerHTML = ""
+                                                endid = "heightest_select";
+                                            }
+                                        }
+                                    }
+                                })
+                            } else {
+                                if (firstAddressList.length > 0) {
+                                    var html2 = ""
+                                    for (var n = 0; n < firstAddressList.length; n++) {
+                                        html2 = html2 + " <option  value=" + firstAddressList[n].SysNo + ">" + firstAddressList[n].Name + "</option>"
+                                    }
+                                    document.getElementById("active_addressInfo").innerHTML =
+                                        "<div class='weui-cell gu-arrow' style='border-bottom: 1px solid #3e4855;'>" +
+                                        "<div class='weui-cell__hd'>" +
+                                        "</div>" +
+                                        "<div class='weui-cell__bd '>" +
+                                        "<select class='weui-select selects' onchange='addhtml(1)'  id='sl1' >" +
+                                        "<option value='0' >请选择</option>" +
+                                        html2 +
+                                        "</select>" +
+                                        "</div>" +
+                                        "</div>" +
+                                        "</div>" +
+                                        "<div id='s_1'>" +
+                                        "</div>";
+                                } else {
+                                    document.getElementById("active_addressInfo").innerHTML = ""
+                                    endid = "heightest_select";
+                                }
+                            }
+
+
+                        }
+                    }
+                });
+            }
+
+            function selectaddress() {
+                var s = $("#heightest_select").val();
+
+                var firstAddressList = [];
+                for (var k = 0; k < addressList.length; k++) {
+                    if (addressList[k].ParentSysNo == s) {
+                        firstAddressList.push(addressList[k]);
+                    };
+                    if (addressList[k].SysNo == s) {
+                        $("#address_CompanyAddress").text(addressList[k].PathName);
+
+                    }
+                }
+                if (firstAddressList.length > 0) {
+                    var html2 = ""
+                    for (var n = 0; n < firstAddressList.length; n++) {
+                        html2 = html2 + " <option  value=" + firstAddressList[n].SysNo + ">" + firstAddressList[n].Name + "</option>"
+                    }
+                    document.getElementById("active_addressInfo").innerHTML =
+                        "<div class='weui-cell gu-arrow' style='border-bottom: 1px solid #3e4855;'>" +
+                        "<div class='weui-cell__hd'>" +
+                        "</div>" +
+                        "<div class='weui-cell__bd '>" +
+                        "<select class='weui-select selects' onchange='addhtml(1)'  id='sl1' >" +
+                        "<option value='0' >请选择</option>" +
+                        html2 +
+                        "</select>" +
+                        "</div>" +
+                        "</div>" +
+                        "</div>" +
+                        "<div id='s_1'>" +
+                        "</div>";
+                    endid = "heightest_select";
+                } else {
+                    document.getElementById("active_addressInfo").innerHTML = "";
+                    endid = "heightest_select";
+                }
+            }
+
+            function addhtml(a) {
+                endid = "sl" + a;
+                var s = a + 1;
+                var val = $("#sl" + a).val();
+                var list = [];
+                if (val > 0) {
+                    for (var k = 0; k < addressList.length; k++) {
+                        if (addressList[k].ParentSysNo == val) {
+                            list.push(addressList[k]);
+                        };
+                    };
+                    if (list.length == 0) {
+                        var data = {
+                            addressSysNo: val,
+                            companySysNo: $.trim($("#SelectCompany").val())
+                        };
+                        $.showLoading();
+                        $.ajax({
+                            url: "/Smoke/LoadSubsetAddress",
+                            type: "POST",
+                            dataType: "json",
+                            data: data,
+                            success: function (r) {
+                                $.hideLoading();
+                                if (r.Success) {
+                                    list = r.Data;
+                                    if (val > 0 && list.length > 0) {
+                                        var html = "";
+                                        for (var n = 0; n < list.length; n++) {
+                                            html = html + " <option  value=" + list[n].SysNo + ">" + list[n].Name + "</option>"
+                                        };
+                                        document.getElementById("s_" + a).innerHTML =
+                                            "<div class='weui-cell gu-arrow' style='border-bottom: 1px solid #3e4855;'>" +
+                                            "<div class='weui-cell__hd'>" +
+                                            "</div>" +
+                                            "<div class='weui-cell__bd'>" +
+                                            "<select class='weui-select selects' onchange='addhtml(" + s + ")'  id='sl" + s + "' >" +
+                                            "<option value='0' >请选择</option>" +
+                                            html +
+                                            "</select>" +
+                                            "</div>" +
+                                            "</div>" +
+                                            "</div>" +
+                                            "<div id='s_" + s + "'>" +
+                                            "</div>";
+                                    } else {
+                                        document.getElementById("s_" + a).innerHTML = ""
+                                        if (val > 0) {
+                                            endid = "sl" + a;
+                                        }
+                                    }
+                                }
+                            }
+                        })
+                    } else {
+                        if (val > 0 && list.length > 0) {
+                            var html = "";
+                            for (var n = 0; n < list.length; n++) {
+                                html = html + " <option  value=" + list[n].SysNo + ">" + list[n].Name + "</option>"
+                            };
+                            document.getElementById("s_" + a).innerHTML =
+                                "<div class='weui-cell gu-arrow' style='border-bottom: 1px solid #3e4855;'>" +
+                                "<div class='weui-cell__hd'>" +
+                                "</div>" +
+                                "<div class='weui-cell__bd'>" +
+                                "<select class='weui-select selects' onchange='addhtml(" + s + ")'  id='sl" + s + "' >" +
+                                "<option value='0' >请选择</option>" +
+                                html +
+                                "</select>" +
+                                "</div>" +
+                                "</div>" +
+                                "</div>" +
+                                "<div id='s_" + s + "'>" +
+                                "</div>";
+                        } else {
+                            document.getElementById("s_" + a).innerHTML = ""
+                            if (val > 0) {
+                                endid = "sl" + a;
+                            }
+                        }
+                    }
+
+                } else {
+                    document.getElementById("s_" + a).innerHTML = "";
+                    endid = "sl" + (a - 1);
+                }
+
+
+            }
+        $("#show-toast").click(function () {
+            if ($(this).hasClass("weui-btn_disabled")) {
+                return false;
+            }
+            var type = @((int)curentUser.UserType);
+            var memo = $.trim($("#memo").val());
+            if (endid == "heightest_select" && (memo == "" || memo == null)) {
+                $.toast(type == 3 ? "请选择详细地址信息或填写设备备注！" :"请选择详细地址信息或填写设备备注！", "forbidden");
+                return;
+            };
+
+            if (endid == "") {
+                var addresssysno = $("#heightest_select").val();
+                if (memo == "" || memo == null) {
+                    $.toast(type == 3 ? "请选择详细地址信息或填写设备备注！" : "请选择详细地址信息或填写设备备注！", "forbidden");
+                    return;
+                }
+            } else {
+                var addresssysno = $("#" + endid).val();
+                if (!addresssysno > 0) {
+                    addresssysno = $("#heightest_select").val();
+                    if (memo == "" || memo == null) {
+                        $.toast(type == 3 ? "请选择详细地址信息或填写设备备注！" : "请选择详细地址信息或填写设备备注！", "forbidden");
+                        return;
+                    }
+                    //$.toast("地址信息出错，请重新选择地址！", "forbidden");
+                    //return;
+                }
+            }
+
+
+            var data = {
+                Code: $.trim($("#smokeCode").val()),
+                CompanySysNo: $.trim($("#SelectCompany").val()),
+                AddressSysNo: addresssysno,
+                Position: $.trim($("#memo").val()),
+                LngLat: ""
+            }
+            if (data.Code == null || data.Code == "") {
+                $.toast("请扫描设备码！", "forbidden");
+                return;
+            };
+            $.showLoading();
+            var flag = true;//微信定位有bug，successs,cancel,fail最多执行一个
+            wx.getLocation({
+                type: 'wgs84', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
+                success: function (res) {
+                    var latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+                    var longitude = res.longitude; // 经度，浮点数，范围为180 ~ -180。
+                    var speed = res.speed; // 速度，以米/每秒计
+                    var accuracy = res.accuracy; // 位置精度
+                    if (res.latitude > 0 && res.longitude > 0) {
+                        data.LngLat = res.latitude + "|" + res.longitude;
+                    }
+                    if (flag) {
+                        var aj = $.ajax({
+                            url: "/Smoke/AddSmokeDetector",
+                            type: "POST",
+                            dataType: "json",
+                            data: data,
+                            success: function (r) {
+                                $.hideLoading();
+                                if (r.error) {
+                                    $.toast("登陆已过期，请退出公众号再进入", "forbidden");
+                                }
+                                if (r.Success) {
+
+                                    $.toast(r.Message, function () {
+                                        //console.log('close');
+                                    });
+                                    $("#smokeCode").val("")
+                                    $("#memo").val("")
+                                    $("#show-toast").removeClass("weui-btn_primary").addClass("weui-btn_disabled")
+                                }
+                                else {
+                                    $.toast(r.Message, "forbidden");
+                                }
+                            },
+                            //complete: function (XMLHttpRequest, status) { //请求完成后最终执行参数
+                            //    if (status == 'timeout') {//超时,status还有success,error等值的情况
+                            //        $.hideLoading();
+                            //        aj.abort(); //取消请求
+                            //        $.toast("请求超时，请检查网络连接后重试。", "forbidden");
+                            //    }
+                            //}
+                        })
+                    }
+                    flag = false;
+                },
+                cancel: function (res) {
+                    if (flag) {
+                        var aj = $.ajax({
+                            url: "/Smoke/AddSmokeDetector",
+                            type: "POST",
+                            dataType: "json",
+                            data: data,
+                            success: function (r) {
+                                $.hideLoading();
+                                if (r.error) {
+                                    $.toast("登陆已过期，请退出公纵号再进入", "forbidden");
+                                }
+                                if (r.Success) {
+
+                                    $.toast(r.Message, function () {
+                                        //console.log('close');
+                                    });
+                                    $("#smokeCode").val("")
+                                    $("#memo").val("")
+                                    $("#show-toast").removeClass("weui-btn_primary").addClass("weui-btn_disabled")
+                                }
+                                else {
+                                    $.toast(r.Message, "forbidden");
+                                }
+                            },
+                            //complete: function (XMLHttpRequest, status) { //请求完成后最终执行参数
+                            //    if (status == 'timeout') {//超时,status还有success,error等值的情况
+                            //        $.hideLoading();
+                            //        aj.abort(); //取消请求
+                            //        $.toast("请求超时，请检查网络连接后重试。", "forbidden");
+                            //    }
+                            //}
+                        })
+                    }
+                    flag = false;
+                },
+                fail: function (res) {
+                    if (flag) {
+                        var aj = $.ajax({
+                            url: "/Smoke/AddSmokeDetector",
+                            type: "POST",
+                            dataType: "json",
+                            data: data,
+                            success: function (r) {
+                                $.hideLoading();
+                                if (r.error) {
+                                    $.toast("登陆已过期，请退出公众号再进入", "forbidden");
+                                }
+                                if (r.Success) {
+
+                                    $.toast(r.Message, function () {
+                                        //console.log('close');
+                                    });
+                                    $("#smokeCode").val("")
+                                    $("#memo").val("")
+                                    $("#show-toast").removeClass("weui-btn_primary").addClass("weui-btn_disabled")
+                                }
+                                else {
+                                    $.toast(r.Message, "forbidden");
+                                }
+                            },
+                            //complete: function (XMLHttpRequest, status) { //请求完成后最终执行参数
+                            //    if (status == 'timeout') {//超时,status还有success,error等值的情况
+                            //        $.hideLoading();
+                            //        aj.abort(); //取消请求
+                            //        $.toast("请求超时，请检查网络连接后重试。", "forbidden");
+                            //    }
+                            //}
+                        })
+                    }
+                    flag = false;
+                }
+            });
+
+
+        });
+
+
+
+
+            $(function () {
+                if (@count==0) {
+                     initCompany();
+                }
+                if (@count>0) {
+                    addhtml(@count)
+                }
+
+        //    var yes = sessionStorage.getItem("IsReady2");
+        //if (yes !== "yes") {
+         $.get("@Url.Action("GetWXjsSdkConfig", "WeiXin")", { curl: location.href.split('#')[0]}, function (re) {
+                if (re.Success) {
+                    var config =JSON.parse(re.Data);
+                    wx.config(config);
+                   // sessionStorage.setItem("IsReady2", "yes");
+                    wx.ready(function () {
+                        if (@autoScan== 1) {
+                            $(".scanning").trigger("click");
+                        }
+                        //console.log("微信接口验证成功");
+                    });
+                    wx.error(function (res) {
+                        //console.log("微信接口验证失败");
+                      //  sessionStorage.setItem("IsReady2", "no");
+                    });
+                } else {
+                    console.log(re.Message);
+                    $.toast("获取微信权限令牌失败，请稍后再试", "forbidden");
+                }
+            }, 'json');
+        //}
+        });
+        function scanQRcode() {
+            wx.scanQRCode({
+                needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+                scanType: ["qrCode", "barCode"], // 可以指定扫二维码还是一维码，默认二者都有
+                success: function (res) {
+                    $("#smokeCode").val("");
+                    var result = res.resultStr; // 当needResult 为 1 时，扫码返回的结果
+                    if (!/^[0-9]*$/.test(result)) {
+                        $.toast("不正确的设备码！", "forbidden");
+                        $("#show-toast").removeClass("weui-btn_primary").addClass("weui-btn_disabled")
+                        return;
+                    }
+                    else if (result.length > 16) {
+                        $.toast("不正确的设备码！", "forbidden");
+                        $("#show-toast").removeClass("weui-btn_primary").addClass("weui-btn_disabled")
+                        return;
+                    }
+                    else {
+                        $("#show-toast").removeClass("weui-btn_disabled").addClass("weui-btn_primary")
+                        $("#smokeCode").val(result);
+                    }
+                },
+                fail: function (rr) {
+                    //alert(JSON.stringify(rr));
+                    $("#show-toast").removeClass("weui-btn_primary").addClass("weui-btn_disabled")
+                    $.toast("获取微信扫描权限失败,请稍后重试!", "forbidden");
+                }
+            });
+        }
+    </script>
+}
+

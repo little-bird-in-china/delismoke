@@ -1,0 +1,221 @@
+﻿@using BlueStone.Smoke.Entity;
+@{
+    Layout = null;
+}
+@model BlueStone.Smoke.Entity.AuthCenter.SystemUser
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">×</button>
+    <h4 class="modal-title" id="myModalLabel">账号信息</h4>
+</div>
+<div class="modal-body">
+    <form class="form-horizontal" id="defaultForm">
+        <div class="row">
+            <div class="form-group col-xs-12">
+                <label class="control-label col-xs-4 "><span class="red">*</span>账号：</label>
+                <div class="col-xs-8">
+                    @if (Model.SysNo > 0)
+                    {
+                        <label class="control-label" >@Model.LoginName</label>
+                    }
+                    <input type=@(Model.SysNo > 0 ? "hidden" : "text") placeholder="" class="form-control" maxlength="11" data-model="LoginName" autocomplete="off" name="lname" value="@Model.LoginName" />
+                    <input type="hidden" data-model="SysNo"  value="@Model.SysNo"/>
+                    <input type="hidden" id="loginname" value="@Model.LoginName" />
+                    <input type="hidden" data-model="MasterSysNo" value="@Model.MasterSysNo"/>
+                </div>
+            </div>
+            @{
+                if (Model.SysNo <= 0)
+                {
+                    <div class="form-group col-xs-12">
+                        <label class="control-label col-xs-4 "><span class="red">*</span>密码：</label>
+                        <div class="col-xs-8">
+                            <input type="text" placeholder="8位以上,字母、数字、特殊字符的组合" class="form-control" data-model="loginpassword" autocomplete="new-password" name="lpassword" value="" />
+                        </div>
+                    </div>
+                }
+
+            }
+            <div class="form-group col-xs-12">
+                <label class="control-label col-xs-4 "><span class="red">*</span>姓名：</label>
+                <div class="col-xs-8">
+                    <input type="text" placeholder="" class="form-control" maxlength="40" data-model="UserFullName" name="fullname" value="@Model.UserFullName" />
+                </div>
+            </div>
+            <div class="form-group col-xs-12">
+                <label class="col-xs-4 control-label"><span class="red">*</span>状态：</label>
+                <div class="col-xs-8">
+                    <select class="select2" tabindex="1" id="pop_CommonStatus" data-model="CommonStatus" name="status">
+                        @{
+                            var commonStatus = BlueStone.Utility.EnumHelper.GetDescriptions<CommonStatus>();
+                            commonStatus.Remove(CommonStatus.Deleted);
+                            foreach (var item in commonStatus)
+                            {
+                                <option value="@((int)item.Key)" @((int)item.Key == (int)Model.CommonStatus ? "selected=selected" : "")>@item.Value</option>
+                            }
+                        }
+                    </select>
+
+                </div>
+            </div>
+            @*<div class="form-group col-xs-12">
+                <label class="col-xs-4 control-label"><span class="red">*</span>手机：</label>
+                <div class="col-xs-8">
+                    <input type="text" placeholder="" class="form-control" id="pop_CellPhone" maxlength="50" data-model="CellPhone" name="phone" value="@Model.CellPhone" />
+                </div>
+            </div>*@
+        </div>
+    </form>
+</div>
+<div class="modal-footer text-center">
+
+    <button id="sure_button" type="button" class="btn btn-sm btn-primary"><i class="fa fa-check"></i>保存</button>
+    @{
+        if (Model.SysNo > 0)
+        {
+            <button id="resetPassword_button" type="button" class="btn btn-sm btn-primary"><i class="fa  fa-undo"></i>重置密码</button>
+            @*<button id="delete_button" type="button" class="btn btn-sm btn-primary"><i class="fa fa-trash-o"></i>删除</button>*@
+        }
+    }
+    <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal"><i class="fa  fa-times"></i>取消</button>
+
+</div>
+<script type="text/javascript">
+    $(function () {
+        $("#defaultForm").bootstrapValidator({
+            message: '提交信息无效!',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                lname: {
+                    validators: {
+                        notEmpty: {
+                            message: '账号不能为空!'
+                        },
+                        stringLength: {
+                            min: 11,
+                            max: 11,
+                            message: '账号应为3-20位的字母、下划线、数字'
+                        },
+                        regexp: {
+                            regexp: /^[a-zA-Z0-9_]{3,20}$/,
+                            message: '账号应为3-20位的字母、下划线、数字'
+                        }
+                    }
+                },
+                lpassword: {
+                    validators: {
+                        notEmpty: {
+                            message: '密码不能为空!'
+                        },
+                        stringLength: {
+                            min: 8,
+                            message: '请输入8位以上的密码'
+                        },
+                        regexp: {
+                            regexp: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[#@@!~$%^&*])[a-zA-Z\d#@@$!~%^&*]{8,}$/,
+                            message: '请输入数字、字母、特殊字符的组合'
+                        }
+                    }
+                },
+                fullname: {
+                    validators: {
+                        notEmpty: {
+                            message:'姓名不能为空!'
+                        },
+                        regexp: {
+                            regexp: /^[0-9a-zA-Z\u4e00-\u9fa5]{1,}$/,
+                            message: '请输入中英文或数字!'
+                        }
+                    }
+                },
+                status: {
+                    validators: {
+                        notEmpty: {
+                            message: '状态不能为空!'
+                        }
+                    }
+                }
+            }
+        });
+        $("#sure_button").click(function () {
+            $("#defaultForm").bootstrapValidator('validate');
+        });
+        $('#pop_CommonStatus').select2();
+        $("#defaultForm").bootstrapValidator().on("success.form.bv", function (e) {
+            var data = $.buildEntity($("#defaultForm"));
+            ReplaceObjHtmlTag(data);
+            $.ajax({
+                url: "/Company/SaveSystemUser",
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (result) {
+                    if (result.Success) {
+                        hideModal(result.Data);
+                    }
+                }
+            });
+        });
+
+
+        var loginname = $("#loginname").val();
+
+        $("#resetPassword_button").click(function () {
+            var record = $(this);
+            //userSysNo: $.trim($("#pop_SysNo").val()),
+            bootbox.confirm({
+                animate: false,
+                size: 'small',
+                message: "确认要将密码重置为登录账号吗?",
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/Company/ResetPwd",
+                            type: "POST",
+                            data: { loginname: loginname} ,
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.Success) {
+                                    $.showSuccess('操作成功');
+                                    hideModal(1);
+                                    //window.location.reload(true);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    });
+
+
+        @*//删除
+        $("#delete_button").click(function () {
+            bootbox.confirm({
+                animate: false,
+                size: 'small',
+                message: "确认要删除当前用户吗?",
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/User/Delete?SysNo=" + $("#pop_SysNo").val(),
+                            type: "POST",
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.Success) {
+                                    hideModal('@Model.SystemUser.SysNo');
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        });*@
+
+
+</script>
+

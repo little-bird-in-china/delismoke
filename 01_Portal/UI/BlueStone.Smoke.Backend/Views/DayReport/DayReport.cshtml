@@ -1,0 +1,281 @@
+﻿
+@{
+    ViewBag.Title = "DayReport";
+
+    var companylist = ViewBag.complist as List<Company>;
+    var IsPMAdmin = (bool)ViewBag.IsPMAdmin;
+}
+
+@section rsHeader{
+    <script src="~/Content/assets/js/echart/echarts.js"></script>
+    <script src="~/Content/assets/js/My97DatePicker/WdatePicker.js"></script>
+    <script src="~/Scripts/Custom/WdatePicker.helper.js"></script>
+}
+<div class="row form-horizontal grayback">
+
+
+    @if (IsPMAdmin)
+    {
+        <div class="form-group col-sm-4 col-xs-12">
+            <label class="col-xs-4 control-label">选择客户：</label>
+            <div class="col-xs-8">
+                <select id="selectCompany" class="select2">
+                    <option value="">请选择</option>
+                    @foreach (var item in companylist)
+                    {
+                        <option value="@((int)item.SysNo)">@item.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    }
+    else
+    {
+        <input type="hidden" id="selectCompany" value="@ViewBag.CurrUser.MasterSysNo" />
+    }
+
+    <div class="form-group col-sm-5 col-xs-12">
+        <div class="col-lg-12">
+            <label class="fl control-label " style="margin:0 5px;">时间：从</label>
+            <div class="col-sm-4 ">
+                <input id="startdate" maxlength="20" class="Wdate form-control" />
+            </div>
+            <label class="fl control-label" style="margin:0 5px;">到</label>
+            <div class="col-sm-4 ">
+                <input id="enddate" maxlength="20" class="Wdate form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="form-group col-sm-3 col-xs-12">
+        <button id="QueryBtn" class="btn btn-sm btn-primary "><i class="fa fa-search"></i>查询</button>
+        <button id="ResetBtn" class="btn btn-sm btn-default"><i class="fa  fa-undo"></i>重置</button>
+    </div>
+</div>
+
+<div id="container" style="width:98%;height:500px;overflow:auto">
+</div>
+
+
+
+@section scripts{
+    <script>
+        var nowdate = (new Date()).Format("yyyy-MM-dd");
+        var tempdate = new Date();
+        var startd = new Date(tempdate.setMonth((new Date()).getMonth() - 1)).Format("yyyy-MM-dd");
+        var $selectCompany = $("#selectCompany");
+        var $startdate = $("#startdate");
+        var $enddate = $("#enddate");
+            $.WdatePicker({
+                src: 'startdate',
+                maxDate: "#F{$dp.$D('enddate')}",
+                dateFmt: 'yyyy-MM-dd',
+                isShowClear :false,
+                onpicked: function (dp) {
+                    var endd =new Date($enddate.val());
+                    var mindate = new Date(dp.cal.getNewDateStr());
+                    if ((endd - mindate) / (1000 * 60 * 60 * 24 * 30) > 2) {
+                        $enddate.val(new Date(mindate.setMonth(mindate.getMonth() + 2)).Format("yyyy-MM-dd"));
+                    }
+                }
+            });
+
+            $.WdatePicker({
+                src: 'enddate',
+                minDate: "#F{$dp.$D('startdate',)}",
+                dateFmt: 'yyyy-MM-dd',
+                isShowClear: false,
+                onpicked: function (dp) {
+                    var mindate = new Date($startdate.val());
+                    var endd = new Date(dp.cal.getNewDateStr());
+                    if ((endd - mindate) / (1000 * 60 * 60 * 24 * 30) > 2) {
+                        $startdate.val(new Date(endd.setMonth(endd.getMonth()-2)).Format("yyyy-MM-dd"));
+                    }
+                }
+            });
+        var dom = document.getElementById("container");
+        var myChart = echarts.init(dom);
+        option = null;
+
+        $startdate.val(startd);
+        $enddate.val(nowdate);
+        var filter = {
+            CompanySysNo: $.trim($selectCompany.val()),
+            StartDayDate: $.trim($startdate.val()),
+            EndDayDate: $.trim($enddate.val())
+        };
+        if (filter.StartDayDate === null || filter.StartDayDate.length === 0) {
+            filter.StartDayDate = startd
+        }
+        if (filter.EndDayDate === null || filter.EndDayDate.length === 0) {
+            filter.EndDayDate = nowdate
+        }
+        //filter.StartDayDate = "2016-1-1";
+     //   filter.EndDayDate = "2018-1-1"
+        $(function () {
+            myChart.showLoading();
+            $.post("@Url.Action("QueryReport", "DayReport")",
+                filter,
+                function (res) {
+                    myChart.hideLoading();
+                    if (res.Success) {
+                        renderData(res.Data);
+                    }
+                },
+                'json'
+            )
+        });
+
+        $("#QueryBtn,#ResetBtn").on("click", function (res) {
+            filter = {
+                CompanySysNo: $.trim($selectCompany.val()),
+                StartDayDate: $.trim($startdate.val()),
+                EndDayDate: $.trim($enddate.val())
+            };
+            if (this.id === 'ResetBtn') {
+                //if (filter.StartDayDate === null || filter.StartDayDate.length === 0) {
+                    filter.StartDayDate = startd
+                //}
+               // if (filter.EndDayDate === null || filter.EndDayDate.length === 0) {
+                    filter.EndDayDate = nowdate
+               // }
+                    $startdate.val(startd);
+                    $enddate.val(nowdate);
+                $selectCompany.select2("val", "");
+                filter.CompanySysNo = null;
+
+            };
+            myChart.showLoading();
+            $.post("@Url.Action("QueryReport", "DayReport")",
+                filter,
+                function (res) {
+                    myChart.hideLoading();
+                    if (res.Success) {
+                        renderData(res.Data);
+                    }
+                },
+                'json'
+            );
+        });
+        function renderData(data) {
+            option = /*$.extend(*/
+                {
+                title: {
+                    text: '烟感器日报表'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function (params, ticket, callback) {
+                        var result = '';
+                        params.forEach(function (item) {
+                            result += "<span style='display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:" + item.color + "'></span>" + item.seriesName + " : " + item.value[1] +""+ item.value[2] +  "</br>";
+                        });
+                        return result;
+            },
+                },
+                legend: {
+                    data: ['烟感器总数', '在线数量', '离线数量', '低电压报警数', '火灾报警数量'],
+                },
+                grid: {
+                    top: '12%',
+                    left: '1%',
+                    right: '1%',
+                    containLabel: true
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        magicType: { type: ['line', 'bar',] },
+                        restore: {},
+                        saveAsImage: {}
+                    },
+                    right: '3%'
+                },
+                dataZoom: [
+                    {
+                        id: 'dataZoomX',
+                        type: 'inside',
+                        xAxisIndex: [0],
+                        filterMode: 'filter', // 设定为 'filter' 从而 X 的窗口变化会影响 Y 的范围。
+                        start: 50,
+                        end:100
+                    },
+                    {
+                        type: 'slider',
+                        xAxisIndex: [0],
+                        filterMode: 'filter', // 设定为 'filter' 从而 X 的窗口变化会影响 Y 的范围。
+                        start: 50,
+                        end: 100
+                    },
+                ],
+                xAxis: {
+                    type: 'category',
+                    data: data.XAxisData,
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '数量'
+                },
+                series: [
+                    {
+                        name: '烟感器总数',
+                        type: 'line',
+                        data: data.SeriesTotal,
+                        itemStyle: {
+                            normal: {
+                                color: ' #0066FF'
+                            }
+                        }
+                    },
+                    {
+                        name: '在线数量',
+                        type: 'line',
+                        data: data.SeriesOnline,
+                        itemStyle: {
+                            normal: {
+                                color: '#008000'
+                            }
+                        }
+                    },
+                    {
+                        name: '离线数量',
+                        type: 'line',
+                        data: data.SeriesOffline,
+                        itemStyle: {
+                            normal: {
+                                color: '#a9a9a9'
+                            }
+                        }
+                    },
+                    {
+                        name: '低电压报警数',
+                        type: 'line',
+                        data: data.SeriesLowPower,
+                        itemStyle: {
+                            normal: {
+                                color: '#ffff00'
+                            }
+                        },
+                    },
+                    {
+                        name: '火灾报警数量',
+                        type: 'line',
+                        data: data.SeriesFire,
+                        itemStyle: {
+                            normal: {
+                                color: '#ff1414'
+                            }
+                        },
+                    }
+                ]
+                }
+               /* , option)*/;
+            if (option && typeof option === "object") {
+                myChart.setOption(option, true);
+            }
+        }
+
+
+
+    </script>
+
+}

@@ -1,0 +1,301 @@
+﻿@using BlueStone.Utility.Web
+@{
+    ViewBag.Title = "菜单列表";
+}
+
+@section rsHeader{
+  <style>
+    #test {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 130px;
+        height: 60px;
+        background: #555;
+        color: #fff;
+        font-size: 13px;
+    }
+</style>
+  
+}
+
+@section rsContent{
+    <section class="content">
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <h3 class="box-title">基本信息</h3>
+                <div class="box-tools pull-right">
+                    <button class="btn btn-box-tool" type="button" data-widget="collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+
+                <div class="row" style="margin-bottom:20px; display:none">
+                    <div class="col-xs-8 col-sm-6 col-md-4 col-lg-4">
+                        <select class="form-control" id="Current-Application">
+                           @{
+                               var allApps = BlueStone.Smoke.Service.AuthServiceLocal.LoadAllSystemApplication();
+                               foreach (var item in allApps)
+                               {
+                                <option value="@(item.ApplicationID)" @(item.ApplicationID== BlueStone.Smoke.Entity.ConstValue.ApplicationID ? "selected=selected":"")>@item.Name</option>
+                               }
+                          }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row" id="mtree">
+                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" id="menuTree" style="min-height:600px">
+                        @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/FunctionPermissionTreeTemplate.cshtml")
+                    </div>
+
+                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" style="position:absolute;right: 10px;" id="edit_form">
+                        @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/EditForm.cshtml")
+                    </div>
+                </div>
+
+            </div>
+            <div class="box-footer">
+            </div>
+        </div>
+
+    </section>
+
+}
+
+@section rsFooter{
+
+@Html.Partial("~/Areas/AuthCenter/Views/CustomControls/MenuPermissionTree.cshtml")
+
+    <script>
+        $(document).ready(function () {
+            var defaultTopVal = $("#edit_form").css("top");
+            var menuYloc = $("#mtree").offset().top;
+            $(window).scroll(function () {
+                if ($(window).scrollTop() > menuYloc) {
+                    var offsetTop = $(window).scrollTop() + "px";
+                    $("#edit_form").animate({ top: offsetTop }, { duration: 200, queue: false });
+                } else if ($(window).scrollTop() < menuYloc) {
+                    $("#edit_form").animate({ top: defaultTopVal }, { duration: 200, queue: false });
+                }
+            });
+        });
+
+
+
+
+        if (window.sessionStorage.ApplicationID != undefined && window.sessionStorage.ApplicationID !== null) {
+            $('#Current-Application').val(window.sessionStorage.ApplicationID);
+        };
+
+        var nemuPermissionSaveUrl = '@Url.Action("SaveMenusPermission", "Menu")';
+        var tree = new KOTree('menuTree', '@Url.Action("LoadMenus", "Menu")');
+
+        //设置编辑
+        tree.EditClick = function (element, currentData, event) {
+            var data = currentData.data;
+            if (currentData.ParentObj != null) {
+                data.ParentName = currentData.ParentObj.text;
+            }
+            form.SetData(data);
+        }
+        tree.AddClick = function (element, currentData, event) {
+            var menu = {};
+            menu.ParentSysNo = currentData.id;
+            menu.ParentName = currentData.text;
+            form.SetData(menu);
+        }
+        tree.DeleteClick = function (element, currentData, event) {
+            $.confirm('确定要删除菜单' + currentData.text, function (res) {
+                if (!res) {
+                    return;
+                }
+                $.ajax({
+                    url: "DeleteMenu",
+                    type: "POST",
+                    dataType: "json",
+                    data: { data: currentData.id },
+                    success: function (result) {
+                        if (result.Success) {
+                            $.showSuccess('删除成功!');
+                            tree.ReLoad(bulidSearchQuery());
+                            if (currentData.id == form.GetData().SysNo) {
+                                form.Reset();
+                            }
+                        }
+                    }
+                });
+            });
+        };
+        tree.PermissionClick = function (element, currentData, event) {
+            var menuSysNo = currentData.id;
+            var all_permissions = [];
+            CustomControl_PermissionSelector.show(function (result) {
+                if (result == null || result.length <= 0) {
+                    return;
+                }
+                for (var i = 0; i < result.length; i++) {
+                    all_permissions.push(result[i]);
+                }
+                $.ajax({
+                    url: nemuPermissionSaveUrl,
+                    type: "POST",
+                    dataType: "json",
+                    data: { data: JSON.stringify(all_permissions), MenuSysNo: menuSysNo },
+                    success: function (result) {
+                        if (result.Success) {
+                            $.showSuccess('权限选择成功!');
+                            //menu_tree.ReLoad({ ApplicationID: $('#Current-Application').val() });
+                        }
+
+                    }
+                });
+            },
+                { ApplicationID: $('#Current-Application').val(), MenuSysNo: menuSysNo });
+        }
+        tree.ReLoad(bulidSearchQuery());
+        //var d = tree.Data;
+        console.log(tree);
+        //编辑form表单
+        var form = new KOForm('edit_form', tree);
+        form.SetButtons({
+            SaveBtn: {
+                actionUrl: 'SaveMenu',
+                text: '保存',
+                callBack: function (result) {
+                    $.showSuccess('保存成功!');
+                    tree.ReLoad(bulidSearchQuery());
+                    form.Reset();
+                }
+            }
+        });
+        form.SetControlGroups([
+            {
+                cText: '父级编号:',
+                cName: 'ParentSysNo',
+                cVisible: false,
+                cDefault: 0
+            },
+            {
+                cText: '系统编号:',
+                cName: 'SysNo',
+                cVisible: false,
+                cDefault: 0
+            }, {
+                cText: 'AppKey:',
+                cName: 'ApplicationID',
+                cVisible: false,
+                cDefault: function () {
+                    return $('#Current-Application').val();
+                }
+            }, {
+                cText: '父级名称:',
+                cName: 'ParentName',
+                cDisabled: true
+            }, {
+                cText: '菜单名称:',
+                cName: 'MenuName',
+                cRule: {
+                    required: { message: "请输入名称" },
+                    pattern: { params: /^(?![<\x22>]+)/, message: "含有不能识别的符号！" }
+                }
+            }, {
+                cText: '菜单Key:',
+                cName: 'MenuKey',
+                cRule: {
+                    pattern: { params: /^(?![<\x22>]+)/, message: "含有不能识别的符号！" }
+                }
+            }, {
+                cText: '图标样式:',
+                cName: 'IconStyle',
+                cRule: {
+                    pattern: { params: /^(?![<\x22>]+)/, message: "含有不能识别的符号！" }
+                }
+            }, {
+                cText: '链接地址:',
+                cName: 'LinkPath',
+                cRule: {
+                    pattern: { params: /^(?![<\x22]+)/, message: "含有不能识别的符号！" }
+                }
+            }, {
+                cText: '是否显示:',
+                cName: 'IsDisplay',
+                cDefault: true,
+                cType: 'radio',
+                cRadioButtuns: [
+                    {
+                        text: '是',
+                        value: true
+                    },
+                    {
+                        text: '否',
+                        value: false
+                    }
+                ]
+            }, {
+                cText: '排序:',
+                cName: 'SortIndex',
+                cDefault: 0,
+                cRule: {
+                    number: { message: "请输入数字" },
+                    required: { message: "请输入排序" }
+                }
+            }, {
+                cText: '页面类型:',
+                cName: 'Type',
+                cType: 'select',
+                cDefault: 0,
+                cSelectOptions: [
+                    {
+                        text: '目录',
+                        value: 0
+                    },
+                    {
+                        text: '页面',
+                        value: 1
+                    }
+                ]
+            }, {
+                cText: '状态:',
+                cName: 'CommonStatus',
+                cDefault: 1,
+                cType: 'radio',
+                cRadioButtuns: [
+                    {
+                        text: '有效',
+                        value: 1
+                    },
+                    {
+                        text: '无效',
+                        value: 0
+                    }
+                ]
+            }, {
+                cText: '备注:',
+                cName: 'Memo',
+                cType: 'area',
+                cAreaSize: {
+                    cols: 10,
+                    rows: 3
+                }
+            }]);
+
+
+
+
+        $('#Current-Application').on("change", function () {
+            window.sessionStorage.ApplicationID = $('#Current-Application').val();
+            form.Reset();
+            tree.ReLoad(bulidSearchQuery());
+        });
+
+        function bulidSearchQuery() {
+            return {
+                ApplicationID: $('#Current-Application').val()
+            }
+        }
+
+    </script>
+}

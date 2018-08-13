@@ -1,0 +1,122 @@
+﻿<div class="modal" id="CustomControl_RoleSelectorModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">角色选择</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <form class="form-horizontal">
+                        <div class="col-xs-12 col-sm-5 col-md-5 col-lg-5">
+                            <div class="form-group">
+                                <label class="col-sm-5 control-label col-xs-5">名称：</label>
+                                <div class="col-sm-7 col-xs-7">
+                                    <input id="CustomControl_RoleSelectorModal_Search_RoleName" class="form-control" placeholder="角色" type="text">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-5 col-md-5 col-lg-5" style="display:none">
+                            <div class="form-group">
+                                <label class="col-sm-5 control-label col-xs-5">所属系统：</label>
+                                <div class="col-sm-7 col-xs-7">
+                                    <select class="form-control select2" style="width: 100%; " id="CustomControl_RoleSelectorModal_Search_Appliction">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-2 col-md-2 col-lg-2">
+                            <div class="form-group">
+                                <button class="btn btn-info btn-sm" id="CustomControl_RoleSelectorModal_SearchBtn" type="button"><i class="fa fa-search"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="row" id="CustomControl_RoleSelectorTable" style="margin:10px;">
+                    @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/DataTableTemplate.cshtml")
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="CustomControl_RoleSelectorModal_OKBtn">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var CustomControl_RoleSelector = function () {
+        var inited = false;
+        var callbackVal = null;
+        var $ui_modal = $("#CustomControl_RoleSelectorModal");
+        var table = {};
+
+        function init()
+        {
+            table = new KODataTable('CustomControl_RoleSelectorTable', '@Url.Action("Query", "Role")');
+            table.SetTableColumns([
+            { cText: '角色名称', cName: 'RoleName', cWidth: '20%' },
+            { cText: '状态', cName: 'CommonStatusStr', cWidth: '10%' }, 
+            { cText: '备注', cName: 'Memo', cWidth: '55%' }
+            ]);
+
+            $('#CustomControl_RoleSelectorModal_SearchBtn').on('click', function (event) {
+                table.ReLoad(bulidSearchQuery());
+            });
+
+            $('#CustomControl_RoleSelectorModal_OKBtn').on('click', function (event) {
+                var select_data = table.GetSelectRows();
+                $ui_modal.modal('hide');
+                if (callbackVal != null) {
+                    callbackVal(select_data);
+                }
+            });
+
+            $('#CustomControl_RoleSelectorModal_Search_Appliction').on("change", function () {
+                table.ReLoad(bulidSearchQuery());
+            });
+        }
+
+        //构建查询条件
+        function bulidSearchQuery() {
+            return {
+                RoleName: $('#CustomControl_RoleSelectorModal_Search_RoleName').val(),
+                ApplicationID: $('#CustomControl_RoleSelectorModal_Search_Appliction').val() == null
+                    || $('#CustomControl_RoleSelectorModal_Search_Appliction').val() == '' ? '-9999' : $('#CustomControl_RoleSelectorModal_Search_Appliction').val()
+            }
+        }
+        
+        function bulidApplictionOptions(Applictions) {
+            $('#CustomControl_RoleSelectorModal_Search_Appliction').empty();
+            for (var i = 0; i < Applictions.length; i++)
+            {
+                $('#CustomControl_RoleSelectorModal_Search_Appliction')
+                    .append("<option value='" + Applictions[i].ApplicationID + "'>" + Applictions[i].Name + "</option>");
+            }
+  
+        }
+
+        return {
+            show: function (callback, moreParams) {
+                if (inited == false) {
+                    inited = true;
+                    init();
+                }
+                if (moreParams.Applictions == null) {
+                    throw new Error('RoleSelector need Applictions !');
+                }
+                //bulidApplictionOptions方法要在table.ReLoad之前执行
+                bulidApplictionOptions(moreParams.Applictions);
+
+                callbackVal = callback;
+                table.ReLoad(bulidSearchQuery());
+                $ui_modal.modal({ backdrop: 'static', keyboard: false });
+            }
+        }
+    }()
+</script>

@@ -1,0 +1,386 @@
+﻿@using BlueStone.Smoke.Entity;
+@using BlueStone.Utility;
+@using BlueStone.Smoke.Service;
+@using BlueStone.Smoke.Backend.Models
+
+@{
+    ViewBag.Title = "内容管理";
+    var topicstatusList = BlueStone.Utility.EnumHelper.GetKeyValuePairs<TopicStatus>(EnumAppendItemType.None);
+
+}
+@section rsHeader
+{
+    <!--datatable-->
+    @Styles.Render("~/Content/datatable")
+    @Scripts.Render("~/bundles/datatable")
+
+}
+
+<div class="row grayback">
+    <a href="@("/Topic/Maintain")" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-plus"></i>发布新闻</a>
+</div>
+<div class="row form-horizontal grayback">
+    <form id="formQuery" role="form">
+
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <label class="col-xs-4 control-label">标题：</label>
+            <div class="col-xs-8">
+                <input id="txtTitle" name="txtTitle" maxlength="50" class="form-control input-sm" value="" />
+            </div>
+        </div>
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <label class="col-xs-4 control-label">类别：</label>
+            <div class="col-xs-8">
+                @Html.Partial("~/Views/UserControls/Topic/UCTopicCategoryPicker.cshtml", new PickerParamModel() { PickerID = "TopicCategorySysNo", MasterName = "Topic" })
+            </div>
+        </div>
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12" style="display:none">
+            <label class="col-xs-4 control-label">状态：</label>
+            <div class="col-xs-8">
+                <select id="selectTopicStatus" class="select2" name="selectTopicStatus" style="width:100%;">
+                    <option value="">--所有--</option>
+                    @foreach (var item in topicstatusList)
+                {
+                    <option @(item.Key == TopicStatus.Published ? "selected" : "") value="@((int)item.Key)">@item.Value</option>
+            }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <div class="col-xs-8 col-xs-offset-4">
+                <button id="btnQuery" type="button" class="btn btn-sm btn-primary "><i class="fa fa-search"></i>查询</button>
+                <button id="btnReset" type="button" class="btn btn-sm btn-default " onclick="formQuery.reset();"><i class="fa  fa-undo"></i>重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="row">
+    <div class="tabbable">
+        <ul class="nav nav-tabs" id="statusTab">
+            <li>
+                <a data-toggle="tab" href="#home" status="">
+                    全部
+                </a>
+            </li>
+
+            <li>
+                <a data-toggle="tab" href="#home" status="@((int)TopicStatus.Init)">
+                    草稿
+                </a>
+            </li>
+
+            <li class="active">
+                <a data-toggle="tab" href="#home" status="@((int)TopicStatus.Published)">
+                    发布
+                </a>
+            </li>
+            <li>
+                <a data-toggle="tab" href="#home" status="@((int)TopicStatus.Offline)">
+                    撤下
+                </a>
+            </li>
+            @*<li>
+                <a data-toggle="tab" href="#home" status="@((int)TopicStatus.Void)">
+                    作废
+                </a>
+            </li>*@
+        </ul>
+
+        <div class="tab-content">
+            <div id="home" class="tab-pane in active">
+
+                <table id="searchlist" class="table table-hover"></table>
+                <div class="action" id="actions">
+                    <a href="javascript:void(0)" class="btn btn-sm btn-primary" onclick="BatchPublish()" id="action_publish"><i class="fa fa-arrow-up"></i>批量发布</a>
+                    <a href="javascript:void(0)" class="btn btn-sm btn-primary" onclick="BatchOffline()" id="action_offline"><i class="fa fa-arrow-down"></i> 批量撤下</a>
+                    @*<a href="javascript:void(0)" class="btn btn-sm btn-primary" onclick="BatchAbondon()" id="action_abondon"><i class="fa fa-trash-o"></i>批量作废</a>*@
+                    <a href="javascript:void(0)" class="btn btn-sm btn-primary" onclick="BatchDelete()" id="action_delete"><i class="fa fa-times"></i>批量删除</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var grid = null;
+    $(document).ready(function () {
+        initgrid();
+        $("#TopicCategorySysNo").val();
+        $("#TopicCategorySysNo").select2();
+        doTableAjaxQuery(grid);
+        $("#actions").show();
+        $("#action_publish").hide();
+        $("#action_abondon").hide();
+        $("#action_delete").hide();
+    });
+
+    $("#btnQuery").click(function () {
+        doTableAjaxQuery(grid,true);
+    });
+
+    $("#btnReset").on("click", function () {
+        $("#formQuery")[0].reset();
+        //$('#TopicCategoryID').select2().val('').trigger("change");
+        //$('#selectTopicStatus').select2().val('').trigger("change");
+        //$("#TopicCategorySysNo").select2().val('').trigger("change");
+        //$('#statusTab').children('li').removeClass('active')
+        //$('#statusTab li:first-child').addClass('active')
+        //$("#action_publish").show();
+        //$("#action_offline").show();
+        //$("#action_abondon").show();
+        //$("#action_delete").show();
+        $("#TopicCategorySysNo").select2().val('').trigger("change")
+    });
+
+    //输入限制
+    $(".only-int-number").unbind('keyup').bind('keyup', function () {
+        $(this).val($(this).val().replace(/[^0-9]/g, ''));
+    });
+
+    //初始化radio Table
+    var initgrid = function () {
+        grid = new Datatable();
+        grid.init({
+            src: $('#searchlist'),
+            dataTable: {
+                ajax: {
+                    url: '/Topic/QueryTopicList'
+                },
+                columns: [
+                    { orderable: true, data: "SysNo", title: "系统编号", sName: "t.SysNo", visible:false },
+                    {
+                        orderable: true, data: "Title", title: "标题", sName: "t.Title", sWidth: "200px",
+                        render: function (data, type, full, meta) {
+                            return '<a  target="_blank" href="/Topic/Maintain?sysno=' + full.SysNo + '" title="' + $.removeHtml(data) + '">' +$.removeHtml(data.substring(0, 80)) + '</a>';
+                        }
+                    },
+                    { orderable: false, data: "CategoryName", title: "类别", sName: "tc.CategoryName" },
+                    { orderable: true, data: "TopicStatusStr", title: "状态", sName: "t.TopicStatus" },
+                    //{ orderable: true, data: "StartTimeStr", title: "有效期开始时间", sName: "t.StartTime" },
+                    //{ orderable: true, data: "EndTimeStr", title: "有效期结束时间", sName: "t.EndTime" },
+                    { orderable: true, data: "InUserName", title: "创建用户", sName: "t.InUserName" },
+                    { orderable: true, data: "InDateStr", title: "创建时间", sName: "t.InDate" },
+                    { orderable: true, data: "EditUserName", title: "编辑用户", sName: "t.EditUserName" },
+                    { orderable: true, data: "EditDateStr", title: "编辑时间", sName: "t.EditDate" },
+                ],
+                select: 'multiple',
+                order: []
+            }
+        });
+    };
+
+    var doTableAjaxQuery = function (grid,isReload) {
+        grid.clearAjaxParams();
+        var queryFilter = {
+            Title: $.trim($("#txtTitle").val()),
+            //CategoryID: $.trim($("#TopicCategoryID").val()),
+            TopicStatus: $.trim($("#selectTopicStatus").val()),
+            CategorySysNo: $("#TopicCategorySysNo").val(),
+            @*MasterName:'@masterName'*@
+        };
+        grid.addAjaxParam("queryfilter", JSON.stringify(queryFilter));
+        if (isReload) {
+            grid.reload();
+        }
+        else {
+            grid.refresh();
+        }
+    };
+
+    function GetSelectedRows() {
+        //var data = [];
+        //$("#searchlist").find(".selected").each(function () {
+        //    data.push(parseInt($(this).find("td").eq(1).text(), 10));
+        //});
+        //return data;
+        //return grid.getSelectedRowsData();
+
+        var data= grid.getSelectedRowsData();
+        var sysnos = [];
+        for (var i = 0; i < data.length; i++) {
+            sysnos.push(data[i].SysNo);
+        }
+        return sysnos;
+    };
+
+    function GettopicStatusStr() {
+        var data = [];
+        $("#searchlist").find(".selected").each(function () {
+            data.push($(this).find("td").eq(2).text());
+        });
+        return data;
+    };
+
+    function BatchPublish() {
+        var data = GetSelectedRows();
+        if (data.length == 0) {
+            $.showError("请选择文章！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        var topicStatusStr = GettopicStatusStr();
+        if (topicStatusStr.toString().indexOf("发布") >= 0) {
+            $.showError("发布的文章不能再次发布！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        if (topicStatusStr.toString().indexOf("作废") >= 0) {
+            $.showError("作废的文章不能发布！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        $.confirm("您确定要发布选中的文章吗？", function (result) {
+            if (!result)
+                return;
+
+            $.ajax({
+                url: "/Topic/AjaxBatchPublishTopic",
+                type: "POST",
+                dataType: "json",
+                data: { data: encodeURI(JSON.stringify(data)) },
+                success: function (data) {
+                    if (!data.Message) {
+                        $.showSuccess('发布文章成功！');
+                        $("#searchlist").DataTable().ajax.reload(null, true);
+                    }
+                }
+            });
+        });
+    }
+    function BatchOffline() {
+        var data = GetSelectedRows();
+        if (data.length == 0) {
+            $.showError("请选择文章！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        var topicStatusStr = GettopicStatusStr();
+        if (topicStatusStr.toString().indexOf("作废") >= 0) {
+            $.showError("作废的文章不能撤下！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        if (topicStatusStr.toString().indexOf("撤下") >= 0) {
+            $.showError("撤下的文章不能再次撤下！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        $.confirm("您确定要撤下选中的文章吗？", function (result) {
+            if (!result) {
+                return;
+            }
+            $.ajax({
+                url: "/Topic/AjaxBatchOfflineTopic",
+                type: "POST",
+                dataType: "json",
+                data: { data: encodeURI(JSON.stringify(data)) },
+                success: function (data) {
+                    if (!data.Message) {
+                        $.showSuccess('撤下文章成功！');
+                        $("#searchlist").DataTable().ajax.reload(null, true);
+                    }
+                }
+            });
+        });
+    }
+    function BatchAbondon() {
+        var data = GetSelectedRows();
+        if (data.length == 0) {
+            $.showError("请选择文章！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        var topicStatusStr = GettopicStatusStr();
+        if (topicStatusStr.toString().indexOf("作废") >= 0) {
+            $.showError("作废的文章不能再次作废！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        if (topicStatusStr.toString().indexOf("发布") >= 0) {
+            $.showError("发布的文章不能直接作废！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        $.confirm("您确定要作废选中的文章吗？", function (result) {
+            if (!result)
+                return;
+
+            $.ajax({
+                url: "/Topic/AjaxBatchAbondonTopic",
+                type: "POST",
+                dataType: "json",
+                data: { data: encodeURI(JSON.stringify(data)) },
+                success: function (data) {
+                    if (!data.Message) {
+                        $.showSuccess('作废文章成功！');
+                        $("#searchlist").DataTable().ajax.reload(null, true);
+                    }
+                }
+            });
+        });
+    }
+    function BatchDelete() {
+        var data = GetSelectedRows();
+        if (data.length == 0) {
+            $.showError("请选择文章！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        var topicStatusStr = GettopicStatusStr();
+        if (topicStatusStr.toString().indexOf("发布") >= 0) {
+            $.showError("发布的文章不能直接删除！", 'bottom-right', '1000', 'danger', 'fa-times', true);
+            return;
+        }
+        $.confirm("您确定要删除选中的文章吗？", function (result) {
+            if (!result)
+                return;
+
+            $.ajax({
+                url: "/Topic/AjaxBatchDeleteTopic",
+                type: "POST",
+                dataType: "json",
+                data: { data: encodeURI(JSON.stringify(data)) },
+                success: function (data) {
+                    if (!data.Message) {
+                        $.showSuccess('删除文章成功！');
+                        $("#searchlist").DataTable().ajax.reload(null, true);
+                    }
+                }
+            });
+        });
+    }
+    $("body").on("click", "#statusTab a", function () {
+        $("#selectTopicStatus").val($(this).attr("status")); 
+        var status = $(this).attr("status")
+        switch (status)
+        {
+            case '0'://草稿
+                $("#actions").show();
+                $("#action_publish").show();
+                $("#action_offline").show();
+                $("#action_abondon").show();
+                $("#action_delete").show();
+                break;
+            case '1'://发布
+                $("#actions").show();
+                $("#action_publish").hide();
+                $("#action_offline").show();
+                $("#action_abondon").hide();
+                $("#action_delete").hide();
+                break;
+            case '11'://撤下
+                $("#actions").show();
+                $("#action_publish").show();
+                $("#action_offline").hide();
+                $("#action_abondon").show();
+                $("#action_delete").show();
+                break;
+            case '-1'://作废
+                $("#actions").show();
+                $("#action_publish").hide();
+                $("#action_offline").hide();
+                $("#action_abondon").hide();
+                $("#action_delete").show();
+                break;
+            default:
+                $("#actions").show();
+                $("#action_publish").show();
+                $("#action_offline").show();
+                $("#action_abondon").show();
+                $("#action_delete").show();
+                break;
+        }
+        $("#btnQuery").trigger("click");
+    })
+</script>

@@ -1,0 +1,82 @@
+﻿<div class="jstree jstree-1 jstree-default" style="min-height:300px;">
+    <ul class="jstree-container-ul jstree-children">
+        <!-- ko foreach:$root.data -->
+        <li class="jstree-node" data-bind="css:{'jstree-last':$data.isLast && $data.isLast==true,'jstree-leaf':$data.childrens.length==0,'jstree-open':$data.open() ,'jstree-closed':!$data.open()}">
+            <i class="jstree-icon jstree-ocl" data-bind="click:$root.OpenClick.bind($data)"></i>
+            <div class="jstree-div">
+
+                <label style="display:inline-block;margin-left:5px;cursor:pointer" data-bind="click:$root.CheckBoxClick.bind($data,$element)">
+                    <div class="icheckbox_square-blue"
+                         data-bind="css:{'checked':$data.checked,'disabled':$data.disabled}"></div>
+                </label>
+
+                <i class="jstree-icon jstree-themeicon"></i>
+                <span data-bind="text:$data.text"></span>
+                <!-- ko if: $data.options.length>0 -->
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td data-bind="css:{'jstree-td':$data.open()==true && $data.childrens.length>0}"></td>
+                            <!-- ko foreach: $data.options -->
+                            <td>
+                                <label style="display:inline-block;margin-left:5px;cursor:pointer" data-bind="click:$root.CheckBoxClick.bind($data,$element)">
+                                    <div class="icheckbox_square-blue"
+                                         data-bind="css:{'checked':$data.checked,'disabled':$data.disabled}"></div>
+                                    <span style="margin-left:5px;font-weight:normal" data-bind="text:$data.text"></span>
+                                </label>
+                            </td>
+                            <!-- /ko -->
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- /ko -->
+            </div>
+            <!-- ko if: $data.childrens.length>0 -->
+            <div data-bind='template: "PermissionTreeChildrenTemplate"'></div>
+            <!-- /ko -->
+        </li>
+        <!-- /ko -->
+    </ul>
+</div>
+<script id='PermissionTreeChildrenTemplate' type='text/html'>
+    <ul class="jstree-children" data-bind="koVisible:$data.open">
+        <!-- ko foreach: $data.childrens -->
+        <li class="jstree-node" data-bind="css:{'jstree-last':$data.isLast && $data.isLast==true,'jstree-leaf':$data.childrens.length==0,'jstree-open':$data.open() ,'jstree-closed':!$data.open()}">
+            <i class="jstree-icon jstree-ocl" data-bind="click:$root.OpenClick.bind($data)"></i>
+            <div class="jstree-div">
+
+
+                <label style="display:inline-block;margin-left:5px;cursor:pointer" data-bind="click:$root.CheckBoxClick.bind($data,$element)">
+                    <div class="icheckbox_square-blue"
+                         data-bind="css:{'checked':$data.checked,'disabled':$data.disabled}"></div>
+                </label>
+
+                <i class="jstree-icon jstree-themeicon"></i>
+                <span data-bind="text:$data.text"></span>
+                <!-- ko if: $data.options.length>0 -->
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td data-bind="css:{'jstree-td':$data.open()==true && $data.childrens.length>0}"></td>
+                            <!-- ko foreach: $data.options -->
+                            <td>
+                                <label style="display:inline-block;margin-left:5px;cursor:pointer" data-bind="click:$root.CheckBoxClick.bind($data,$element)">
+                                    <div class="icheckbox_square-blue"
+                                         data-bind="css:{'checked':$data.checked,'disabled':$data.disabled}">
+                                    </div>
+                                    <span style="margin-left:5px;font-weight:normal" data-bind="text:$data.text"></span>
+                                </label>
+                            </td>
+                            <!-- /ko -->
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- /ko -->
+            </div>
+            <!-- ko if: $data.childrens.length>0 -->
+            <div data-bind='template: "PermissionTreeChildrenTemplate"'></div>
+            <!-- /ko -->
+        </li>
+        <!-- /ko -->
+    </ul>
+</script>

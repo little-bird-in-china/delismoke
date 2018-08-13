@@ -1,0 +1,299 @@
+﻿@using BlueStone.Smoke.Entity;
+@using BlueStone.Smoke.Backend.Models;
+@model Company
+@{
+    ViewBag.Title = "客户编辑";
+}
+@section rsHeader{
+    @Styles.Render("~/Content/jstree")
+    @Scripts.Render("~/bundles/jstree")
+    @Scripts.Render("~/bundles/fileinput")
+    @Styles.Render("~/Content/fileinput")
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=B3f7707c25da5b29a6ff69618788a296"></script>
+
+
+    <style>
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none !important;
+            margin: 0;
+        }
+
+        #allmap {
+            height: 500px;
+            width: 100%;
+        }
+
+        #r-result {
+            width: 100%;
+            font-size: 14px;
+        }
+    </style>
+}
+<ul class="nav nav-tabs">
+    <li class="active">
+        <a href="javascript:void(0)">基本信息维护</a>
+    </li>
+    <li class="">
+        @if (Model.SysNo > 0)
+        {
+            <a href="@Url.Action("CompanyUserView", "Company", new { sysno = Model.SysNo })">账号管理</a>
+        }
+        else
+        {
+            <a href="javascript:$.showError('请保存当前客户后，再管理客户账号!')">客户账号管理</a>
+        }
+    </li>
+</ul>
+<div class="row form-horizontal grayback">
+    <form id="defaultForm" class="form-horizontal">
+        <input type="hidden" value="@Model.SysNo" id="SysNo" />
+        <div class="col-xs-12">
+            <div class="col-xs-12 col-sm-6 col-lg-6">
+                <div class="form-group">
+                    <label class="control-label col-sm-3 col-xs-4 col-lg-2"><span class="red">*</span>客户名称：</label>
+                    <div class="col-sm-9 col-xs-8 col-lg-4">
+                        <input name="Name" data-model="Name" maxlength="25" id="Name" class="form-control" value="@Model.Name" data-bv-notempty="true" data-bv-notempty-message="客户名称不能为空。" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3 col-xs-4 col-lg-2">公司电话：</label>
+                    <div class="col-sm-9 col-xs-8  col-lg-4">
+                        <input name="Phone" data-model="Phone" maxlength="50" class="form-control" id="Phone" value="@Model.Phone" data-bv-regexp="true" data-bv-regexp-regexp="^((1[3-9]\d{9})|(0\d{2,3}(-?)\d{7,8})|(\d{7,8}))$" data-bv-regexp-message="请输入正确的手机或固话号码，固话格式为：区号-固话号码" placeholder="请输入电话号码" />
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3 col-xs-4 col-lg-2"><span class="red">*</span>联系人：</label>
+                    <div class="col-sm-9 col-xs-8 col-lg-4">
+                        <input name="ContactName" data-model="ContactName" data-bv-notempty="true" data-bv-notempty-message="联系人不能为空。" maxlength="15" id="ContactName" class="form-control" value="@Model.ContactName" />
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3 col-xs-4 col-lg-2"><span class="red">*</span>联系手机：</label>
+                    <div class="col-sm-9 col-xs-8 col-lg-4">
+                        <input name="ContactCellPhone" data-model="ContactCellPhone" maxlength="11" data-bv-notempty="true" data-bv-notempty-message="联系人手机号不能为空。" data-bv-regexp="true" data-bv-regexp-regexp="^(1[3-9]\d{9})$" data-bv-regexp-message="请输入正确的手机" class="form-control" id="ContactCellPhone" placeholder="请输入手机号码" value="@Model.ContactCellPhone" />
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3 col-xs-4 col-lg-2"><span class="red">*</span>管理员账号：</label>
+                    <div class="col-sm-9 col-xs-8 col-lg-4">
+                        <input name="LoginName" data-model="LoginName" @(Model.SysNo>0?"readonly":"") data-bv-notempty="true" data-bv-notempty-message="管理员账号不能为空。" maxlength="15" id="LoginName" class="form-control" value="@Model.LoginName"
+                                data-bv-regexp="true" data-bv-regexp-regexp="^[a-zA-Z0-9_]{3,20}$" data-bv-regexp-message="账号应为3-20位的字母、下划线、数字"/>
+                    </div>
+                    @if (Model.SysNo == 0)
+                        {<div class="col-sm-9 col-xs-8 col-lg-4">
+                                        <span class="red" style="line-height: 25px;">* 默认密码和账号一致</span>
+                                    </div>
+                    }
+                </div>
+                <div class="form-group">
+                    <label class="control-label  col-sm-3 col-xs-4 col-lg-2">办公地区：</label>
+                    <div class="col-sm-9 col-xs-8 ">
+                        @Html.Partial("~/Views/UserControls/Common/UCAreaPicker.cshtml", new BlueStone.Smoke.Backend.Models.PickerParamModel() { PickerID = "selectAreaSysNo", SelectValue = Model.AreaSysNo > 0 ? Model.AreaSysNo.ToString() : "", })
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label  col-sm-3 col-xs-4 col-lg-2">详细地址：</label>
+                    <div class="col-lg-4 col-xs-4 ">
+                        <input name="Address" data-model="Address" maxlength="50" class="form-control" id="Address" value="@Model.Address" />
+                    </div>
+                    <a class="control-label col-lg-2 col-sm-2   col-xs-2" data-name="LngLat" style="cursor:pointer;">坐标：</a>
+                    <label class="control-label col-lg-1 col-sm-2 col-xs-5" id="LngLat" data-name="LngLat" style="cursor:pointer;text-align:left;">@Model.LngLat </label>
+                    @*  <a href="javascript:;" id="clearp" class="control-label  col-lg-1" style="display:none" onclick="clearll()">清除坐标</a>*@
+
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label  col-sm-3 col-xs-4 col-lg-2">介绍：</label>
+                    <div class="col-sm-9 col-xs-8">
+                        <textarea name="Description" data-model="Description" style="width:548px" rows="4" class="form-control" id="Description"> @Model.Description </textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-lg-4">
+                <label class="control-label col-sm-3 col-xs-4">Logo：</label>
+                <div class="col-sm-9 col-xs-10">
+                    <div id="LogoContainer" style="width:300px;">
+                        <input id="Company_Logo" type="file" />
+                    </div>
+                    <input name="Logo" data-model="Logo" id="Logo" type="hidden" value="@Model.Logo" />
+                </div>
+            </div>
+        </div>
+
+
+    </form>
+</div>
+@*@if (Model.CompanyStatus == CompanyStatus.Init || Model.CompanyStatus == CompanyStatus.Authenticated)
+    {*@
+<div class="bottomaction">
+    <a id="btnSave" class="btn btn-sm btn-primary submitBtn"><i class="fa fa-save right"></i> 保存</a>
+    <a id="btnSaveing" class="btn btn-sm btn-primary" style="display:none;"><i class="fa fa-arrow-circle-up right"></i> "保存中...</a>
+</div>
+@*}*@
+@Html.Partial("~/Views/Shared/_ModalPartial.cshtml", new ModalModel { IsSmall = false })
+@section scripts{
+    <script>
+
+        $("#defaultForm").bootstrapValidator().on("success.form.bv", function (e) {
+            var data = {
+                SysNo: $("#SysNo").val(),
+                Name: $("#Name").val(),
+                Phone: $("#Phone").val(),
+                LoginName: $.trim($("#LoginName").val()),
+                ContactName: $.trim($("#ContactName").val()),
+                ContactCellPhone: $("#ContactCellPhone").val(),
+                Logo: $.trim($("#Logo").val()),
+                Description: $.trim($("#Description").val()),
+                AreaSysNo: $("#selectAreaSysNo").val(),
+                Address: $("#Address").val(),
+                LngLat: $("#LngLat").text(),
+            }
+
+            //if (data.AreaSysNo == "" || data.AreaSysNo == "0") {
+            //    $.showError("请选择地区。");
+            //    return;
+            //}
+            //ReplaceObjHtmlTag(data);
+            $.ajax({
+                url: '@Url.Action("Save", "Company")',
+                type: "POST",
+                dataType: "json",
+                data: { data: JSON.stringify(data) },
+                success: function (data) {
+                    if (data.Success) {
+                        $.showSuccess(data.Message);
+                        window.location.href = "/Company/Maintain?sysNo=" + data.Data;
+                    }
+                }
+            });
+        });
+        $("#btnSave").click(function () {
+            $("#defaultForm").bootstrapValidator('validate');
+        });
+        if ($.trim($("#LngLat").text()).length > 0) {
+            $("#clearp").show();
+        }
+
+        function clearll() {
+            $("#LngLat").text("");
+            $("#clearp").hide();
+        }
+        function GetDefaultImageOption(initialPreviewUrl, initialPreviewConfig, dropZoneTitle, maxFileSize) {
+            var DefaultImageOption = {
+                language: 'zh',
+                uploadUrl: "/Handler/FileUploadHandler.ashx?appName=logo", // you must set a valid URL here else you will get an error
+                allowedFileExtensions: ['jpg', 'png', 'jpeg'],
+                uploadAsync: true,
+                overwriteInitial: true,
+                showClose: false,
+                initialPreview: initialPreviewUrl,
+                initialPreviewAsData: true,
+                initialPreviewConfig: initialPreviewConfig,
+                maxFileSize: maxFileSize,
+                maxFileCount: 1,
+                dropZoneTitle: dropZoneTitle ,
+                fileActionSettings: {
+                    showZoom: true,
+                    showUpload: false,
+                    showDrag: false,
+                    showDelete: false,
+                },
+                slugCallback: function (filename) {
+                    return filename.replace('(', '_').replace(']', '_');
+                },
+                msgValidationError: '请上传小于1M，后缀为.jpg,.jpeg或.png格式的图片',
+                msgUploadEmpty:'请上传小于1M，后缀为.jpg,.jpeg或.png格式的图片'
+            };
+            return DefaultImageOption
+        };
+
+        $(function () {
+
+            var logoDropZoneTitle = '图片大小不要超过1Mb,</br>图片比例为：1*1,</br>图片格式:jpg,png,jpeg';
+            var logoInitialPreviewUrl = "";
+            var logoInitialPreviewConfig = [];
+            if ('@Model.Logo' != "") {
+                logoInitialPreviewUrl = GlobalDefine.ImageStorageServerDomain+  '@Model.Logo';
+                logoInitialPreviewConfig.push({ downloadUrl: logoInitialPreviewUrl, width: "120px", key: -1 })
+            }
+            var logoImageOption = GetDefaultImageOption(logoInitialPreviewUrl, logoInitialPreviewConfig, logoDropZoneTitle,1024)
+            $("#Company_Logo").fileinput("refresh",logoImageOption).on('filebatchselected', function () {
+                $(this).fileinput("upload");
+            }).on('fileuploaded', function (event, data, previewId, index) {
+                var ele = $(this);
+                var result = data.response;
+                if (result.state != "SUCCESS") {
+                    $.showError(result.message);
+                } else {
+                    $("#Logo").val(result.url);
+                    var initConfig = []; 
+                    initConfig.push({ downloadUrl: result.url, width: "120px", key: -1 });
+                    logoImageOption.initialPreview = GlobalDefine.ImageStorageServerDomain +  result.url;
+                    logoImageOption.initialPreviewConfig = initConfig;
+                    logoImageOption.contentFileConfigList = initConfig;
+                    setTimeout(function () {
+                        ele.fileinput(logoImageOption);
+                        ele.fileinput("refresh", logoImageOption);
+                    }, 1000);
+                }
+                }).on("filedeleted", function () {
+                    $("#Logo").val("");
+                });
+
+
+            $('[data-name="LngLat"]').click(function () {
+                var lnglati =$.trim($("#LngLat").text());
+                var province = "", city = "", address="";
+                if ($("#selectAreaSysNo_Province").val() !== "0") {
+                    province  =$.trim($("#s2id_selectAreaSysNo_Province").text());
+                }
+                if ($("#selectAreaSysNo_City").val() !== "0") {
+                    city = $.trim($("#s2id_selectAreaSysNo_City").text());
+                }
+                address = $.trim( $("#Address").val());
+                var lati, lngi;
+                if (lnglati != '') {
+                    var arr = lnglati.split("|");
+                    if (arr != null && arr.length == 2) {
+                        lngi = arr[0];
+                        lati = arr[1];
+                    }
+                }
+                var url = "/Company/_EditLngLat?lngStr=" + lngi + "&latStr=" + lati + "&provincename=" + encodeURIComponent(province) + "&cityname=" + encodeURIComponent(city) + "&address=" + encodeURIComponent(address) ;
+                showModal(url, function (data) {
+                    if (data!='') {
+                        $("#LngLat").text(data);
+                        $("#clearp").show();
+                    }
+                });
+               // setTimeout(function () {
+                   // if ($("#modalDiv").is(":visible")) {
+
+                var addre = $.trim(province + city + address);
+                if (addre.length > 0) {
+                    $("#cityname").val($.trim(province + city));
+                    $("#addre").val($.trim(province + city + address));
+                }
+
+                if (lnglati.length === 0) {
+                    if (addre.length > 0) {
+                        showOptionsURL();
+                    }
+                } else {
+                    $("#addhouseLongitude").val(lngi);
+                    $("#addhouseLatitude").val(lati);
+                    doMark();
+                }
+                   // }
+               // }, 200);
+
+            });
+        });
+    </script>
+
+}

@@ -1,0 +1,159 @@
+﻿@{
+    ViewBag.Title = "消息模板";
+}
+@using BlueStone.Utility
+
+@section rsHeader
+{
+    <!-- datepicker my97 -->
+<script src="~/Content/assets/js/My97DatePicker/WdatePicker.js"></script>
+<script src="~/Scripts/Custom/WdatePicker.helper.js"></script>
+    <!--datatable-->
+    @Styles.Render("~/Content/datatable")
+    @Scripts.Render("~/bundles/datatable")
+}
+<div class="row form-horizontal grayback">
+    <a href="@Url.Action("Mannager","SMS",new {companysysno= ViewBag.companySysNo })" target="_blank" class="btn btn-sm btn-primary"><i class="fa fa-plus"></i>添加新模版</a>
+</div>
+
+<div class="row form-horizontal grayback">
+    <form id="formQuery" role="form">
+            <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+                <input type="hidden" id="companySysNo" value="@ViewBag.companySysNo"  />
+                <label class="col-xs-4 control-label">模板名称：</label>
+                <div class="col-xs-8">
+                    <select id="selectActionCode" name="selectActionCode" class="select2">
+                        <option value="" selected="selected">所有</option>
+                        @{
+                            var list = ViewBag.MsgTenantActionList;
+                            if (list != null && list.Count > 0)
+                            {
+                                foreach (var item in list)
+                                {
+                                    <option value="@item.SMSTemplateCode">@item.SMSTemplateName</option>
+                                }
+                            }
+                        }
+                    </select>
+
+                </div>
+            </div>
+            <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+                <label class="col-xs-4 control-label">消息类型：</label>
+                <div class="col-xs-8">
+                    <select id="selectMsgType" name="selectMsgType" class="select2">
+                        <option value="" selected="selected">所有</option>
+                        @foreach (var item in BlueStone.Utility.EnumHelper.GetDescriptions<MessageCenter.Entity.MsgType>())
+                        {
+                            if ((int)item.Key != -1)
+                            {
+                                <option value="@((int)item.Key)">@item.Value</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <div class="col-xs-8 col-xs-offset-4">
+                <button id="btnQuery" type="button" class="btn btn-sm btn-primary "><i class="fa fa-search"></i>查 询</button>
+                <button id="btnReset" type="button" class="btn btn-sm btn-default "><i class="fa  fa-undo"></i>重置</button>
+
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<div class="row">
+    <table id="searchlist" class="table table-hover"></table>
+</div>
+
+@Html.Partial("~/Views/Shared/_ModalPartial.cshtml")
+@section  scripts{
+    <script type="text/javascript">
+        var gridtable = null;
+        //初始化radio Table
+        var initradiogrid = function () {
+            gridtable = new Datatable();
+            gridtable.init({
+                src: $('#searchlist'),
+                dataTable: {
+                    ajax: {
+                        url: '@Url.Action("Query", "SMS")'
+                    },
+                    columns: [
+                        {
+                            data: "SysNo", title: '@LangHelper.GetText("编号")', sName: "m.SysNo",orderable: true,"visible":false,
+                            render: function (data, type, full, meta) {
+                                return '<a  href="/SMS/Mannager?id=' + data + '&companysysno=@ViewBag.companySysNo" target="_blank">' + data + '</a>'
+                            }
+                        },
+                        { data: "ActionCode", title: '@LangHelper.GetText("动作编码")', sName: "m.ActionCode", "visible": false },
+                        {
+                            data: "ActionCode", orderable: false, title: '@LangHelper.GetText("模板名称")', render: function (data, type, full, meta) {
+                                //return '<a  href="/SMS/Mannager?id=' + full.SysNo + '" target="_blank">' + data + '</a>';
+                                var template = $("#selectActionCode").select2().children();
+                                for (var i = 0; i < template.length; i++) {
+                                    if (data === template[i].value) {
+                                        return '<a  href="/SMS/Mannager?id=' + full.SysNo + '&companysysno=@ViewBag.companySysNo" target="_blank">' + template[i].text + '</a>';;
+                                    }
+                                }
+                            }
+                        },
+                        { data: "MsgTypeStr", title: '@LangHelper.GetText("消息类型")', sName: "m.MsgType" ,orderable: false},
+                        { data: "TemplateContent", title: '@LangHelper.GetText("模版内容")', sName: "m.TemplateContent", orderable: false },
+                        { data: "EnabledStr", title: "是否启用", sName: "m.Enabled", orderable: false }
+                    ],
+                    //select: 'multiple',
+                    order: [[0, 'desc']]
+                }
+            });
+        };
+
+        var doTableAjaxQuery = function (grid) {
+            grid.clearAjaxParams();
+            var queryfilter = {
+                ActionCode: $.trim($("#selectActionCode").val()),
+                MsgType: $.trim($("#selectMsgType").val()),
+                CompanySysNo: $("#companySysNo").val()
+            };
+            grid.addAjaxParam("queryfilter", JSON.stringify(queryfilter));
+            grid.getDataTable().ajax.reload();
+        };
+        $("#btnReset").on("click", function () {
+            $("#selectMsgType").select2().select2('val', $('#selectMsgType option:eq(0)').val());
+            $("#selectActionCode").select2().select2('val', $('#selectActionCode option:eq(0)').val());
+            $("#formQuery")[0].reset();
+        });
+        $("#btnQuery").click(function () {
+            doTableAjaxQuery(gridtable);
+        });
+        function delEntity(id) {
+            bootbox.confirm({
+                animate: false,
+                size: 'small',
+                message: "确认要删除当前记录吗?",
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/SMS/Delete?id=" + id,
+                            type: "POST",
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.Success) {
+                                    $.showSuccess('操作成功');
+                                    $("#searchlist").DataTable().ajax.reload(null, true);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+        $(document).ready(function () {
+            initradiogrid();
+            doTableAjaxQuery(gridtable);
+        });
+    </script>
+}

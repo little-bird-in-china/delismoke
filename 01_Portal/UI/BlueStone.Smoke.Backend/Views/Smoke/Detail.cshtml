@@ -1,0 +1,441 @@
+﻿@using BlueStone.Utility;
+@model SmokeDetailModel
+@{
+    var statuslist = EnumHelper.GetDescriptions<BlueStone.Smoke.Entity.SmokeDetectorStatus>();
+    var detector = Model.DetectorInfo;
+    var curUser = ViewBag.CurrUser as CurrentUser;
+}
+
+@section rsHeader{
+    @Styles.Render("~/Content/datatable")
+    @Scripts.Render("~/bundles/datatable")
+    @Styles.Render("~/Content/jstree")
+    @Scripts.Render("~/bundles/jstree")
+}
+@if (Model.HasError)
+{
+    <div class="row" style="padding:20px;height:200px;">
+        @Model.ErrorMessage
+    </div>
+}
+else
+{
+
+    <div class="row  grayback">
+        <div class="col-xs-4">
+            @if (detector.UIStatus == UISmokeDetectorStatus.FireWarning)
+            {
+                <button id="cancelWarning" onclick="decectorPageManager.cacelWarning()" type="button" class="btn btn-sm btn-danger"><i class="fa fa-undo"></i>取消报警</button>
+            }
+
+            <button id="deleteDetector" onclick="decectorPageManager.deleteDetector()" type="button" class="btn btn-sm btn-danger"><i class="fa fa-times"></i>删除设备</button>
+            <button id="updateInfo" onclick="decectorPageManager.updateSmokeInfo()" type="button" class="btn btn-sm btn-primary">设备信息维护</button>
+
+        </div>
+    </div>
+    <div class="row  grayback">
+        <div class="col-xs-12 groupname"><strong>内容维护</strong></div>
+        <input type="hidden" id="SysNo" name="SysNo" data-model="SysNo" value="@(detector.SysNo)" />
+        <div class="col-xs-12 col-sm-10 col-lg-8">
+            <div class="form-group col-lg-12">
+                <label class="control-label  col-sm-2 col-xs-4">设备编号：</label>
+                <span class="control-label text-left">
+                    @detector.Code
+                </span>
+            </div>
+            <div class="form-group  col-lg-12">
+                <label class="control-label  col-sm-2 col-xs-4">设备状态：</label>
+                <span class="control-label  text-left">
+                    @detector.UIStatusStr
+                </span>
+            </div>
+            <div class="form-group  col-lg-12">
+                <label class="control-label col-sm-2 col-xs-4">ONENET编号：</label>
+                <span class="control-label  text-left">
+                    @detector.DeviceId
+                </span>
+            </div>
+            <div class="form-group  col-lg-12">
+                <label class="control-label col-sm-2 col-xs-4">设备位置：</label>
+                <span class="control-label text-left">
+                    @(detector.AddressName + " " + detector.Position)
+                </span>
+            </div>
+            <div class="form-group  col-lg-12">
+                <label class="control-label col-sm-2 col-xs-4">添加时间：</label>
+                <span class="control-label text-left">
+                    @detector.InDateStr
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row  grayback">
+        <div class="col-xs-12 groupname"><strong>绑定的用户</strong></div>
+        <div>
+            @if (Model.ClientList != null && Model.ClientList.Count > 0)
+            {
+                <table id="gridClient" class="table table-hover"></table>
+            }
+            else
+            {
+                @:还没有绑定用户
+            }
+        </div>
+    </div>
+    <div class="row  grayback">
+        <div class="col-xs-12 groupname"><strong>报警历史</strong></div>
+        <div>
+
+            <table id="gridMsgHistory" class="table table-hover"></table>
+
+        </div>
+    </div>
+    <div class="row  grayback">
+        <div class="col-xs-12 groupname"><strong>用户通知历史</strong></div>
+        <div>
+            <table id="userMsgHistory" class="table table-hover"></table>
+        </div>
+    </div>
+    <div id="sureDelete" style="z-index: 1060; display:none;" class="modal fade bs-modal-lg in" data-keyboard="false" data-backdrop="static" role="basic" aria-hidden="false">
+
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">×</button>
+                    <h4 class="modal-title" id="myModalLabel">提示</h4>
+                </div>
+                <div id="installerBody" class="modal-body" style="text-align:center;">
+                    <div>
+                        你确定要删除此设备吗？
+                    </div>
+                    <div style="margin-top:20px;">
+                        <label><input type="checkbox" id="cbForceDelete" /> <span class="text">如果删除不成功，则进行强制删除</span></label>
+                    </div>
+                </div>
+                <div class="modal-footer text-center">
+                    <button id="deletesurebtn" type="button" class="btn btn-sm  btn-primary"><i class="fa fa-times"></i>确定</button>
+                    <button type="button" class="btn btn-sm" data-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="updateInfoBox" style="z-index: 1060; display:none;" class="modal fade bs-modal-lg in" data-keyboard="false" data-backdrop="static" role="basic" aria-hidden="false">
+
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">×</button>
+                    <h4 class="modal-title" id="myModalLabel">信息维护</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" id="defaultForm">
+                        <div class="row">
+                            @*<div class="col-sm-3 col-xs-12">
+                                    <div class="widget">
+                                        <div class="widget-body" id="tree_content">
+                                            <div id="treeIsEmptyContainer" data-tag="0" style="display:none;">
+                                                    <button id="btnCreateRootAddress" type="button" class="btn btn-sm btn-primary " style="margin-left:20px;"><i class="fa fa-plus"></i>创建根地址</button>
+                                                </div>
+                                            <div id="treeAddress">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>*@
+                            <div class="form-group col-xs-12">
+                                <label class="col-sm-3 col-xs-4 control-label"><span class="red">*</span>ONENET编号：</label>
+                                <div class="col-sm-8 col-xs-10">
+                                    <input name="ONENETID" id="ONENETID"
+                                           class="form-control" onkeyup="value=value.replace(/[^\d]/g,'')" placeholder="请输入ONENET编号：" value=" @detector.DeviceId" />
+                                </div>
+                            </div>
+                            <div class="form-group col-xs-12">
+                                <label class="col-sm-3 col-xs-4 control-label"><span class="red">*</span>位置：</label>
+                                <div class="col-sm-8 col-xs-10" style="max-height:400px; overflow-y:auto;">
+                                    <div style="margin-top:5px" id="treeAddress">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-xs-12">
+                                <label class="col-sm-3 col-xs-4 control-label">设备备注：</label>
+                                <div class="col-sm-8 col-xs-10">
+                                    <input name="Position" id="Position"
+                                           class="form-control" placeholder="请输入设备备注" value=" @detector.Position" />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer text-center">
+                    <button id="updatesavebtn" type="button" class="btn btn-sm btn-primary"><i class="fa fa-check"></i>确定</button>
+                    <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal"><i class="fa  fa-times"></i>取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @section scripts{
+    <script>
+        var decectorPageManager = {
+            listUrl :"@(curUser.CompanySysNo>0 ? Url.RouteUrl("SmokeList") : Url.RouteUrl("SmokeListManager", new { CompanySysNo = detector.CompanySysNo }))",
+            clientList: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.ClientList)),
+            msgGrid: null,
+            companySysNo: "@detector.CompanySysNo",
+            getAddressUrl: "@Url.Action("GetAddressTree", "Company")",
+            selectAddressCode: "@detector.AddressCode",
+            selectAddressSysNo: "@detector.AddressSysNo",
+            addressTree: null,
+            firstLoad: true,
+            loadTree: function (selectedSysNo) {
+                var url = decectorPageManager.getAddressUrl;
+                $('#treeAddress').jstree({
+                    "core": {
+                        "themes": {
+                            "responsive": false,
+                            'variant': 'small',
+                            'stripes': false
+                        },
+                        "check_callback": true,
+                        'data': {
+                            'url': url,
+                            "dataType": "json",
+                            data: function (node) {
+                                if (decectorPageManager.firstLoad) {
+                                    decectorPageManager.firstLoad = false;
+                                    return { ParentSysNo: node.id, CompanySysNo: decectorPageManager.companySysNo, SelectedAddressCode: decectorPageManager.selectAddressCode };
+                                } else {
+                                    return { ParentSysNo: node.id, CompanySysNo: decectorPageManager.companySysNo};
+                                }
+                            },
+                            success: function (d) {
+                                var jqEmpty = $("#treeIsEmptyContainer");
+                                if (d == null || d.length == 0) {
+                                    var tag = jqEmpty.attr("data-tag");
+                                    if (tag == "0") {
+                                        jqEmpty.show();
+                                    }
+                                }
+                                else {
+                                    jqEmpty.hide();
+                                }
+                                jqEmpty.attr("data-tag", "1");
+                            }
+                        }
+                    },
+                    "types": {},
+                    "plugins": ["types"]
+                });
+                decectorPageManager.addressTree = $('#treeAddress').jstree(true);
+
+                var jqTree = $('#treeAddress');
+                jqTree.on('select_node.jstree', function (e, data) {
+                    // var link = $('#' + data.selected).find('li');
+                    decectorPageManager.selectAddressSysNo = data.selected[0];
+                });
+                jqTree.on('loaded.jstree', function (e, data) {
+                    $('#treeAddress').jstree(true).select_node(decectorPageManager.selectAddressSysNo);
+                });
+            },
+            bindClient: function (data) {
+                var grid = new Datatable();
+                grid.init({
+                    src: $('#gridClient'),
+                    dataTable: {
+                        data: decectorPageManager.clientList,
+                        columns: [
+                            {
+                                data: 'Name', title: '用户', orderable: false
+                            },
+                            {
+                                data: 'CellPhone', title: '电话', orderable: false, render: function (data, type, full, meta) {
+                                    var p = "";
+                                    if (full.CellPhone != null && full.CellPhone != "") {
+                                        p = full.CellPhone;
+                                    }
+                                    if (full.CellPhone2 != null && full.CellPhone2 != "") {
+                                        if (p != "") p += ","
+                                        p += full.CellPhone2;
+                                    }
+                                    if (full.CellPhone3 != null && full.CellPhone3 != "") {
+                                        if (p != "") p += ","
+                                        p += full.CellPhone3;
+                                    }
+                                    return p;
+                                }
+                            },
+                            {
+                                data: 'RegisterTimeStr', title: '绑定时间', orderable: false
+                            }
+                        ],
+                        order: [[2, 'desc']]
+                    }
+                });
+            },
+            bindMsg: function (data) {
+                msgGrid = new Datatable();
+                msgGrid.init({
+                    src: $('#gridMsgHistory'),
+                    dataTable: {
+                        ajax: {
+                            url: '@Url.Action("AjaxQueryDeviceNoticeInfo", "Smoke")',
+
+                        },
+                        columns: [
+                            {
+                                data: 'StatusStr', title: '通知类型', orderable: false
+                            },
+                            {
+                                data: 'BeginTimeStr', title: '通知时间', orderable: true,sName: 'BeginTime'
+                            }
+                        ],
+                        order: [[1, 'desc']]
+                    }
+                });
+            },
+              userMsg: function (data) {
+                msgUserGrid = new Datatable();
+                msgUserGrid.init({
+                    src: $('#userMsgHistory'),
+                    dataTable: {
+                        ajax: {
+                            url: '@Url.Action("AjaxQueryDeviceUserNoticeInfo", "Smoke")',
+
+                        },
+                        columns: [
+                            {
+                                data: 'ActionCode', title: '通知类型', orderable: false, render: function (data, type, full, meta) {
+                                    if (data == "WechatUserBindDevices") {
+                                        return "绑定用户"
+                                    } else if (data == "DevicesWarning") {
+                                        return "设备报警"
+                                    } else if (data == "DevicesOffLine") {
+                                        return "设备离线"
+                                    }
+                                }
+                            },
+                            {
+                                data: 'MsgTypeStr', title: '接收类型', orderable: true, sName: 'm.MsgType'
+                            },
+                            {
+                                data: 'MsgReceiver', title: '接收人', orderable: false, sName: 'm.MsgReceiver', render: function (data, type, full, meta) {
+                                    if (full.MsgType == 2) {
+                                        return full.WechatName;
+                                    } else {
+                                        return data;
+                                    }
+                                }
+                            },
+                            //{
+                            //    data: 'MsgContent', title: '通知内容', orderable: false, sName: 'm.MsgContent'
+                            //},
+                            {
+                                data: 'HandleTimeStr', title: '通知时间', orderable: true, sName: 'm.HandleTime'
+                            }
+                        ],
+                        order: [[3, 'desc']]
+                    }
+                });
+            },
+            ini: function () {
+                $(function () {
+                    if (decectorPageManager.clientList != null && decectorPageManager.clientList.length>0) {
+                        decectorPageManager.bindClient();
+                    }
+                    decectorPageManager.bindMsg();
+                    decectorPageManager.userMsg();
+                    decectorPageManager.doTableAjaxQuery(msgGrid);
+                    decectorPageManager.doTableAjaxQuery(msgUserGrid);
+                });
+            },
+            cacelWarning:function(){
+
+                $.confirm("确定要取消报警吗?", function (result) {
+                    if (result) {
+                        $.get("@Url.Action("CancelWarning", "Smoke")", {  code:@detector.Code }, function (res) {
+                            if (res.Success) {
+                                $.showSuccess("取消成功");
+                                window.location.reload();
+                            }
+                        }, 'json');
+                    }
+                });
+            },
+            deleteDetector: function () {
+                $("#sureDelete").modal("show");
+
+            },
+            updateSmokeInfo: function () {
+                if (decectorPageManager.selectAddressSysNo > 0) {
+                    decectorPageManager.loadTree(decectorPageManager.selectAddressSysNo);
+                } else {
+                    decectorPageManager.loadTree();
+                }
+
+                $("#updateInfoBox").modal("show");
+            },
+
+            doTableAjaxQuery : function (grid) {
+                grid.clearAjaxParams();
+                var queryFilter = {
+                    DeviceCode: "@detector.Code",
+                     MasterID: "@detector.Code",
+                };
+                grid.addAjaxParam("queryfilter", JSON.stringify(queryFilter));
+                grid.getDataTable().ajax.reload();
+            },
+
+        };
+            decectorPageManager.ini();
+        $("#deletesurebtn").click(function () {
+
+            var isForce = $("#cbForceDelete").prop("checked");
+            $.get("@Url.Action("DeleteDetector", "Smoke")", { code:@detector.Code, isdelete: isForce }, function (res) {
+                if (res.Success) {
+                    $.showSuccess("删除成功");
+                    setTimeout(function () {
+                        window.location.href = decectorPageManager.listUrl;
+                    }, 2000)
+
+                }
+            }, 'json');
+        });
+            @*$("#deletenobtn").click(function () {
+
+                $.get("@Url.Action("DeleteDetector", "Smoke")", { code:@detector.Code,isdelete: false }, function (res) {
+                        if (res.Success) {
+                            $.showSuccess("删除成功");
+                            setTimeout(function () {
+                                window.location.href = decectorPageManager.listUrl;
+                            }, 2000)
+
+                        }
+                    }, 'json');
+            })*@
+            $("#updatesavebtn").click(function () {
+
+                var DeviceID = $.trim($("#ONENETID").val());
+                var AddressSysNo = decectorPageManager.selectAddressSysNo;
+                var Position = $.trim($("#Position").val());
+                if (DeviceID == null || DeviceID == "") {
+                    $.showError("请填写ONENET编号！")
+                    return;
+                }
+                if (!/^[0-9]*$/.test(DeviceID)) {
+                    $.showError("ONENET编号只能为纯数字！");
+                    return;
+                }
+
+                $.get("@Url.Action("UpdateSmokeInfo", "Smoke")", { code: "@detector.Code", newDeviceID: DeviceID, addressSysNo: AddressSysNo, position: Position }, function (res) {
+                        if (res.Success) {
+                            $.showSuccess("修改成功");
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 1000)
+                        }
+                    }, 'json');
+
+            })
+    </script>
+    }
+}

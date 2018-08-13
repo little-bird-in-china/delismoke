@@ -1,0 +1,7 @@
+H:\My projects\smoke\代码\MessageCenter\MessegeCenter.Entity\bin\Debug\MessegeCenter.Entity.dll
+H:\My projects\smoke\代码\MessageCenter\MessegeCenter.Entity\bin\Debug\MessegeCenter.Entity.pdb
+H:\My projects\smoke\代码\MessageCenter\MessegeCenter.Entity\bin\Debug\BlueStone.Utility.dll
+H:\My projects\smoke\代码\MessageCenter\MessegeCenter.Entity\bin\Debug\Newtonsoft.Json.dll
+H:\My projects\smoke\代码\MessageCenter\MessegeCenter.Entity\obj\Debug\MessegeCenter.Entity.csproj.CoreCompileInputs.cache
+H:\My projects\smoke\代码\MessageCenter\MessegeCenter.Entity\obj\Debug\MessegeCenter.Entity.dll
+H:\My projects\smoke\代码\MessageCenter\MessegeCenter.Entity\obj\Debug\MessegeCenter.Entity.pdb

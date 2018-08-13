@@ -1,0 +1,347 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2ED9F7FE-A807-4F9D-9AAF-42D05E775004}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BlueStone.Smoke.Msite</RootNamespace>
+    <AssemblyName>BlueStone.Smoke.Msite</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <Use64BitIISExpress />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="BlueStone.Utility, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\00_ReferenceLib\Framework\BlueStone.Utility.dll</HintPath>
+    </Reference>
+    <Reference Include="BlueStone.Utility.Web, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\00_ReferenceLib\Framework\BlueStone.Utility.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.WebPages.3.0.0\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.Web.Optimization.1.1.1\lib\net40\System.Web.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.Razor.3.0.0\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.WebPages.3.0.0\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.WebPages.3.0.0\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.WebPages.3.0.0\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Net.Http">
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest">
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\..\packages\Microsoft.AspNet.Mvc.5.0.0\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="WebGrease">
+      <Private>True</Private>
+      <HintPath>..\..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Content\wechatweb\themes\default\js\" />
+    <Folder Include="Properties\App_Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AppCode\AjaxResult.cs" />
+    <Compile Include="AppCode\AppUserInfo.cs" />
+    <Compile Include="App_Start\ErrorHandleAttribute.cs" />
+    <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\UserMgr.cs" />
+    <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\SmokeController.cs" />
+    <Compile Include="Controllers\WXApiController.cs" />
+    <Compile Include="Controllers\WeiXinController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SmokeModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Untility\SecurityHelper.cs" />
+    <Compile Include="Untility\StringUtility.cs" />
+    <Compile Include="Untility\WebPortalHelper.cs" />
+    <Content Include="Configuration\Route.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Content\wechatweb\themes\default\css\article.css" />
+    <Content Include="Content\wechatweb\themes\default\img\circular.png" />
+    <Content Include="Content\wechatweb\themes\default\img\echartbg.png" />
+    <Content Include="Content\wechatweb\themes\default\img\null.png" />
+    <Content Include="Content\wechatweb\libs\jquery\echarts.min.js" />
+    <Content Include="Configuration\Data\Smoke\Address.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Configuration\Data\Smoke\SmokeDetector.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Content\user-bg.gif" />
+    <Content Include="Content\wechatweb\libs\jweixin-1.2.0.js" />
+    <Content Include="Content\wechatweb\libs\jquery\city-picker.js" />
+    <Content Include="Content\wechatweb\libs\jquery\fastclick.js" />
+    <Content Include="Content\wechatweb\libs\jquery\jquery-2.1.4.js" />
+    <Content Include="Content\wechatweb\libs\jquery\jquery-weui.js" />
+    <Content Include="Content\wechatweb\themes\default\css\demos.css" />
+    <Content Include="Content\wechatweb\themes\default\css\jquery-weui.css" />
+    <Content Include="Content\wechatweb\themes\default\css\weui.min.css" />
+    <Content Include="Content\wechatweb\themes\default\font\iconfont.css" />
+    <Content Include="Content\wechatweb\themes\default\font\iconfont.js" />
+    <Content Include="Content\wechatweb\themes\default\font\iconfont.svg" />
+    <Content Include="Content\wechatweb\themes\default\img\user-bg.gif" />
+    <Content Include="Content\wechatweb\user-logo.jpg" />
+    <Content Include="Global.asax" />
+    <Content Include="Configuration\AppSettings\Base.config" />
+    <Content Include="MP_verify_ClQO7LZKG3Adl7yu.txt" />
+    <Content Include="Views\Shared\WechatWeb\_Main.cshtml" />
+    <Content Include="Views\Shared\WechatWeb\_Footer.cshtml" />
+    <Content Include="Views\Smoke\Contact.cshtml" />
+    <Content Include="Views\Smoke\TopicDetail.cshtml" />
+    <Content Include="Configuration\Data\Message\Message.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Configuration\Data\Message\MessageTemplate.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Configuration\Data\SMS\MsgTemplate.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Configuration\Data\SMS\MsgTenantAction.config" />
+    <Content Include="Configuration\Data\Client\ClientSmokeDetector.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Views\Shared\WechatWeb\_NoMain.cshtml" />
+    <Content Include="Configuration\Data\Smoke\AddressMap.config" />
+    <Content Include="Configuration\Data\AuthCenter\SystemUser.config" />
+    <Content Include="Configuration\WeiXinPush.config" />
+    <None Include="Properties\PublishProfiles\jenkins.debug.pubxml">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="Content\wechatweb\themes\default\font\iconfont.eot" />
+    <Content Include="Content\wechatweb\themes\default\font\iconfont.ttf" />
+    <Content Include="Content\wechatweb\themes\default\font\iconfont.woff" />
+    <Content Include="Views\Smoke\DeviceList.cshtml" />
+    <Content Include="Views\Smoke\TopicList.cshtml" />
+    <None Include="Properties\PublishProfiles\msite.pubxml" />
+    <Content Include="Configuration\Data\Client\Client.config" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+    <None Include="Properties\PublishProfiles\msite.pubxml" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Views\Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Shared\Error.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Configuration\Cookie.config" />
+    <Content Include="Configuration\Cookie.prd.config" />
+    <Content Include="Configuration\Cookie.pre.config" />
+    <Content Include="Configuration\Data\DB.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Configuration\Data\DB.Prd.config" />
+    <Content Include="Configuration\Data\Topic\Topic.config" />
+    <Content Include="Configuration\Data\Company\Company.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Configuration\Data\Customer\Customer.config" />
+    <Content Include="Configuration\Data\Customer\CompanyContacter.config" />
+    <Content Include="Configuration\Data\Common\Common.config" />
+    <Content Include="Configuration\Data\Category\Category.config" />
+    <Content Include="Views\Smoke\AddDevices.cshtml" />
+    <Content Include="Views\Smoke\AdminBinding.cshtml" />
+    <Content Include="Views\Smoke\BondeDevices.cshtml" />
+    <Content Include="Views\Smoke\DeviceDetails.cshtml" />
+    <Content Include="Views\Smoke\Notice.cshtml" />
+    <Content Include="Views\Smoke\UserInfo.cshtml" />
+    <Content Include="Views\Smoke\_DeviceItem.cshtml" />
+    <Content Include="Views\Smoke\InstallSmokedetectorList.cshtml" />
+    <Content Include="Views\Smoke\AdminBinding2.cshtml" />
+    <Content Include="Views\Smoke\Test.cshtml" />
+    <None Include="Web.Pre.config">
+      <DependentUpon>Web.config</DependentUpon>
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Service\BlueStone.Smoke.DataAccess\BlueStone.Smoke.DataAccess.csproj">
+      <Project>{fed9e899-3c72-443b-9424-52d86d1dba10}</Project>
+      <Name>BlueStone.Smoke.DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Service\BlueStone.Smoke.Entity\BlueStone.Smoke.Entity.csproj">
+      <Project>{4d7750ce-84a0-4a8b-a084-c5cf32cca5dc}</Project>
+      <Name>BlueStone.Smoke.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Service\BlueStone.Smoke.Service\BlueStone.Smoke.Service.csproj">
+      <Project>{3be47d1c-e453-42c3-8b31-3604cf9a9a7c}</Project>
+      <Name>BlueStone.Smoke.Service</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Pre|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>26106</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:8051/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。启用“NuGet 程序包还原”可下载这些程序包。有关详细信息，请参阅 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
+</Project>

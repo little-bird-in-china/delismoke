@@ -1,0 +1,265 @@
+﻿@using BlueStone.Smoke.Entity;
+@Model BlueStone.AuthCenter.Web.Model.UserEdit_Model;
+@{
+    ViewBag.Title = "用户编辑";
+}
+@section rsHeader{
+
+}
+@section rsContent
+{
+    <section class="content">
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <h3 class="box-title">基本信息</h3>
+                <div class="box-tools pull-right">
+                    <button class="btn btn-box-tool" type="button" data-widget="collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body" id="edit_form">
+                @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/EditForm.cshtml")
+            </div>
+            <div class="box-footer">
+            </div>
+        </div>
+        @if (Model.UserInfo.SysNo > 0)
+        {
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">拥有角色</h3>
+                    <div class="box-tools pull-right">
+                        <div class="btn-group">
+                            <button class="btn btn-primary btn-sm" type="button" id="add-role">
+                                <i class="fa fa-plus-square"></i> 添加
+                            </button>
+                            <button class="btn btn-danger btn-sm" type="button" id="remove-role">
+                                <i class="fa fa-minus-square"></i> 删除
+                            </button>
+                        </div>
+                        &nbsp;&nbsp;
+                        <button class="btn btn-box-tool" type="button" data-widget="collapse">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body" id="has-roles-table">
+                    @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/LocalTableTemplate.cshtml")
+                </div>
+                <div class="box-footer">
+                    <div class="row">
+                        <div class="btn-group col-md-offset-5 col-lg-offset-5 col-sm-offset-4 col-xs-offset-4">
+                            <button class="btn btn-primary" type="button" id="save-role">
+                                <i class="fa fa-save"></i> 保存
+                            </button>
+                            <button class="btn btn-default" type="button" id="reset-role">
+                                <i class="fa fa-edit"></i> 重置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </section>
+
+    @Html.Partial("~/Areas/AuthCenter/Views/CustomControls/RoleSelector.cshtml")
+}
+
+@section rsFooter{
+    <script>
+        var UserEdit_PageMgr = function () {
+            var data_model = JSON.parse('@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model))');
+
+            var roleEditPageUrl = '@Url.Action("RoleEdit", "Role")';
+            var userEditPageUrl = '@Url.Action("UserEdit", "User")';
+            var saveUsersRoleUrl = '@Url.Action("SaveUsersRole", "User")';
+
+            var appCheckboxs = [];
+
+            for (var i = 0; i < data_model.allApps.length; i++) {
+                appCheckboxs.push({ text: data_model.allApps[i].Name, value: data_model.allApps[i].ApplicationID });
+            }
+
+            var form = new KOForm('edit_form');
+            form.SetButtons({
+                SaveBtn: {
+                    actionUrl: 'SaveSystemUser',
+                    text: '保存',
+                    callBack: function (result) {
+                        window.location.href = userEditPageUrl + '?UserSysNo=' + result.Data.SysNo;
+                    }
+                },
+                ResetBtn: {
+                    resetFunc: function () {
+                        form.SetData(data_model.UserInfo);
+                    }
+                }
+            });
+            form.SetControlGroups([
+            {
+                cText: '系统编号:',
+                cName: 'SysNo',
+                cVisible: false,
+                cDefault: 0
+            }, {
+                cText: '账户名:',
+                cName: 'LoginName',
+                cRule: {
+                    required: { message: "请输入账户名" },
+                    pattern: {
+                        params: /^[a-zA-Z0-9_]{3,11}$/,
+                        message: "账号应为3-11位的字母、下划线、数字!"
+                    }
+                },
+                cDisabled: function (row, all, element) {
+                    var sysno_row = all()[0];
+                    if (sysno_row.cValue() > 0) {
+                        return true;
+                    }
+                    return false;
+                }
+            }, {
+                cText: '姓名:',
+                cName: 'UserFullName'
+            }, {
+                cText: 'AppKey:',
+                cName: 'ApplicationID',
+                cVisible: false,
+                cDefault: function () {
+                    return $('#GlobalAppSelect').val();
+                }
+            }, {
+                cText: '性别:',
+                cName: 'Gender',
+                cRule: {
+                    required: { message: "性别必选" }
+                },
+                cType: 'radio',
+                cRadioButtuns: [
+                    {
+                        text: '男',
+                        value: 1
+                    },
+                    {
+                        text: '女',
+                        value: 0
+                    }
+                ]
+            }, {
+                cText: '状态:',
+                cName: 'CommonStatus',
+                cDefault: 1,
+                cType: 'radio',
+                cRadioButtuns: [
+                    {
+                        text: '有效',
+                        value: 1
+                    },
+                    {
+                        text: '无效',
+                        value: 0
+                    }
+                ]
+            },{
+                cText: '所属系统:',
+                cName: 'Applications',
+                cType: 'checkboxs',
+                cCheckboxs: appCheckboxs,
+                cCheckboxsSet: function (item, items) {
+                    for (var i = 0; i < items.length; i++) {
+                        var tmp = items[i];
+                        if (tmp.ApplicationID == item.value) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                cCheckboxsGet: function (checkboxs) {
+                    var result = [];
+                    for (var i = 0; i < checkboxs.length; i++) {
+                        temp = checkboxs[i];
+                        if (temp.cChecked()) {
+                            result.push({ Name: temp.text, ApplicationID: temp.value });
+                        }
+                    }
+                    return result;
+                }
+            }, 
+            {
+                cText: '手机:',
+                cName: 'CellPhone',
+                cRule: {
+                    required: { message: "请输入手机号" },
+                    phoneCN: { message: "请输入正确的手机号码" }
+                }
+            }, {
+                cText: '邮箱:',
+                cName: 'Email',
+                cRule: {
+                    email: { message: "请输入合法的邮箱地址" }
+                }
+            }, {
+                cText: 'QQ:',
+                cName: 'QQ'
+            }]);
+            form.SetData(data_model.UserInfo);
+
+            var roleTable = new KOLocalTable('has-roles-table');
+            roleTable.SetTableColumns([
+                { cText: '编号', cName: 'SysNo', cWidth: '5%' },
+                {
+                    cText: '名称', cName: 'RoleName', cWidth: '15%', cType: 'html',
+                    cRender: function (row, rowindex) {
+                        var result = '<a href="' + roleEditPageUrl + '?RoleSysNo=' + row.SysNo + '" target="_blank"  >' + row.RoleName + '</a>';
+                        return result;
+                    }
+                },
+                { cText: '所属系统', cName: 'ApplicationName', cWidth: '15%' },
+                { cText: '状态', cName: 'CommonStatusStr', cWidth: '10%' },
+                { cText: '备注', cName: 'Memo', cWidth: '55%' }
+            ]);
+            roleTable.SetTableData(data_model.UserRoles);
+
+            $('#add-role').on('click', function (event) {
+                CustomControl_RoleSelector.show(function (result) {
+                    for (var i = 0; i < result.length; i++) {
+                        roleTable.AddTableRow(result[i]);
+                    }
+                }, {
+                    Applictions: data_model.UserInfo.Applications
+                });
+            });
+
+            $('#remove-role').on('click', function (event) {
+                roleTable.RemoveSelectRows();
+            });
+
+            $('#reset-role').on('click', function (event) {
+                roleTable.SetTableData(data_model.UserRoles);
+            });
+
+            $('#save-role').on('click', function (event) {
+                var results = roleTable.GetAllRows();
+                var $btn = $(this);
+                $btn.attr('disabled', true);
+                $.ajax({
+                    url: saveUsersRoleUrl,
+                    type: "POST",
+                    dataType: "json",
+                    data: { UserSysNo: data_model.UserInfo.SysNo, data: JSON.stringify(results) },
+                    success: function (result) {
+                        if (result.Success) {
+                            window.location.href = userEditPageUrl + '?UserSysNo=' + data_model.UserInfo.SysNo;
+                        }
+                    }
+                });
+            });
+
+            return {
+
+            }
+        }();
+
+    </script>
+}

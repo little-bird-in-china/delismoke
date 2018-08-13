@@ -1,0 +1,319 @@
+﻿@model int
+
+
+@Styles.Render("~/Content/jstree")
+@Scripts.Render("~/bundles/jstree")
+
+<div class="treediv" style="overflow-y:auto;max-height:100%;padding-right:20px; ">
+    <div id="treeAddress" class="moveSlow" style="visibility:hidden">
+    </div>
+    <button id="controlTree" style="border-color:transparent; background-color:transparent;visibility:hidden" class="btn btn-circle  btn-xs" type="button">
+        <i class="fa fa-arrow-down" style="color:white;"></i>
+    </button>
+</div>
+
+
+
+@*<script type="text/javascript">
+        var addressPageManager =
+            {
+                companySysNo: @Model,
+                getAddressUrl: "/Company/GetAddressTree",
+                selectAddressInfo: null,
+                addressTree: null,
+                loadTree: function (selectedSysNo) {
+                    var url = addressPageManager.getAddressUrl;
+                    $('#treeAddress').jstree({
+                        "core": {
+                            "multiple": false,
+                            "themes": {
+                                "responsive": false,
+                                'variant': 'small',
+                                'stripes': false
+                            },
+                            "check_callback": true,
+                            'data': {
+                                'url': url,
+                                "dataType": "json",
+                                data: function (node) {
+                                    return { ParentSysNo: node.id, CompanySysNo: addressPageManager.companySysNo };
+                                },
+                                success: function (d) {
+                                    var jqEmpty = $("#treeIsEmptyContainer");
+                                    if (d == null || d.length == 0) {
+                                        var tag = jqEmpty.attr("data-tag");
+                                        if (tag == "0") {
+                                            jqEmpty.show();
+                                        }
+                                    }
+                                    jqEmpty.attr("data-tag", "1");
+
+
+
+                                }
+                            }
+                        },
+                        "types": {},
+                        "plugins": ["types"]
+                    });
+                    addressPageManager.addressTree = $('#treeAddress').jstree(true);
+
+                    var jqTree = $('#treeAddress');
+                    jqTree.on('select_node.jstree', function (e, data) {
+                        var addInfo = data.node.data;
+                        if (data.node.parent == "#") {
+                            $("#addressPath").text(addInfo.Name);
+                        }
+                        else {
+                            $("#addressPath").text(addInfo.PathName);
+                        }
+                        handler.loadAddressMap(data.node.data.SysNo);
+
+                        // var link = $('#' + data.selected).find('li');
+                        addressPageManager.selectAddressInfo = null;
+                        if (data && data.node) {
+                            addressPageManager.selectAddressInfo = addInfo;
+                            var grade = addressPageManager.selectAddressInfo.Grade;
+                            $('input[type="checkbox"][data-grade]').each(function () {
+                                var jqThis = $(this);
+                                var g = jqThis.attr("data-grade");
+                                if (g < grade || (grade >= 2 && g == grade)) {
+                                    jqThis.prop("checked", false);
+                                    jqThis.prop("disabled", true);
+                                }
+                                else {
+                                    jqThis.prop("checked", g > grade);
+                                    jqThis.prop("disabled", false);
+                                }
+                            });
+                        }
+                    });
+
+
+                    var tree = $("#treeAddress");
+                    var height = tree.outerHeight();
+                    tree.css("margin-top", -height);
+                },
+
+                getPattern: function (patternContainerId) {
+                    var pattern = { ParentNoAsPreName: false };
+                    $("#" + patternContainerId).find('[data-name]').each(function () {
+                        var jqThis = $(this);
+                        var n = jqThis.attr("data-name");
+                        var v = jqThis.val();
+                        pattern[n] = v;
+                    });
+                    pattern.ParentNoAsPreName = pattern.ParentNoAsPreName == "1";
+                    pattern.CompanySysNo = addressPageManager.companySysNo;
+                    return pattern;
+                },
+
+                getAddPattern: function (patternContainerId) {
+                    var buildingPattern = $("#createAdd_Building").prop("checked") ? addressPageManager.getPattern("createAdd_Building_Pattern") : null;
+                    var floorPattern = $("#createAdd_Floor").prop("checked") ? addressPageManager.getPattern("createAdd_Floor_Pattern") : null;
+                    var roomPattern = $("#createAdd_Room").prop("checked") ? addressPageManager.getPattern("createAdd_Room_Pattern") : null;
+
+                    return {
+                        BuildingPattern: buildingPattern,
+                        FloorPattern: floorPattern,
+                        RoomPattern: roomPattern,
+                    };
+                },
+
+                ini: function () {
+                    $(function () {
+                        addressPageManager.loadTree();
+                        //$("#btnRename").click(function () { addressPageManager.rename(); });
+                        //$("#btnCreateSub").click(function () { addressPageManager.createAddress(); });
+                        //$("#btnAddRootAddress").click(function () { addressPageManager.createAddress("#"); });
+                        //$("#btnDelete").click(function () { addressPageManager.delAddress(); });
+                        $("#btnCreateAddress").click(function () {
+                            if (addressPageManager.selectAddressInfo == null) {
+                                alert("请在左边文件存入的文件夹后再上传文件");
+                                return;
+                            }
+                            addressPageManager.showCreateDialog();
+                        });
+                        $("#createAdd_btnOK").click(function () {
+                            addressPageManager.createAddress();
+                        });
+                        $("#createAdd_Room_PreNameType").change(function () {
+                            var v = $(this).val();
+                            var jqPreName = $('#createAdd_Room_Pattern [data-name="PreName"]');
+                            if (v == 0) {
+                                jqPreName.val("").attr("placeholder", "名称前缀");
+                            }
+                            else {
+                                jqPreName.val("").attr("placeholder", "与编号的分隔符");
+                            }
+                        });
+                    });
+
+                }
+            };
+        //addressPageManager.ini();
+    </script>*@
+
+
+
+<script type="text/javascript">
+    var addressPageManager =
+        {
+            companySysNo: @Model,
+            getAddressUrl: "@Url.Action("GetAddressTree", "Company")",
+            selectAddressInfo: null,
+            addressTree: null,
+            hasLoadBefore: false,
+            loadTree: function (selectedSysNo) {
+                var url = addressPageManager.getAddressUrl;
+                $('#treeAddress').jstree({
+                    "core": {
+                        "multiple": false,
+                        "themes": {
+                            "responsive": false,
+                            'variant': 'small',
+                            'stripes': true
+                        },
+                        "check_callback": true,
+                        'data': {
+                            'url': url,
+                            "dataType": "json",
+                            data: function (node) {
+                                return { ParentSysNo: node.id, CompanySysNo: addressPageManager.companySysNo };
+                            },
+                            success: function (d) {
+
+                                var jqEmpty = $("#treeIsEmptyContainer");
+                                if (d == null || d.length == 0) {
+                                    var tag = jqEmpty.attr("data-tag");
+                                    if (tag == "0") {
+                                        jqEmpty.show();
+                                    }
+                                } else {  
+                                    //如果获取数据出错  则返回
+                                    if (d.Message) {
+                                        return;
+                                    }
+                                    addressPageManager.resetTreeData(d);
+                                    d[0].state.opened = true;
+
+                                    addressPageManager.rootAddress = d[0];
+                                    jqEmpty.hide();
+                                }
+                                jqEmpty.attr("data-tag", "1");
+
+
+
+                            }
+                        }
+                    },
+                    "types": {},
+                    "plugins": ["types"]
+                });
+                addressPageManager.addressTree = $('#treeAddress').jstree(true);
+
+                var jqTree = $('#treeAddress');
+                jqTree.unbind("select_node.jstree");
+                jqTree.on('select_node.jstree', function (e, data) {
+                    var addInfo = data.node.data;
+                    if (data.node.parent == "#") {
+                        $("#addressPath").text(addInfo.Name);
+                    }
+                    else {
+                        $("#addressPath").text(addInfo.PathName);
+                    }
+                    handler.loadAddressMap(data.node.data.SysNo);
+
+                    // var link = $('#' + data.selected).find('li');
+                    addressPageManager.selectAddressInfo = null;
+                    if (data && data.node) {
+                        addressPageManager.selectAddressInfo = addInfo;
+                        var grade= addressPageManager.selectAddressInfo.Grade;
+                        $('input[type="checkbox"][data-grade]').each(function () {
+                            var jqThis = $(this);
+                            var g = jqThis.attr("data-grade");
+                            if (g < grade || (grade >= 2 && g == grade)) {
+                                jqThis.prop("checked", false);
+                                jqThis.prop("disabled", true);
+                            }
+                            else {
+                                jqThis.prop("checked", g > grade );
+                                jqThis.prop("disabled", false);
+                            }
+                        });
+                    }
+                });
+
+
+                jqTree.on('loaded.jstree', function (e, data) {
+                    if (addressPageManager.rootAddress != null) {
+                        addressPageManager.addressTree.select_node(addressPageManager.rootAddress.id);
+                        addressPageManager.resetTree();
+                    }
+                });
+            },
+            resetTree: function () {
+                //debugger;
+                if (!addressPageManager.hasLoadBefore) {
+                    var i = $("#controlTree").find("i");
+                    var tree = $("#treeAddress");
+                    var height = tree.outerHeight();
+                    if (height) {
+                        tree.css("margin-top", -height);
+                        i.attr("class", "fa fa-arrow-down");
+                    }
+
+                    setTimeout(function () {
+                        tree.css("visibility", "visible");
+                        $("#controlTree").css("visibility", "visible");
+                    }, 500);
+
+                    addressPageManager.hasLoadBefore = true;
+                }
+
+
+
+            },
+
+            resetTreeData: function (dataArray) {
+                
+
+
+                $.each(dataArray, function (i, n) {
+                    n.state.opened = false;
+                    if (n.children && n.children.length > 0) {
+                        addressPageManager.resetTreeData(n.children);
+                    }
+                });
+            },
+
+
+            ini: function () {
+                $(function () {
+                    addressPageManager.loadTree();
+                });
+
+
+                $("#controlTree").click(function () {
+                    var i = $(this).find("i");
+                    var tree = $("#treeAddress");
+                    var margintop = tree.css("margin-top");
+                    var height = tree.outerHeight();
+                    if (margintop) {
+                        if (margintop.indexOf("-") > -1) {
+                            tree.css("margin-top", 0);
+                            i.attr("class", "fa fa-arrow-up");
+                        } else {
+                            tree.css("margin-top", -height);
+                            i.attr("class", "fa fa-arrow-down");
+                        }
+                    } else {
+                        tree.css("margin-top", -height);
+                        i.attr("class", "fa fa-arrow-down");
+
+                    }
+                });
+            }
+        };
+    addressPageManager.ini();
+</script>

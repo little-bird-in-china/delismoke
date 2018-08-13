@@ -1,0 +1,111 @@
+﻿@{
+    AppUserInfo curentUser = UserMgr.ReadUserInfo() ?? new AppUserInfo();
+}
+@section rsHeader
+{
+
+}
+
+<div class="gu-form-content">
+
+    <div class="gu-form-con-bg">
+        @if (curentUser.ManagerSysNo > 0)
+        {
+            <div class="weui-cells">
+                <div class="weui-cell">
+                    <i class="iconfont phone">&#xe636;</i>
+                    <div class="weui-cell__bd">
+                        <input readonly class="weui-input" id="bindingUser" type="text" value="@("已绑定："+HttpUtility.UrlDecode(curentUser.ManagerName))" />
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <i class="iconfont phone">&#xe636;</i>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" id="userID" type="text" placeholder="账号">
+                </div>
+            </div>
+        </div>
+        <div class="weui-cells weui-cells_form">
+            <div class="weui-cell">
+                <i class="iconfont phone">&#xe630;</i>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" type="password" id="userPassword" placeholder="密码">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@if (curentUser.ManagerSysNo > 0)
+{
+    <div class='demos-content-padded'>
+        <a href="javascript:;" id='show-toast' class="weui-btn weui-btn_primary">确认改绑</a>
+    </div>
+    <div class='demos-content-padded'>
+        <a href="javascript:;" id='relieve_manager' class="weui-btn " style="background-color:#d50b0b">解除绑定</a>
+    </div>
+}
+else
+{
+    <div class='demos-content-padded'>
+        <a href="javascript:;" id='show-toast' class="weui-btn weui-btn_primary">确认绑定</a>
+    </div>
+}
+
+
+
+@section rsFooter{
+    <script>
+        $(document).on("click", "#show-toast", function () {
+            var data = {
+                ID: $.trim($("#userID").val()),
+                password: $.trim($("#userPassword").val())
+            }
+            $.showLoading();
+            $.ajax({
+                url: "/Smoke/BindingAdminID",
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (r) {
+                    $.hideLoading();
+                    if (r.Success) {
+                        $.toast(r.Message, function () {
+                            document.activeElement.blur();
+                            $("input").blur();
+                            window.location = "/Smoke/UserInfo"
+                        });
+                    } else {
+                        $.toast(r.Message, "forbidden");
+                    }
+
+                }
+            })
+
+
+        }).on("click", "#relieve_manager", function () {
+            $.ajax({
+                url: "/Smoke/RelieveManager",
+                type: "POST",
+                dataType: "json",
+                success: function (r) {
+                    $.hideLoading();
+                    if (r.Success) {
+                        $.toast(r.Message, function () {
+                            document.activeElement.blur();
+                            $("input").blur();
+                            window.location = "/Smoke/UserInfo"
+                        });
+                    } else {
+                        $.toast(r.Message, "forbidden");
+                    }
+
+                }
+            })
+            });
+
+    </script>
+}

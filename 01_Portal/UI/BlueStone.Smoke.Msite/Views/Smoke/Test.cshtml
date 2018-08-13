@@ -1,0 +1,92 @@
+﻿
+@{
+    ViewBag.Title = "Test";
+    Layout = "~/Views/Shared/WechatWeb/_Main.cshtml";
+}
+<div class="weui-cells weui-cells_form" >
+    <div class="weui-cell weui-cell_switch" style="margin-top: 30px;">
+        <div class="weui-cell__bd">
+            离线测试
+            <input class="weui-switch" id="choose" type="checkbox">
+            报警测试
+            <input hidden="hidden" id="btn" name="btn1" type="radio" value="off" checked="checked" />
+        </div>
+    </div>
+</div>
+<div class="weui-cells">
+    <div class="weui-cell">
+        <div class="weui-cell__bd">
+            <input class="weui-input" type="text" id="code" placeholder="请输入设备code">
+        </div>
+    </div>
+</div>
+<div class="weui-btn-area">
+    <a class="weui-btn weui-btn_primary" href="javascript:" id="showTooltips">确定</a>
+</div>
+@section rsFooter{
+    
+    <script>
+        $("#choose").on("click", function (res) {
+            if ($("#btn").val() == "off") {
+                $("#btn").val("on");
+                $.toptip('你选择了报警测试', 'success')
+            } else {
+                $("#btn").val("off");
+                $.toptip('你选择了离线测试', 'success')
+            }
+        });
+        var $code= $("#code");
+        $("#showTooltips").on("click", function (ress) {
+            $.showLoading();
+            if ($.trim($code.val()).length === 0) {
+                $.toptip('请输入设备code', 'error');
+                $.hideLoading();
+                return;
+            }
+            var offline = $("#btn").val() == "on" ? 0 : 1;
+            wx.getLocation({
+                success: function (res) {
+                    alert('成功:' + JSON.stringify(res));
+                },
+                cancel: function (res) {
+                    alert('拒绝:' + JSON.stringify(res));
+                },
+                fail: function (res) {
+                    alert('失败:' + JSON.stringify(res));
+                },
+                complete: function (res) {
+
+                    alert('complete:'+JSON.stringify(res));
+                }
+            });
+            $.hideLoading();
+            //$.post("/Smoke/SendTest", { id: $.trim($code.val()), offline: offline }, function (res) {
+            //    $.hideLoading();
+            //    $.toast("操作成功", function () { });
+            //}, "json");
+        });
+
+
+        $(function () {
+            $.get("@Url.Action("GetWXjsSdkConfig", "WeiXin")", { curl: location.href.split('#')[0] }, function (re) {
+                if (re.Success) {
+                    var config = JSON.parse(re.Data);
+                    wx.config(config);
+                    // sessionStorage.setItem("IsReady2", "yes");
+                    wx.ready(function () {
+
+                        //console.log("微信接口验证成功");
+                    });
+                    wx.error(function (res) {
+                        //console.log("微信接口验证失败");
+                        //  sessionStorage.setItem("IsReady2", "no");
+                    });
+                } else {
+                    console.log(re.Message);
+                    $.toast("获取微信权限令牌失败，请稍后再试", "forbidden");
+                }
+            }, 'json');
+        });
+
+    </script>
+    }

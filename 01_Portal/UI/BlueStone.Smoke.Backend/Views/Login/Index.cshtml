@@ -1,0 +1,125 @@
+﻿@{
+    Layout = null;
+    string returnUrl = Request.QueryString["ReturnUrl"];
+    if (string.IsNullOrWhiteSpace(returnUrl))
+    {
+        returnUrl = string.Empty;
+    }
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="shortcut icon" href="~/Content/favicon/favicon.ico" type="image/x-icon">
+    <title>烟感平台-登录</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/base")
+    @Styles.Render("~/Content/assets/css/login.css")
+</head>
+<body>
+    <div class="login-header">
+        <div class="wraper">
+            <!--<div class="logo"></div>-->
+            <div class="sys-name">金乘烟感平台</div>
+        </div>
+    </div>
+    <div class="login-main">
+        <div class="wraper">
+            <div class="login-bg animated bounceIn">
+                <img src="~/Content/assets/img/login_img.png" />
+            </div>
+            <div class="login-container animated fadeInDown" id="LoginModel">
+                <div class="loginbox">
+                    <div class="loginbox-title"><i></i>烟感平台</div>
+                    <div class="loginbox-textbox form-group">
+                        <input data-bind="textInput:Data.UserName,event:{keyup:FnKeyUp}" type="text" class="form-control" placeholder="账号" />
+                    </div>
+                    <div class="loginbox-textbox form-group">
+                        <input data-bind="textInput:Data.UserPwd,event:{keyup:FnKeyUp}" type="password" class="form-control" placeholder="密码" />
+                    </div>
+                    <div class="loginbox-textbox verifycode row">
+                        <div class="form-group ">
+                            <input data-bind="textInput:Data.VerifyCode,event:{keyup:FnKeyUp}" type="text" class="form-control" maxlength="5" placeholder="验证码" />
+                        </div>
+                        <img data-bind="click:GetCode,attr:{src:VerifyCodeSrc}" title="点击刷新验证码" />
+                    </div>
+                    <div class="loginbox-forgot form-group has-error">
+                        <a data-bind="click:LostPwd" href="javascript:;">忘记密码？</a>
+                        <small id="tis" class="help-block" style="display:none;">请联系管理员</small>
+                    </div>
+                    <div class="loginbox-submit">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="click:Login">登录</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="login-footer">
+        <span>Copyright © @(DateTime.Now.ToString("yyyy")) 宁海县经济和信息化局. All Rights Reserved</span>
+    </div>
+    <script>
+        var viewModel = {
+            Data: {
+                UserName: ko.observable().extend({
+                    required: { message: '请输入账号' }
+                }),
+                UserPwd: ko.observable().extend({
+                    required: { message: '请输入密码' }
+                }),
+                VerifyCode: ko.observable().extend({
+                    required: { message: '请输入验证码' }
+                })
+            },
+            VerifyCodeSrc: ko.observable('/Login/LoginValidationCode'),
+            Login: function () {
+                var self = this;
+                $("#tis").hide();
+                var errors = ko.validation.group(viewModel.Data);
+                if (errors().length > 0) {
+                    errors.showAllMessages();
+                    return;
+                }
+                var postData = ko.toJS(viewModel.Data);
+                $.ajax({
+                    url: "@Url.Action("Login", "Login")",
+                    type: "POST",
+                    dataType: "json",
+                    data: postData,
+                    success: function (res) {
+                        if (res && res.Success) {
+                           
+                           window.location.href = '/Home/Index';
+                            
+                        } else {
+                            self.GetCode();
+                            $("#tis").text(res.Message).show();
+                        }
+                    },
+                    complete: function () {
+                        $.hideLoading();
+                    }
+                });
+            },
+            GetCode: function () {
+                var src = "/Login/LoginValidationCode?time=" + (new Date()).getTime();
+                viewModel.VerifyCodeSrc(src);
+                viewModel.Data.VerifyCode('');
+                var errors = ko.validation.group(viewModel.Data.VerifyCode);
+                if (errors().length > 0) {
+                    errors.showAllMessages(false);
+                }
+            },
+            FnKeyUp: function (the, e) {
+                if (e.which == 13) {
+                    the.Login();
+                }
+            },
+            LostPwd: function () {
+                $("#tis").text('忘记密码请联系管理员').show();
+            }
+        }
+        ko.applyBindings(viewModel, document.getElementById('LoginModel'));
+    </script>
+</body>
+</html>

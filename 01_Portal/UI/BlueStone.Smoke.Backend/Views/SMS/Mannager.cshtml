@@ -1,0 +1,296 @@
+﻿@model MessageCenter.Entity.MsgTemplate
+@{
+    ViewBag.Title = "消息推送模板维护";
+    var companySysNo = ViewBag.companySysNo;
+}
+
+@section rsHeader
+{
+    <!--ueditor-->
+    <link href="~/Content/assets/ueditor/themes/default/css/ueditor.css" rel="stylesheet" />
+    <script src="~/Content/assets/ueditor/ueditor.config.js"></script>
+    <script src="~/Content/assets/ueditor/ueditor.all.js"></script>
+    <script src="~/Content/assets/ueditor/lang/zh-cn/zh-cn.js"></script>
+
+    <!-- webuploader-->
+    @Styles.Render("~/content/assets/js/uploadify/uploadify.css")
+    @Scripts.Render("~/content/assets/js/uploadify/jquery.uploadify.js")
+}
+<form id="defaultForm" class="form-horizontal">
+    <div class="row grayback form-horizontal" style="margin-bottom:0px; padding-bottom:0px;">
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <label class="col-xs-4 control-label"><span class="red">*</span>消息模板：</label>
+            <div class="col-xs-8">
+                <input id="txtSysNo" type="hidden" name="txtSysNo" data-model="SysNo" maxlength="9" class="form-control " disabled="disabled" value="@Model.SysNo" />
+                <input data-model="CompanySysNo" type="hidden" disabled="disabled" value="@ViewBag.companySysNo" />
+                <select id="selectActionCode" name="selectActionCode" data-model="ActionCode" class="whole-width select2" data-bv-notempty="true" @((Model.SysNo > 0) ? "disabled=\"disabled\"" : "")
+                        data-bv-notempty-message="请选择模板!">
+                    <option value="" selected="selected">请选择</option>
+                    @{
+                        var list = ViewBag.MsgTenantActionList;
+                        if (list != null && list.Count > 0)
+                        {
+                            foreach (var item in list)
+                            {
+                                <option value="@item.SMSTemplateCode" @(Model.ActionCode == item.SMSTemplateCode ? "selected = 'selected'" : "")>@item.SMSTemplateName</option>
+                            }
+                        }
+                    }
+                </select>
+
+            </div>
+        </div>
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <label class="col-xs-4 control-label"><span class="red">*</span>所属类型：</label>
+            <div class="col-xs-8">
+                <select id="selectMsgType" name="selectMsgType" data-model="MsgType" class="whole-width select2" data-bv-notempty="true" @((Model.SysNo > 0) ? "disabled=\"disabled\"" : "")
+                        data-bv-notempty-message="请选择模版所属类型">
+                    <option value="" selected="selected">请选择</option>
+                    @foreach (var item in BlueStone.Utility.EnumHelper.GetDescriptions<MessageCenter.Entity.MsgType>())
+                    {
+                        if ((int)item.Key != -1)
+                        {
+                            <option value="@((int)item.Key)" @(Model.MsgType == item.Key ? "selected = 'selected'" : "")>@item.Value</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <div class="col-xs-8 col-xs-offset-4 control-label text-left">
+                <label>
+                    <input id="checkEnabled" name="Enabled" data-model="Enabled" type="checkbox" class="form-control input-sm" value="@Model.Enabled" @((Model.Enabled == true || Model.SysNo == 0) ? "checked=checked" : "") />
+                    <span class="text cursor-pointer">启用</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="row grayback form-horizontal" style="margin-top:0px; padding-top:0px;">
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <label class="control-label col-xs-4">第三方模版ID：</label>
+            <div class="col-xs-8">
+                <input id="txtExternalTemplateID" value="@Model.ExternalTemplateID" data-model="ExternalTemplateID" class="form-control input-sm" />
+            </div>
+        </div>
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <label class="control-label col-xs-4">最大发送次数(默认1)：</label>
+            <div class="col-xs-8">
+                <input id="LimitCount" value="@Model.LimitCount" data-model="LimitCount" class="form-control input-sm" />
+            </div>
+        </div>
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <label class="control-label col-xs-4">发送频率(默认60秒):</label>
+            <div class="col-xs-8">
+                <input id="SendFrequency" value="@Model.SendFrequency" data-model="SendFrequency" class="form-control input-sm" />
+            </div>
+        </div>
+        @if (Model.SysNo == 0 || Model.MsgType == MessageCenter.Entity.MsgType.WeiXin)
+        {
+            <div id="showurl" class="form-group  col-lg-8 col-sm-6 col-xs-12">
+                <label class="control-label col-xs-4 col-lg-2">微信详情基础地址:</label>
+                <div class="col-xs-8">
+                    <input value="@Model.Url" data-model="Url" class="form-control input-sm" placeholder=" 注意:只需要填写完整的域名地址即可. 例如:http://www.baidu.com" />
+                </div>
+            </div>
+        }
+        @*@if (Model.MsgType != MessageCenter.Entity.MsgType.SMS && Model.MsgType != MessageCenter.Entity.MsgType.WeiXin)
+            {
+                <div style='display:@(ViewBag.MsgTemplateVarList!=null?"":"none")' id="varRow">
+                    <div class="form-group col-md-12">
+                        <div class="form-group col-lg-8 col-sm-12 col-xs-12">
+                            <label class="control-label col-md-2">变量：</label>
+                            <div class="col-sm-10" style="padding-top:7px;" id="varList">
+                                @if (ViewBag.MsgTemplateVarList != null)
+                                {
+                                    foreach (var item in ViewBag.MsgTemplateVarList)
+                                    {
+                                <a href="javascript:void(0)" style="margin:0px 3px" onclick='insertVar("@item.Key")'>@item.Value</a>
+                                    }
+                                <span>&nbsp;&nbsp;&nbsp;(<span style="color:red">注：点击链接即可向"内容"中插入对应变量。</span>)</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12" style="padding:0 !important;">
+                    <div class="form-group col-lg-8 col-sm-12 col-xs-12" id="TemplateContentDiv">
+                        <label class="control-label col-sm-2 col-xs-4 label-add"><span class="red">*</span>内容：</label>
+                        <div class="col-sm-10 col-xs-8 content-add">
+                            <div class="widget-main no-padding" id="TemplateContentEditorPanel">
+                                <script type="text/plain" id="TemplateContentEditor">
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }*@
+                        @* else
+                            { *@
+                        <div class="col-xs-12" style="padding: 0 !important; display: none">
+                            <div class="form-group col-lg-8 col-sm-12 col-xs-12" id="TemplateContentDiv">
+                                <label class="control-label col-sm-2 col-xs-4 label-add"><span class="red">*</span>内容：</label>
+                                <div class="col-sm-10 col-xs-8 content-add">
+                                    <script type="text/plain" id="TemplateContentEditor" style="display:none">
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                        @* }*@
+                    </div>
+                </form>
+
+                <div class="bottomaction">
+                    @if (Model.SysNo > 0)
+                    {
+                        <a href="@Url.Action("Mannager","SMS",new {companysysno= ViewBag.companySysNo })" class="btn btn-sm btn-primary "><i class="fa fa-plus"></i>新建</a>
+                    }
+                    <a id="btnSave" class="btn btn-sm btn-primary submitBtn"><i class="fa fa-check"></i>保存</a>
+                </div>
+
+                @Html.Partial("~/Views/Shared/_ModalPartial.cshtml")
+                @section  scripts{
+                    <script type="text/javascript">
+        var templateEditor = new UE.ui.Editor({ toolbars: [] });
+        var toolbars = [];
+        var PhoneMessage = @((int)MessageCenter.Entity.MsgType.SMS);
+        var WeiXin = @((int)MessageCenter.Entity.MsgType.WeiXin);
+        $(function () {
+            $("#selectEnabled").select2().select2('val', $('#selectEnabled option:eq(0)').val());
+            var content = '@(Html.Raw(string.IsNullOrWhiteSpace(Model.TemplateContent) ? "" : Model.TemplateContent.Replace("'", "\"").Replace("\n", "").Replace("\r", "").Replace("\t", "")))';
+            templateEditor.render("TemplateContentEditor");
+            templateEditor.addListener("ready", function () {
+                templateEditor.setContent(content);
+            });
+        });
+        function insertVar(varstr) {
+            templateEditor.execCommand('insertHtml', varstr);
+        }
+        $(function () {
+            $("#btnSave").click(function () {
+                var selectActionCode = $('#selectActionCode').val();
+                var selectMsgType = $('#selectMsgType').val();
+                //如果选择的类型是wechat或PhoneMessage、
+                if (parseInt(selectMsgType) ===PhoneMessage||parseInt(selectMsgType) ===WeiXin) {
+                    var etid = $.trim($('#txtExternalTemplateID').val())
+                    if (etid.length===0) {
+                        $.showError("请填写第三方模版ID！");
+                        return false;
+                    }
+
+                }else {
+                    var con = templateEditor.getContentTxt();
+                    if (con.length === 0) {
+                        $.showError("请填写模版内容！");
+                        return false;
+                    }
+                }
+                $("#defaultForm").bootstrapValidator('validate');
+            });
+            $("#selectActionCode").on("change", function (e) {
+                templateEditor.setContent('');
+                $("#varRow").hide();
+                $("#varList").html('');
+                if (e.val.length > 0) {
+                    $.ajax({
+                        url: "/SMS/LoadTemplateVar?actionCode=" + e.val,
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        success: function (result) {
+                            if (result.Success) {
+                                var html = "";
+                                if (result.Data != null) {
+                                    for (var key in result.Data) {
+                                        html += '<a href="javascript:void(0)" style="margin:0px 3px" onclick=\'insertVar("' + key + '")\'>' + result.Data[key] + '</a>';
+                                    }
+                                    html += '<span>&nbsp;&nbsp;&nbsp;(<span style="color:red">注：点击链接即可向"内容"中插入对应变量。</span>)</span>';
+                                }
+                                $("#varRow").show();
+                                $("#varList").html(html);
+
+                                //修改显示
+                                var selectActionCode = $('#selectActionCode').val();
+                                var selectMsgType = $('#selectMsgType').val();
+                                //如果选择的类型是wechat或PhoneMessage
+                                if (parseInt(selectMsgType) ===PhoneMessage||parseInt(selectMsgType) ===WeiXin) {
+                                    $('#TemplateContentDiv').hide();
+                                    $('#varRow').hide();
+
+                                } else {
+
+                                    $('#TemplateContentDiv').show();
+                                    $('#varRow').show();
+                                }
+                            }
+                        }
+                    });
+                }
+
+            });
+            $('#selectMsgType').on('change', function (e) {
+                if (parseInt(e.val) ===PhoneMessage||parseInt(e.val) ===WeiXin||e.val.length===0) {
+                    $('#TemplateContentDiv').hide();
+                    $('#varRow').hide();
+                    if (parseInt(e.val) === PhoneMessage) {
+                        $("#showurl").hide();
+                    } else {
+                        $("#showurl").show();
+                    }
+                }
+                else {
+                    $('#TemplateContentDiv').show();
+                    $('#varRow').show();
+                }
+                $('#txtExternalTemplateID').val('');
+                templateEditor.setContent('');
+            })
+            $("#defaultForm").bootstrapValidator().on("success.form.bv", function (e) {
+                var data = $.buildEntity($("#defaultForm"));
+                data.TemplateContent = templateEditor.getContentTxt();
+                var isChecked = $("#checkEnabled").prop("checked");
+                if (isChecked) {
+                    data.Enabled=true;
+                }
+                else {
+                    data.Enabled=false;
+                }
+                $.ajax({
+                    url: "/SMS/Maintain",
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: $.toJSON(data),
+                    success: function (result) {
+                        if (result.Success) {
+                            $.showSuccess(result.Message);
+                            if (result.Code > 0) {
+                                refresh(result.Code);
+                            }
+                        }
+                    }
+                });
+            });
+
+            $("#authenticationContent").on("focusout", "input[type='text']", function () {
+                var isEnable = false;
+                if ($("#authentSysNo").val() <= 0) {
+                    if (!authentValueEmpty()) {
+                        isEnable = true;
+                    }
+                } else {
+                    isEnable = true;
+                }
+                enableAuthentValidators(isEnable);
+            });
+        })
+
+        //刷新编辑页面
+        var refresh = function (sysno) {
+            if (sysno > 0) {
+                window.location.href = "/SMS/Mannager?id=" + sysno +"&companysysno=@ViewBag.companySysNo";
+            } else {
+                window.location.reload();
+            }
+        }
+                    </script>
+                }

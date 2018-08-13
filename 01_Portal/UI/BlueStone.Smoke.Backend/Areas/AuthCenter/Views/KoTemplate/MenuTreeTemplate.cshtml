@@ -1,0 +1,78 @@
+﻿<div class="jstree jstree-1 jstree-default" style="min-height:300px;">
+    <ul class="jstree-container-ul jstree-children">
+        <!-- ko foreach:$root.data -->
+        <li class="jstree-node" data-bind="css:{'jstree-last':$data.isLast && $data.isLast==true,'jstree-leaf':$data.childrens.length==0,'jstree-open':$data.open() ,'jstree-closed':!$data.open()}">
+            <i class="jstree-icon jstree-ocl" data-bind="click:$root.OpenClick.bind($data)"></i>
+            <div class="jstree-div" style="font-size:15px;padding:2px;">
+                <i class="jstree-icon jstree-themeicon"></i>
+                <div class="menu-tree-node">
+                    <span data-bind="text:$data.text"></span>
+                    <button class="btn btn-xs btn-default menu-tree-btn" data-bind="click:$root.addClick.bind($data,$element)" type="button" style="margin-left:2px;">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+                <!-- ko if: $data.options.length>0 -->
+                <table class="table" style="margin-bottom: 1px;">
+                    <tbody>
+                        <tr>
+                            <td data-bind="css:{'jstree-td':$data.open()==true && $data.childrens.length>0}"></td>
+                            <!-- ko foreach: $data.options -->
+                            <td class="menu-tree-node">
+                                <span style="margin-left:5px;font-weight:normal" data-bind="text:$data.text"></span>
+                                <button class="btn btn-xs btn-default menu-tree-btn" data-bind="click:$root.deleteClick.bind($data,$element)" type="button">
+                                    <i class="fa fa-trash-o"></i>
+                                </button>
+                            </td>
+                            <!-- /ko -->
+                            
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- /ko -->
+            </div>
+            <!-- ko if: $data.childrens.length>0 -->
+            <div data-bind='template: "MenuTreeChildrenTemplate"'></div>
+            <!-- /ko -->
+        </li>
+        <!-- /ko -->
+    </ul>
+</div>
+<script id='MenuTreeChildrenTemplate' type='text/html'>
+    <ul class="jstree-children" data-bind="koVisible:$data.open">
+        <!-- ko foreach: $data.childrens -->
+        <li class="jstree-node" data-bind="css:{'jstree-last':$data.isLast && $data.isLast==true,'jstree-leaf':$data.childrens.length==0,'jstree-open':$data.open() ,'jstree-closed':!$data.open()}">
+            <i class="jstree-icon jstree-ocl" data-bind="click:$root.OpenClick.bind($data)"></i>
+            <div class="jstree-div" style="font-size:15px;padding:2px;">
+                <i class="jstree-icon jstree-themeicon"></i>
+                <div class="menu-tree-node">
+                    <span data-bind="text:$data.text"></span>
+                    <button class="btn btn-xs btn-default menu-tree-btn" data-bind="click:$root.addClick.bind($data,$element)" type="button" style="margin-left:2px;">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+                <!-- ko if: $data.options.length>0 -->
+                <table class="table" style="margin-bottom: 1px;">
+                    <tbody>
+                        <tr>
+                            <td data-bind="css:{'jstree-td':$data.open()==true && $data.childrens.length>0}"></td>
+                            <!-- ko foreach: $data.options -->
+                            <td class="menu-tree-node">
+                                <span style="margin-left:5px;font-weight:normal" data-bind="text:$data.text"></span>
+                                <button class="btn btn-xs btn-default menu-tree-btn" data-bind="click:$root.deleteClick.bind($data,$element)" type="button" >
+                                    <i class="fa fa-trash-o"></i>
+                                </button>
+                            </td>
+                            <!-- /ko -->
+
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- /ko -->
+            </div>
+            <!-- ko if: $data.childrens.length>0 -->
+            <div data-bind='template: "MenuTreeChildrenTemplate"'></div>
+            <!-- /ko -->
+        </li>
+        <!-- /ko -->
+    </ul>
+</script>

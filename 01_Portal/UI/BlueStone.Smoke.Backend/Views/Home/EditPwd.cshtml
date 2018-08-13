@@ -1,0 +1,72 @@
+﻿@{
+    ViewBag.NoSubMenu = true;
+    ViewBag.Title = "修改密码";
+}
+@section rsHeader
+{
+
+}
+
+<div class="row grayback form-horizontal">
+    <form id="EidtForm">
+        <div class="row">
+            <div class="form-group col-lg-12 col-sm-12 col-xs-12">
+                <label class="col-sm-2 control-label">原始密码:</label>
+                <div class="col-sm-4">
+                    <input type="password" class="form-control" placeholder="请输入原始密码" data-bv-notEmpty="true" data-model="OldPassWord" id="OldPassWord" name="OldWord" data-bv-notEmpty-message="请输入原始密码" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-lg-12 col-sm-12 col-xs-12">
+                <label class="col-sm-2 control-label">新密码:</label>
+                <div class="col-sm-4">
+                    <input type="password" data-model="newPassWord" name="NewWord1" id="New1" class="form-control"
+                            data-bv-notEmpty="true" data-bv-regexp="true" data-bv-regexp-regexp="^\w{6,20}$" data-bv-regexp-message="6-20位字母、数字、下划线组合"
+                            placeholder="请输入新密码" data-bv-notEmpty-message="请输入新密码" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-lg-12 col-sm-12 col-xs-12">
+                <label class="col-sm-2 control-label">确认密码:</label>
+                <div class="col-sm-4">
+                    <input type="password" data-model="newPassWord" name="NewWord2" id="New2" data-bv-notEmpty="true" class="form-control"
+                            data-bv-regexp="true" data-bv-regexp-regexp="^\w{6,20}$" data-bv-regexp-message="6-20位字母、数字、下划线组合"
+                            placeholder="请再次输入密码" data-bv-notEmpty-message="请输入确认密码" />
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="row">
+        <div class="col-lg-6 col-sm-6 col-xs-6 text-center">
+            <button class="btn btn-primary btn-sm" id="btnSave">确认修改</button>
+        </div>
+    </div>
+        
+</div>
+
+<script>
+    $("#btnSave").click(function () {
+
+        $("#EidtForm").bootstrapValidator('validate');
+    });
+
+    $("#EidtForm").bootstrapValidator().on("success.form.bv", function (e) {
+        var data = $.buildEntity($("#PageForm"));
+        var Old = $("#OldPassWord").val();
+        var new1 = $("#New1").val();
+        var new2 = $("#New2").val();
+        $.ajax({
+            url: "/Home/SavePwd",
+            type: "POST",
+            dataType: "json",
+            data: { OldPassword:Old, new1: new1, new2: new2 },
+            success: function (result) {
+                if (result && result.Success) {
+                    window.location.href = "/";
+                }
+            }
+        });
+    });
+</script>

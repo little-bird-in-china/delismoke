@@ -1,0 +1,38 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model HandleErrorInfo
+
+<div class="error-header"></div>
+<section class="error-container text-center">
+    @if (Model.Exception != null)
+    {
+
+        if (Model.Exception.HelpLink == "BizEx")
+        {
+
+            <h1>业务异常!</h1>
+            <div class="error-divider">
+                <p class="description"> @(Model.Exception.Message)</p>
+                <div class="text-center">
+                    <a href="/Home/Index" class="return-btn"><i class="fa fa-home"></i>主页</a>
+                </div>
+
+            </div>
+        }
+        else
+        {
+            <h1>系统异常!</h1>
+            <div class="error-divider">
+                <p class="description">系统发生异常，已通知管理员处理，请稍后再试</p>
+                <div class="text-center">
+                    <a href="/Home/Index" class="return-btn"><i class="fa fa-home"></i>主页</a>
+                </div>
+
+            </div>
+        }
+
+    }
+
+</section>
+

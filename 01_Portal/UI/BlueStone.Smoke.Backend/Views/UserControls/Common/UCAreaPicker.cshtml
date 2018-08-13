@@ -1,0 +1,34 @@
+﻿@using BlueStone.Smoke.Entity 
+@model BlueStone.Smoke.Backend.Models.PickerParamModel
+@{
+    @Scripts.Render("~/Scripts/Common/area.js")
+    Area area = new Area();
+    int regionSysNo = 0;
+    if (!string.IsNullOrEmpty(Model.SelectValue) && int.TryParse(Model.SelectValue, out regionSysNo))
+    {
+        if (regionSysNo > 0)
+        {
+            area = BlueStone.Smoke.Backend.Facade.CommonService.LoadAreaBySysNo(regionSysNo);
+        }
+    }
+}
+<div id="UCAreaPicker">
+    <select selectvalue="@area.ProvinceSysNo" isselectall="true" id="@(Model.PickerID)_Province" name="@(Model.PickerID)_Province" style="width:33.333333%;float:left;"></select>
+    <select selectvalue="@area.CitySysNo" id="@(Model.PickerID)_City" name="@(Model.PickerID)_City" style="width:33.333333%;float:left;"></select>
+    <select @Model.Validator data-model="@Model.PickerID" selectvalue="@area.RegionSysNo" id="@Model.PickerID" name="@Model.PickerID" style="width:33.333333%;float:left;"></select>
+</div>
+<script type="text/javascript">
+
+    $(function () {
+        var area = new AreaPicker({
+            provinceID: "@(Model.PickerID)_Province",
+            cityID: "@(Model.PickerID)_City",
+            regionID: "@(Model.PickerID)"
+        });
+        $("#UCAreaPicker select").select2();
+    });
+</script>
+
+
+
+

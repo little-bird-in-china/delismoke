@@ -1,0 +1,49 @@
+﻿@using BlueStone.Smoke.Msite.Models;
+@using BlueStone.Smoke.Entity
+@using BlueStone.Utility.Web
+@model List<QR_SmokeDetector>
+
+@{
+    var UserTypeite = UserMgr.ReadUserInfo().UserType;
+    List<QR_SmokeDetector> list = Model;
+}
+@foreach (var item in list)
+{
+    <div class="@(UserTypeite == UserType.Common?"weui-cell_swiped":null)  gu-swipe">
+        <div class="weui-cell__bd cell_position">
+            <a href="/Smoke/DeviceDetails?code=@item.Code">
+                <div class="weui-cell">
+                    @if (item.Status == SmokeDetectorStatus.TestWarning || item.Status == SmokeDetectorStatus.Warning)
+                    {
+                        <div class="weui-cell__bd error" style="padding-right:10px;">
+                            <p>
+                                <span class="heartbit"></span>
+                                <i class="gu-state"></i>@(item.AddressName + item.Position)
+                            </p>
+                        </div>
+                    }
+                    else if (item.Status == SmokeDetectorStatus.Lost || item.Status == SmokeDetectorStatus.OutNet || item.Status == SmokeDetectorStatus.Offline)
+                    {
+                        <div class="weui-cell__bd offLine" style="padding-right:10px;">
+                            <p><i class="gu-state"></i>@(item.AddressName + item.Position)</p>
+                        </div>
+                    }
+                    else if (item.Status == SmokeDetectorStatus.LowPower)
+                    {
+                        <div class="weui-cell__bd warning" style="padding-right:10px;">
+                            <p><i class="gu-state"></i>@(item.AddressName + item.Position)</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="weui-cell__bd normal" style="padding-right:10px;">
+                            <p><i class="gu-state"></i>@(item.AddressName + item.Position)</p>
+                        </div>
+                    }
+                    <div class="weui-cell__ft"><i class="iconfont">&#xe634;</i></div>
+                </div>
+                <p class="weui-media-box__desc gu-list-p" style="color:white"><i class="iconfont" style="margin-right: 2px; font-size: 14px;">&#xe63b;</i>@item.Code</p>
+            </a>
+        </div>
+    </div>
+}

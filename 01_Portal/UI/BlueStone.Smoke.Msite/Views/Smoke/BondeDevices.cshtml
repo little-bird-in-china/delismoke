@@ -1,0 +1,219 @@
+﻿@{ 
+
+    ViewBag.Title = "绑定设备";
+    int autoScan = 0;
+    int.TryParse(Request["AutoScan"], out autoScan);
+}
+@section rsHeader
+{
+    <style type="text/css">
+        .weui-btn_disabled {
+            background-color: #8B8B7A;
+            color:white;
+        }
+            .weui-btn_disabled:active {
+                background-color: #8B8B7A;
+            }
+    </style>
+}
+<div class="gu-form-content">
+    <div class="gu-form-con-bg">
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <i class="iconfont name">&#xe63b;</i>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" id="serId" type="text" placeholder="设备编号" onblur="GetAddre()" onfocus="Inittemp()">
+                </div>
+                <i class="iconfont scanning" onclick="scanQRcode()">&#xe637;</i>
+            </div>
+        </div>
+        <div class="weui-cells weui-cells_form" id="showaddr" style="display:none">
+            <div class="weui-cell">
+                <i class="iconfont address">&#xe638;</i>
+                <div class="weui-cell__bd">
+                    <div  id="address" class="textarea" ></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class='demos-content-padded'>
+    <a href="javascript:;" id='bindSure' class="weui-btn weui-btn_disabled ">确认绑定</a>
+</div>
+
+@section rsFooter{
+    <script>
+        $(function () {
+            $.showLoading();
+            $.get("@Url.Action("GetWXjsSdkConfig", "WeiXin")", { curl: location.href.split('#')[0] }, function (re) {
+                $.hideLoading();
+                if (re.Success) {
+                    var config =JSON.parse(re.Data);
+                    wx.config(config);
+                    wx.ready(function () {
+                        console.log("微信接口验证成功");
+                        if (@autoScan== 1) {
+                            $(".scanning").trigger("click");
+                        }
+                    });
+                    wx.error(function (res) {
+                        console.log("微信接口验证失败");
+                        console.log(res);
+                    });
+                } else {
+                    console.log(re.Message);
+                    $.toast("获取微信权限令牌失败，请稍后再试", "forbidden");
+                }
+            }, 'json');
+        });
+        var $serId = $("#serId");
+        var $address = $("#address");
+        var $showaddr = $("#showaddr");
+        var showAlert = false;
+        function scanQRcode() {
+                  wx.scanQRCode({
+                                needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+                                scanType: ["qrCode", "barCode"], // 可以指定扫二维码还是一维码，默认二者都有
+                                success: function (res) {
+                                    console.log(res);
+                                    $("#bindSure").removeClass("weui-btn_disabled").addClass("weui-btn_primary")
+                                    var result = res.resultStr; // 当needResult 为 1 时，扫码返回的结果
+                                    $.showLoading();
+                                    $.post("@Url.Action("ScanDevicesQR", "Smoke")", { serID: result }, function (re) {
+                                        $.hideLoading();
+                                        if (re.Success) {
+                                            if (re.Code === 1) {
+                                                showAlert = true;
+                                                $.modal({
+                                                    title: '提示',
+                                                    text: re.Message,
+                                                    buttons: [{
+                                                        text: '添加设备',
+                                                        onClick: function () {
+                                                            location.href = "@Url.Action("adddevices","smoke")";
+                                                        }
+                                                    }, {
+                                                            text: '取消',
+                                                            className:'default'
+                                                    }, {
+                                                        text: '绑定管理员',
+                                                        onClick: function () {
+                                                            location.href = "@Url.Action("adminbinding","smoke")";
+                                                        }
+                                                    }]
+                                                });
+                                            }else{
+                                                $("#bindSure").removeClass("weui-btn_disabled").addClass("weui-btn_primary");
+                                                $serId.val(result);
+                                                $address.text(re.Data);
+                                                $showaddr.show();
+                                            }
+                                        } else {
+                                            $("#bindSure").removeClass("weui-btn_primary").addClass("weui-btn_disabled");
+                                            $.toast(re.Message, "forbidden");
+                                        }
+                                    },'json');
+
+                                    console.log(result);
+                                },
+                                fail: function (rr) {
+                                    $.toast("获取微信扫描权限失败,请稍后重试!", "forbidden");
+                                   // alert(JSON.stringify(rr));
+                                }
+                            });
+        }
+        function Inittemp() {
+            showAlert = false;
+        }
+        function GetAddre() {
+            if ($.trim($serId.val()).length > 0) {
+                var result = $.trim($serId.val());
+                $.post("@Url.Action("ScanDevicesQR", "Smoke")",{ serID: result },
+                    function (re) {
+                        if (re.Success) {
+                            if (re.Code === 1) {
+                                showAlert = true;
+                                $.modal({
+                                    title: '提示',
+                                    text: re.Message,
+                                    buttons: [{
+                                        text: '添加设备',
+                                        onClick: function () {
+                                            location.href = "@Url.Action("adddevices","smoke")";
+                                        }
+                                    }, {
+                                        text: '关闭',
+                                        className: 'default'
+                                    }, {
+                                        text: '绑定管理员',
+                                        onClick: function () {
+                                            location.href = "@Url.Action("adminbinding","smoke")";
+                                        }
+                                    }]
+                                });
+                                return;
+                            }
+                            else {
+                                $("#bindSure").removeClass("weui-btn_disabled").addClass("weui-btn_primary");
+                                $serId.val(result);
+                                $address.text(re.Data);
+                                $showaddr.show();
+                            };
+                        } else {
+                            $("#bindSure").removeClass("weui-btn_primary").addClass("weui-btn_disabled");
+                            $address.text("");
+                            $showaddr.hide();
+                            $.toast(re.Message, "forbidden");
+                        }
+                    }, 'json');
+            }
+            else {
+                $("#bindSure").removeClass("weui-btn_primary").addClass("weui-btn_disabled");
+            }
+        }
+        $("#bindSure").on("click", function (even) {
+            if ($(this).hasClass("weui-btn_disabled") && !showAlert) {
+                return false;
+            }
+            var serid = $.trim($serId.val());
+            if (serid.length === 0) {
+                $.toast("请先扫描设备二维码后再绑定", "forbidden");
+                return;
+            }
+            $.showLoading();
+            $.post("@Url.Action("BindingDevicesApi", "Smoke")", { serID: serid }, function (re) {
+                $.hideLoading();
+                if (re.Success) {
+                    if (re.Code === 1) {
+                        $.modal({
+                            title: '提示',
+                            text: re.Message,
+                            buttons: [{
+                                text: '添加设备',
+                                onClick: function () {
+                                    location.href = "@Url.Action("adddevices","smoke")";
+                                }
+                            }, {
+                                text: '关闭',
+                                className: 'default'
+                            }, {
+                                text: '绑定管理员',
+                                onClick: function () {
+                                    location.href = "@Url.Action("adminbinding","smoke")";
+                                }
+                            }]
+                        });
+                        return;
+                    }
+                    $serId.val("");
+                    $address.text("");
+                    $showaddr.hide();
+                    $.toast("操作成功", function () { });
+
+                } else {
+                    $.toast(re.Message, "forbidden");
+                }
+            }, 'json');
+        });
+    </script>
+}

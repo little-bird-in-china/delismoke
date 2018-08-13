@@ -1,0 +1,325 @@
+﻿@using BlueStone.Smoke.Msite.Models;
+@using BlueStone.Smoke.Entity
+@model DeviceListModel
+
+@{
+    var status = ViewBag.status;
+    var UserType = (UserType)ViewBag.UserType;
+    ViewBag.Title = "设备列表";
+    bool hasData = Model != null && Model.DeviceList != null && Model.DeviceList.data != null && Model.DeviceList.data.Count > 0;
+}
+@section rsHeader
+{
+
+    @Scripts.Render("~/Content/wechatweb/libs/jquery/echarts.min.js")
+
+}
+<style>
+    .click_table {
+        color: #4cc932 !important
+    }
+</style>
+@if (hasData)
+{
+    <div class="weui-flex gu-pd" id="top">
+
+        <div class="weui-flex gu-pd">
+            <div class="gu-Chart">
+                <div class="chart-number">
+                    <b>@Model.CountInfo.ALLSmokeCount<i>台</i></b>
+                    <span>烟感设备</span>
+                </div>
+                <div class="chart-bg">
+                    <img src="~/Content/wechatweb/themes/default/img/circular.png">
+                </div>
+                <div id="container" style="height: 100%"></div>
+            </div>
+        </div>
+    </div>
+    @*if (UserType == UserType.Common)
+    {
+        <div class="gu-button weui-flex weui-cells_checkbox">
+            <a href="#" class="weui-flex__item" title="批量解绑">
+                <span id="open" class="on"><i class="iconfont">&#xe639;</i></span>
+                <span id="close" class="close">
+                    <label for="oneCheck">
+                        <input type="checkbox" name="checkbox1" class="weui-check" id="oneCheck" onclick='checkboxall();'>
+                        <i class="weui-icon-checked"></i>
+                    </label>
+                    <em id="btn">批量解绑设备</em>
+                    <i class="iconfont">&#xe62b;</i>
+                </span>
+            </a>
+        </div>
+    }*@
+    @*normal / error / offLine*@
+    <div class="body-bottom-pd" id="deveceItemView">
+        @Html.Partial("~/Views/Smoke/_DeviceItem.cshtml", Model.DeviceList.data)
+    </div> 
+}
+else
+{
+    <div class="deviceNull">
+        <img src="~/Content/wechatweb/themes/default/img/null.png">
+        <div class="alertxt">
+            <span>还未@(UserType==UserType.Installer?"添加":"绑定")任何设备~</span>
+            <span>请扫描条形码@(UserType == UserType.Installer ? "添加" : "绑定")</span>
+        </div>
+        <a class="scanning" href="@(UserType==UserType.Installer? Url.Action("AddDevices", "Smoke",new { AutoScan=1 }) : Url.Action("BondeDevices", "Smoke", new { AutoScan = 1 }))">  
+            扫 描
+        </a>
+    </div>
+
+}
+@section rsFooter{
+
+    <script> 
+        var pageIndex =@(Model.DeviceList.PageIndex);
+        var pageCount=@(Model.DeviceList.recordsTotal/ Model.DeviceList.PageSize);
+        $("#open").click(function () {
+            $("#open").addClass("open-close").removeClass("on");
+            $("#close").addClass("close-open").removeClass("close");
+            $(".gu-button a").height(40 + "px");
+            $(".cell_position").addClass("position");
+        });
+        $("#close>i").click(function () {
+            $("#open").addClass("on").removeClass("open-close");
+            $("#close").addClass("close").removeClass("close-open");
+            $(".gu-button a").height(30 + "px");
+            $(".cell_position").removeClass("position");
+        });
+
+        function checkboxall() {
+            var boxList = $("input[name='checkboxType']");
+            if ($("#oneCheck")[0].checked) {
+            for (var i = 0; i < boxList.length; i++) {
+                boxList[i].checked = true
+                }
+            } else {
+                for (var i = 0; i < boxList.length; i++) {
+                    boxList[i].checked = false;
+                    }
+                }
+
+            }
+            function itemCheck() {
+            $("#oneCheck")[0].checked = false
+        }
+
+        $("#btn").click(function () {
+                    var checklist = $("input[name='checkboxType']");
+                    var checkedList = [];
+                    for (var i = 0; i < checklist.length; i++) {
+                        if (checklist[i].checked) {
+                checkedList.push(checklist[i].value)
+                        }
+        };
+        if (checkedList.length == 0) {
+                $.toast("请选择要解绑的设备！", "forbidden");
+            return;
+        };
+        relieve(checkedList);
+    })
+        $(".weui-flex__item").click(function () {
+            $(".weui-flex__item").removeClass("on");
+            $(this).addClass("on");
+
+    })
+        $(document).scroll(function () { 
+            var scrollTop = $(this).scrollTop();     //滑过的文档高度
+            var scrollHeight = $(this).height();      //文档高度
+            var windowHeight = window.innerHeight;  //浏览器窗口高度
+            if (scrollTop + windowHeight == scrollHeight && pageIndex < pageCount) {
+                var data = { 
+                    uiStatus: "@status",
+                    PageIndex: pageIndex+1
+                }
+                $.ajax({
+                    url: "/Smoke/QueryDeviceList",
+                    type: "POST",
+                    dataType: "html",
+                    data: data,
+                    success: function (r) {
+                        pageIndex = pageIndex + 1;
+                            $("#deveceItemView").append(r)
+                    }
+                })
+            }
+        });
+
+        function itemRelieve(code) {
+            var codes = [];
+            codes.push(code);
+            relieve(codes);
+        }
+
+        function relieve(datalist) {
+            if (datalist.length == 0 || typeof (datalist) == "undefined") {
+                $.toast("请选择要解绑的设备！", "forbidden");
+                return;
+            };
+            var data = {
+                "codes": datalist,
+            }
+            $.confirm("您确定解绑设备吗?", "提示", function () {
+                $.ajax({
+                    url: "/Smoke/RelieveDetector",
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+                    traditional: true,
+                    success: function (r) {
+                        if (r.Success) {
+                            $.toast("操作成功", function () {
+                                console.log('close');
+                                location.reload()
+                            });
+                        } else {
+                            $.toast(r.Message, "forbidden");
+                        }
+                    }
+                })
+            }, function () {
+                //取消操作
+            });
+
+
+        }
+
+        $(function () {
+            ////分页查询
+            //var topH = 101;
+            ////初始化iscroll高度
+            //$('#deviceList').height($(window).height() - topH);
+            ////初始化滑动对象
+            //var catepro_iscroll = new IScroll('#deviceList', {
+            //    probeType: 3,
+            //    mouseWheel: true,
+            //    click: true,
+            //    scrollbars: false,
+            //    resizeScrollbars: false
+            //});
+            //var handle = 0; //初始为0，无状态；1表示下拉，2表示上拉
+            //catepro_iscroll.on('scroll', function () {
+            //    if (this.y > 5) {
+            //        handle = 1;
+            //    } else if (this.y < (this.maxScrollY - 5)) {
+            //        handle = 2;
+            //    };
+            //});
+            //catepro_iscroll.on("scrollEnd", function () {
+            //    if (handle === 2 && pageIndex < pageCount) {
+            //        QueryPage();
+            //    }
+            //    handle = 0;
+            //    catepro_iscroll.refresh();
+            //});
+        });
+        function QueryPage() {
+            var data = {
+                pageIndex: pageIndex + 1,
+                uiStatus: "@status"
+            }
+            $.ajax({
+                type: 'post',
+                url: '/Smoke/QueryDeviceList',
+                dataType: "html",
+                data: data,
+                success: function (data) {
+                    pageIndex++;
+                    if (data.length <= 10) {
+                        $("#EndTip").show();
+                    } else {
+                        $('#deveceItemView').append(data);
+                    }
+                }
+            });
+        }
+        if ("@hasData.ToString().ToLower()" == "true") {
+            var dom = document.getElementById("container");
+            var myChart = echarts.init(dom);
+            var charData = [];
+            if (@Model.CountInfo.OnlineCount> 0) {
+                charData.push({
+                    value: @Model.CountInfo.OnlineCount,
+                    name: '正常',
+                    itemStyle: {
+                        color: '#19eb37'
+                    }
+                });
+            }
+            if (@Model.CountInfo.OfflineCount> 0) {
+                charData.push({
+                    value: @Model.CountInfo.OfflineCount,
+                    name: '离线',
+                    itemStyle: {
+                        color: '#ccc'
+                    }
+                });
+            }
+            if (@Model.CountInfo.LowPowerCount> 0) {
+                charData.push({
+                    value: @Model.CountInfo.LowPowerCount,
+                    name: '低电量',
+                    itemStyle: {
+                        color: 'rgb(255,217,94)'
+                    }
+                });
+            }
+            if (@Model.CountInfo.WarningCount> 0) {
+                charData.push({
+                    value: @Model.CountInfo.WarningCount,
+                    name: '报警',
+                    itemStyle: {
+                        color: '#f24748'
+                    }
+                });
+            }
+
+            var app = {};
+            option = null;
+            app.title = '嵌套环形图';
+
+            option = {
+                series: [{
+                    name: '访问来源',
+                    type: 'pie',
+                    radius: ['64%', '70%'],
+                    startAngle: -45,
+                    stillShowZeroSum: true,
+                    minAngle: 45,
+                    avoidLabelOverlap: true,
+                    itemStyle: {
+                        borderColor: '#232e3a',
+                        borderWidth: 2
+                    },
+                    label: {
+                        normal: {
+                            formatter: '{a|{c}台\n{b}}',
+                            borderWidth: 1,
+                            //							borderColor: function(params) {
+                            //								return '#999';
+                            //							},
+                            //							borderRadius: 4,
+                            padding: [0, 0],
+                            rich: {
+                                a: {
+                                    fontSize: 12,
+                                    lineHeight: 14,
+                                    align: 'center',
+                                    borderRadius: 4
+                                }
+                            }
+                        }
+                    },
+                    data: charData
+                }]
+            };;
+            if (option && typeof option === "object") {
+                myChart.setOption(option, true);
+            }
+        }
+
+
+    </script>
+}

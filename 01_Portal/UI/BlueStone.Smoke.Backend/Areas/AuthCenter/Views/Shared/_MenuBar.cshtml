@@ -1,0 +1,84 @@
+﻿@using BlueStone.Utility.Web
+@using BlueStone.Utility.Web.Auth.Models
+@{
+    List<AuthMenuModel> menuItemList = AuthMgr.GetUserMenuList();
+
+    var topLevelMenuList = menuItemList.Where(item => string.IsNullOrWhiteSpace(item.ParentSysNo) || string.Compare(item.ParentSysNo, "0") == 0).ToList();
+
+    foreach (var item in topLevelMenuList)
+    {
+        foreach (var item2 in menuItemList.FindAll(f => f.ParentSysNo.Trim() == item.SysNo))
+        {
+            if (string.Compare(Request.Url.AbsolutePath, item2.LinkPath, true) == 0)
+            {
+                item2.IsActive = true;
+                var topMenu = menuItemList.FindAll(p => p.SysNo == item2.ParentSysNo).First();
+                topMenu.IsOpen = true;
+                topMenu.IsActive = true;
+            }
+        }
+    }
+
+    BlueStone.Utility.Web.Auth.Models.AuthUserModel CurrUser = ViewBag.CurrUser as BlueStone.Utility.Web.Auth.Models.AuthUserModel;
+
+}
+
+<aside class="main-sidebar">
+    <section class="sidebar">
+        <!-- Sidebar user panel -->
+        <div class="user-panel">
+            <div class="pull-left image">
+                <img src="~/Areas/AuthCenter/Content/adminlet/img/user2-160x160.jpg" class="img-circle" alt="User Image">
+            </div>
+            <div class="pull-left info">
+                <p>@CurrUser.UserDisplayName</p>
+                <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+            </div>
+        </div>
+        <!-- search form -->
+        @*<form action="#" class="sidebar-form">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Search...">
+                <span class="input-group-btn">
+                    <button type="submit" name="search" id="search-btn" class="btn btn-flat">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </span>
+            </div>
+        </form>*@
+        <!-- /.search form -->
+        <ul class="sidebar-menu">
+            <li class="header">MAIN NAVIGATION</li>
+
+            @for (int i = 0; i < topLevelMenuList.Count(); i++)
+            {
+                var topLevelMenu = topLevelMenuList[i];
+                var childrenLevelMenu = menuItemList.FindAll(x => x.ParentSysNo == topLevelMenu.SysNo);
+                <li class="treeview @(topLevelMenu.IsActive?"active":string.Empty)">
+                    <a href="@(string.IsNullOrWhiteSpace(topLevelMenu.LinkPath)? "javascript:;":topLevelMenu.LinkPath) ">
+                        <i class="@topLevelMenu.IconStyle"></i> <span>@topLevelMenu.MenuName</span>
+                        @if (childrenLevelMenu.Count > 0)
+                        {
+                            <span class="pull-right-container">
+                                <i class="fa fa-angle-left pull-right"></i>
+                            </span>
+                        }
+                    </a>
+                    @if (childrenLevelMenu.Count > 0)
+                    {
+                        <ul class="treeview-menu">
+                            @for (int j = 0; j < childrenLevelMenu.Count; j++)
+                            {
+                                <li @(childrenLevelMenu[j].IsActive ? "class=active" : string.Empty) @(childrenLevelMenu[j].IsDisplay == "1" ? "" : "style=display:none")>
+                                    <a href="@(string.IsNullOrWhiteSpace(childrenLevelMenu[j].LinkPath)?"javascript:;":childrenLevelMenu[j].LinkPath)">
+                                        <i class="fa fa-circle-o"></i>@childrenLevelMenu[j].MenuName
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </li>
+            }
+        </ul>
+    </section>
+</aside>

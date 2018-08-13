@@ -1,0 +1,456 @@
+﻿@using BlueStone.Smoke.Backend.App_Start
+@using BlueStone.Utility.Web
+@{
+    ViewBag.Title = "功能列表";
+}
+
+@section rsHeader{
+}
+
+@section rsContent{
+    <section class="content">
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <h3 class="box-title">基本信息</h3>
+                <div class="box-tools pull-right">
+                    <button class="btn btn-box-tool" type="button" data-widget="collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+
+                <div class="row" style="margin-bottom:20px; display:none">
+                    <div class="col-xs-8 col-sm-6 col-md-4 col-lg-4">
+                        <select class="form-control" id="Current-Application">
+                            @{
+                                var allApps = BlueStone.Smoke.Service.AuthServiceLocal.LoadAllSystemApplication();
+                                foreach (var item in allApps)
+                                {
+                                    <option value="@(item.ApplicationID)"  @(item.ApplicationID==BlueStone.Smoke.Entity.ConstValue.ApplicationID ? "selected=selected":"")>@item.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row" id="mtree">
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" id="menuTree" style="min-height:600px">
+                            @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/FunctionPermissionTreeTemplate.cshtml")
+                        </div>
+                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" id="edit_form" style="position:absolute;right: 10px;">
+                        @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/EditForm.cshtml")
+                    </div>
+                      
+                    <div  class="col-xs-12 col-sm-6 col-md-6 col-lg-6" style="position:absolute;right: 10px;" id="pertree" >
+                       
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="control_panel" style="display:none">
+                             <label id="name" ></label>
+                            @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/JsonControlTemplate.cshtml")
+                        </div>
+
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="permission_form" style="display:none">
+                            @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/EditForm.cshtml")
+                        </div>
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="result_table" style="display:none">
+                            @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/DataTableTemplate.cshtml")
+                        </div>
+                    </div>
+                     
+                   
+                </div>
+
+            </div>
+            <div class="box-footer">
+            </div>
+        </div>
+
+    </section>
+
+}
+
+@section rsFooter{
+    <script>
+
+        $(document).ready(function () {
+            var defaultpertreetop = $("#pertree").css("top");
+            var defaultTopVal = $("#edit_form").css("top");
+            var menuYloc = $("#mtree").offset().top;
+            $(window).scroll(function () {
+                if ($(window).scrollTop() > menuYloc) {
+                    var offsetTop = $(window).scrollTop() + "px";
+                    $("#pertree").animate({ top: offsetTop }, { duration: 200, queue: false });
+                    $("#edit_form").animate({ top: offsetTop }, { duration: 200, queue: false });
+                } else if ($(window).scrollTop() < menuYloc) {
+                    $("#edit_form").animate({ top: defaultTopVal }, { duration: 200, queue: false });
+                    $("#pertree").animate({ top: defaultpertreetop }, { duration: 200, queue: false });
+                }
+            });
+        });
+
+
+
+        var HasAuth_Permission_SaveSysPermission = '@(AuthMgr.HasAuth(FunctionKeys.Permission_SaveSysPermission) ?"true":"false")' == 'true';
+        var HasAuth_Permission_DeleteSysPermission = '@(AuthMgr.HasAuth(FunctionKeys.Permission_DeleteSysPermission) ?"true":"false")' == 'true';
+
+        if (window.sessionStorage.ApplicationID != undefined && window.sessionStorage.ApplicationID !== null) {
+            $('#Current-Application').val(window.sessionStorage.ApplicationID);
+        };
+        var tree = new KOTree('menuTree', '@Url.Action("LoadFunctions", "Permission")');
+
+        //编辑form表单
+        var form = new KOForm('edit_form', tree);
+        form.SetButtons({
+            SaveBtn: {
+                actionUrl: '@Url.Action("SaveFunction", "Permission")',
+                text: '保存',
+                callBack: function (result) {
+                    $.showSuccess('保存成功!');
+                    tree.ReLoad(bulidSearchQuery());
+                    form.Reset();
+                }
+            }
+        });
+        form.SetControlGroups([
+        {
+            cText: '父级编号:',
+            cName: 'ParentSysNo',
+            cVisible: false,
+            cDefault: 0
+        }, {
+            cText: 'AppKey:',
+            cName: 'ApplicationID',
+            cVisible: false,
+            cDefault: function () {
+                return $('#Current-Application').val();
+            }
+        }, {
+            cText: '系统编号:',
+            cName: 'SysNo',
+            cVisible: false,
+            cDefault: 0
+        }, {
+            cText: '父级名称:',
+            cName: 'ParentName',
+            cDisabled: true
+        }, {
+            cText: '功能名称:',
+            cName: 'FunctionName',
+            cRule: {
+                required: { message: "请输入名称" },
+                pattern: { params: /^(?![<\x22]+)/, message: "含有不能识别的符号！" }
+            }
+        }, {
+            cText: '排序:',
+            cName: 'SortIndex',
+            cDefault: 0,
+            cRule: {
+                number: { message: "请输入数字" },
+                required: { message: "请输入排序" }
+            },
+            cRule: {
+                required: { message: "请输入正整数" },
+                pattern: {
+                    params: /^\d+$/,
+                    message: "请输入正整数！!"
+                }
+            },
+        }, {
+            cText: '状态:',
+            cName: 'CommonStatus',
+            cDefault: 1,
+            cType: 'radio',
+            cRadioButtuns: [
+                {
+                    text: '有效',
+                    value: 1
+                },
+                {
+                    text: '无效',
+                    value: 0
+                }
+            ]
+        }, {
+            cText: '备注:',
+            cName: 'Memo',
+            cType: 'area',
+            cAreaSize: {
+                cols: 10,
+                rows: 3
+            }
+        }]);
+
+
+        var Perform = new KOForm('permission_form');
+         Perform.SetButtons({
+            SaveBtn: {
+                actionUrl: '@Url.Action("SaveSysPermission", "Permission")',
+                text: '保存',
+                callBack: function (result) {
+                    $.showSuccess('保存成功!');
+                    per_f.hide();
+                    table.ReLoad(bulidSearchQuery(selectData));
+                }
+             }
+        });
+         Perform.SetControlGroups([
+             {
+                 cText: '系统编号:',
+                 cName: 'SysNo',
+                 cVisible: false,
+                 cDefault: 0
+             }, {
+                 cText: 'AppKey:',
+                 cName: 'ApplicationID',
+                 cVisible: false,
+                 cDefault: function () {
+                     return $('#Current-Application').val();
+                 }
+             }, {
+                 cText: '所属功能:',
+                 cName: 'FunctionName',
+                 cVisible: true,
+                 cDisabled: true,
+                 cDefault: function () {
+                     return bulidSearchQuery(selectData).FunctionName;
+                 }
+
+             }, {
+                 cText: '功能编号:',
+                 cName: 'FunctionSysNo',
+                 cVisible: false,
+                 cDefault: function () {
+                     return bulidSearchQuery(selectData).FunctionSysNo;
+                 }
+
+             }, {
+                 cText: '功能编码:',
+                 cName: 'FunctionSysCode',
+                 cVisible: false,
+                 cDefault: function () {
+                     return bulidSearchQuery(selectData).FunctionSysCode;
+                 }
+
+             }, {
+                 cText: '权限名称:',
+                 cName: 'PermissionName',
+                 cRule: {
+                     required: { message: "请输入权限名称" }
+                 }
+             }, {
+                 cText: '权限Key:',
+                 cName: 'PermissionKey',
+                 cRule: {
+                     required: { message: "请输入权限Key" }
+                 }
+             }, {
+                 cText: '状态:',
+                 cName: 'CommonStatus',
+                 cDefault: 1,
+                 cType: 'radio',
+                 cRadioButtuns: [
+                     {
+                         text: '有效',
+                         value: 1
+                     },
+                     {
+                         text: '无效',
+                         value: 0
+                     }
+                 ]
+             }, {
+                 cText: '备注:',
+                 cName: 'Memo',
+                 cType: 'area',
+                 cAreaSize: {
+                     cols: 10,
+                     rows: 3
+                 }
+             }]);
+
+
+         var table = new KODataTable('result_table', 'Query');
+        table.SetTableColumns([
+        {
+            cText: '权限名称',
+            cName: 'PermissionName'
+        }, {
+            cText: '权限Key',
+            cName: 'PermissionKey'
+        }, {
+            cText: '状态',
+            cName: 'CommonStatusStr'
+        }, {
+            cText: '备注',
+            cName: 'Memo'
+        }, {
+            cText: '操作',
+            cType: 'html',
+            cRender: function (row, rowindex) {
+                var result = '';
+                if (HasAuth_Permission_SaveSysPermission) {
+                    result += '<button class="btn btn-mini btn-primary" onclick="EditPermission(' + rowindex + ')"><i class="icon-pencil icon-white"></i>编辑</button>';
+                }
+                return result;
+            }
+        }]);
+
+
+
+
+         var ed_f = $('#edit_form');
+         var cot_p = $('#control_panel');
+         var per_f = $('#permission_form');
+         var re_t = $('#result_table');
+         var isFirst = true;
+         //创建,启用,禁用,删除
+         var control = new KOControl('control_panel', Perform, table);
+         control.SetButtons({
+             CreateBtn: {
+                 visible: HasAuth_Permission_SaveSysPermission,
+                 callBack: function (Perform, table) {
+                     if (bulidSearchQuery().FunctionSysNo != null) {
+                         if (isFirst) {
+                             per_f.show(750);
+                         } else {
+                             per_f.hide(500);
+                         }
+                         isFirst = !isFirst;
+                         Perform.Reset();
+
+                         Perform.Toggle();
+                     } else {
+                         $.showWarning('创建前请先选择功能!');
+                     }
+                 }
+             },
+             ActiveBtn: {
+                 visible: HasAuth_Permission_SaveSysPermission,
+                 actionUrl: 'ActiveSysPermission',
+                 callBack: function (Perform, table) {
+                     per_f.hide(500);
+                     table.ReLoad(bulidSearchQuery(selectData));
+                 }
+             },
+             DeActiveBtn: {
+                 visible: HasAuth_Permission_SaveSysPermission,
+                 actionUrl: 'DeActiveSysPermission',
+                 callBack: function (Perform, table) {
+                     per_f.hide(500);
+                     table.ReLoad(bulidSearchQuery(selectData));
+                 }
+             },
+             DeleteBtn: {
+                 visible: HasAuth_Permission_DeleteSysPermission,
+                 actionUrl: 'DeleteSysPermission',
+                 callBack: function (Perform, table) {
+                     per_f.hide(500);
+                     table.ReLoad(bulidSearchQuery(selectData));
+                 }
+             }
+         });
+
+
+
+        //设置编辑
+        tree.EditClick = function (element, currentData, event) {
+            ed_f.show();
+            cot_p.hide();
+            per_f.hide();
+            re_t.hide();
+
+            var data = currentData.data;
+            if (currentData.ParentObj != null) {
+                data.ParentName = currentData.ParentObj.text;
+            }
+            form.SetData(data);
+        }
+        tree.AddClick = function (element, currentData, event) {
+            ed_f.show();
+            cot_p.hide();
+            per_f.hide();
+            re_t.hide();
+            var menu = {};
+            menu.ParentSysNo = currentData.id;
+            menu.ParentName = currentData.text;
+            form.SetData(menu);
+        }
+        tree.DeleteClick = function (element, currentData, event) {
+            ed_f.show();
+            cot_p.hide();
+            per_f.hide();
+            re_t.hide();
+            $.confirm('确定要删除功能' + currentData.text, function (res) {
+                if (!res) {
+                    return;
+                }
+                $.ajax({
+                    url: "DeleteFunction",
+                    type: "POST",
+                    dataType: "json",
+                    data: { data: currentData.id },
+                    success: function (result) {
+                        if (result.Success) {
+                            $.showSuccess('删除成功!');
+                            tree.ReLoad(bulidSearchQuery(currentData.data));
+                            if (currentData.id == form.GetData().SysNo) {
+                                form.Reset();
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        var selectData = null;
+        tree.PermissionClick = function (element, currentData, event) {
+            selectData = null;
+            ed_f.hide();
+            per_f.hide();
+            cot_p.show();
+            re_t.show();
+            $("#name").text(currentData.data.FunctionName+"：");
+            table.ReLoad(bulidSearchQuery(currentData.data));
+            selectData = currentData.data;
+        }
+        tree.ReLoad(bulidSearchQuery());
+
+        function EditPermission(rowindex) {
+            Perform.Reset();
+            var rowdata = table.GetRowByIndex(rowindex);
+            per_f.show(750);
+            Perform.SetData(rowdata);
+            Perform.Show();
+        }
+
+
+        $('#Current-Application').on("change", function () {
+            window.sessionStorage.ApplicationID = $('#Current-Application').val();
+            form.Reset();
+            Perform.Reset();
+            ed_f.show();
+            cot_p.hide();
+            per_f.hide()
+            re_t.hide();
+            tree.ReLoad(bulidSearchQuery());
+        });
+
+        function bulidSearchQuery(data) {
+            var sys = 0;
+            var functionname = "";
+            var function_syscode = null;
+            if (data !== undefined && data !== 0 && data !== null) {
+                 sys = data.SysNo;
+                 functionname = data.FunctionName;
+                 function_syscode = data.SysCode;
+            }
+            return {
+                FunctionName: functionname,
+                FunctionSysCode: function_syscode,
+                FunctionSysNo: sys,
+                ApplicationID: $('#Current-Application').val()
+            }
+        }
+
+    </script>
+}

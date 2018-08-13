@@ -1,0 +1,135 @@
+﻿
+@model List<SmokeDetector>
+@{
+
+}
+<style type="text/css">
+    span.onlineCircle {
+        width: 15px;
+        height: 15px;
+        display: inline-block;
+        background-color: green;
+        border: 1px green solid;
+        border-radius: 100%;
+        margin-right: 5px;
+    }
+
+    span.offlineCircle {
+        width: 15px;
+        height: 15px;
+        display: inline-block;
+        border: 1px darkgray solid;
+        border-radius: 100%;
+        margin-right: 5px;
+        background-color: darkgray;
+    }
+
+    span.warnCircle {
+        width: 15px;
+        height: 15px;
+        display: inline-block;
+        background-color: red;
+        border: 1px red solid;
+        border-radius: 100%;
+        margin-right: 5px;
+        background-color: red;
+    }
+
+    span.lowPowerCircle {
+        width: 15px;
+        height: 15px;
+        display: inline-block;
+        background-color: yellow;
+        border: 1px yellow solid;
+        border-radius: 100%;
+        margin-right: 5px;
+        background-color: yellow;
+    }
+
+    .addpattern {
+        border: solid 1px #F2F2F2;
+        width: 100%;
+        text-align: center;
+    }
+
+        .addpattern td, .addpattern th {
+            border: solid 1px #D9D9D9;
+            padding: 5px;
+            text-align: center;
+        }
+
+            .addpattern td input {
+                text-align: center;
+                width: 80px;
+            }
+
+            .addpattern td select {
+                height: 28px;
+                padding: 4px 6px;
+                width: 90px;
+            }
+
+    .modal-lg {
+        width: 60%
+    }
+</style>
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">×</button>
+    <h4 class="modal-title">绑定设备列表</h4>
+</div>
+<div class="modal-body">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>设备编号</th>
+                <th>设备位置</th>
+                <th>ONENET编号</th>
+                <th>安装人员</th>
+                <th>安装时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr class="row_topiccategory">
+                    <td>
+                        @{
+                            if (item.UIStatus == UISmokeDetectorStatus.OffLine)
+                            {
+                                <span class='offlineCircle' title='离线'></span>
+                            }
+                            else if (item.UIStatus == UISmokeDetectorStatus.FireWarning)
+                            {
+                                <img src='/Content/assets/img/warning.gif' style='margin-left:-5px;' title='报警' />
+                            }
+                            else if (item.UIStatus == UISmokeDetectorStatus.LowPowerWarning)
+                            {
+                                <span class='lowPowerCircle' title='低电量报警'></span>
+                            }
+                            else
+                            {
+                                <span class='onlineCircle' title='在线'></span>
+                            }
+                            @item.Code
+                        }
+                    </td>
+                    <td>
+                        @(item.Position == null ? item.AddressName : item.AddressName + item.Position)
+                    </td>
+                    <td>
+                        @item.DeviceId
+                    </td>
+                    <td>
+                        @item.InstallerName
+                    </td>
+                    <td>
+                        @item.InstalledTimeStr
+                    </td>
+                </tr>
+                            }
+        </tbody>
+    </table>
+</div>
+<div class="modal-footer text-center">
+    <button  type="button" data-dismiss="modal" class="btn btn-sm  btn-primary"><i class="fa fa-times"></i>关闭</button>
+</div>

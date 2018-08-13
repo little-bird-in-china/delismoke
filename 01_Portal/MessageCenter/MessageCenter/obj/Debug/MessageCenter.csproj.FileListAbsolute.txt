@@ -1,0 +1,16 @@
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\MessageCenter.dll.config
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\MessageCenter.dll
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\MessageCenter.pdb
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\BlueStone.Utility.DataAccess.dll
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\BlueStone.Utility.dll
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\CCPRestSDK.dll
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\MessegeCenter.Entity.dll
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\Microsoft.QualityTools.Testing.Fakes.dll
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\Newtonsoft.Json.dll
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\MySql.Data.dll
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\MessegeCenter.Entity.pdb
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\bin\Debug\zh-Hans\Microsoft.QualityTools.Testing.Fakes.resources.dll
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\obj\Debug\MessageCenter.csprojResolveAssemblyReference.cache
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\obj\Debug\MessageCenter.csproj.CoreCompileInputs.cache
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\obj\Debug\MessageCenter.dll
+H:\My projects\smoke\代码\MessageCenter\MessageCenter\obj\Debug\MessageCenter.pdb

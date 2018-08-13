@@ -1,0 +1,90 @@
+﻿
+@{
+    Layout = null;
+}
+<div id="modalDiv" class="modal fade bs-modal-lg" style="z-index:1041" data-keyboard="false" data-backdrop="static" role="basic" aria-hidden="true">
+    @* <div class="clearfix">
+        </div>
+        <div class="page-loading page-loading-boxed">
+            <img src="~/Resources/media/image/loading-spinner-grey.gif" alt="loading" />
+            <span>&nbsp;&nbsp;Loading... </span>
+        </div>*@
+
+    @{
+        var isSmall = false;
+        if (Model != null)
+        {
+            var type = Model.GetType();
+            if (type.Name == "ModalModel")
+            {
+                isSmall = Model.IsSmall;
+            }
+        }
+
+    }
+
+    <div class="modal-dialog @if (!isSmall) {@Html.Raw("modal-lg")}">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var __modalDialog = null;
+    var __modalIsLoadData = false;
+    var __modalIsReload = true;
+    $(function () {
+        __modalDialog = $("#modalDiv").modal({
+            show: false
+        })
+        //初始模态窗口
+        __modalDialog.on("shown.bs.modal", function (e) {
+            if (__modalIsLoadData == true && !__modalIsReload) return;
+            __modalIsLoadData = true;
+            var modalData = getModalData();
+            $.ajax({
+                type: modalData.type,
+                data: modalData.data,
+                url: modalData.url,
+                dataType: "html",
+                success: function (data) {
+                    $("#modalDiv").find(".modal-content").html(data);
+                }
+            });
+        });
+        if (__modalIsReload) {
+            __modalDialog.on("hide.bs.modal", function (e) {
+                $("#modalDiv").find(".modal-content").html("");
+            });
+        }
+    });
+
+    //显示模态窗口url地址 callBack回调函数
+    function showModal(url, callBack, isReload) {
+        if (isReload == false) {
+            __modalIsReload = false;
+        }
+        __modalDialog = $("#modalDiv").data("ModalData", {
+            "type": "GET",
+            "url": url,
+            "callBack": callBack
+        });
+        __modalDialog.modal("show");
+    }
+    //隐藏模态窗口,data回传数据
+    function hideModal(data) {
+        __modalDialog.modal('hide')
+        callBack(data);
+    }
+    //获取模态窗口data
+    function getModalData() {
+        return $("#modalDiv").data("ModalData");
+    }
+    //回调函数
+    function callBack(data) {
+        var modalData = getModalData();
+        if (modalData && modalData.callBack && $.type(modalData.callBack) === "function") {
+            modalData.callBack(data);
+        }
+    }
+</script>

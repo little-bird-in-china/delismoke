@@ -1,0 +1,72 @@
+﻿@{
+    string controller = ViewContext.RouteData.Values["controller"].ToString().ToLower();
+    string action = ViewContext.RouteData.Values["action"].ToString().ToLower();
+    Func<string, string, string> MenuClassActive = (controllerStr, actionstr) =>
+    {
+        if (string.Equals(controllerStr, controller, StringComparison.InvariantCultureIgnoreCase)
+        && string.Equals(actionstr, action, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return "weui-bar__item--on";
+        }
+        return "";
+    };
+    AppUserInfo curentUser = UserMgr.ReadUserInfo() ?? new AppUserInfo();
+}
+@if (Model)
+{
+    <div class="weui-tabbar">
+        <a href="@Url.Action("DeviceList","Smoke")" class="weui-tabbar__item @MenuClassActive("Smoke", "DeviceList")">
+            <div class="weui-tabbar__icon">
+                <i class="iconfont">&#xe63d;</i>
+            </div>
+            <p class="weui-tabbar__label">设备列表</p>
+        </a>
+        @*<input type="hidden" id="switchFlag" value="@isbonde" />*@
+
+        @if (curentUser.UserType == UserType.Installer)
+        {
+            <a href="@Url.Action("AddDevices","Smoke")"  class="weui-tabbar__item @MenuClassActive("Smoke", "AddDevices")">
+                <div class="weui-tabbar__icon">
+                    <i class="iconfont">&#xe63a;</i>
+                </div>
+                <p class="weui-tabbar__label">添加设备</p>
+            </a>
+        }
+        else
+        {
+            <a href="@Url.Action("BondeDevices","Smoke")" class="weui-tabbar__item @MenuClassActive("Smoke", "BondeDevices")">
+                <div class="weui-tabbar__icon">
+                    <i class="iconfont">&#xe63a;</i>
+                </div>
+                <p class="weui-tabbar__label">绑定设备</p>
+            </a>
+        }
+
+
+        <a href="@Url.Action("Notice","Smoke")" class="weui-tabbar__item @MenuClassActive("Smoke", "Notice")">
+            @*<span class="weui-badge" style="position: absolute;top: -.2em;right: 2em;"></span>*@
+            <div class="weui-tabbar__icon">
+                <i class="iconfont">&#xe62e;</i>
+            </div>
+            <p class="weui-tabbar__label">通知</p>
+        </a>
+        <a href="@Url.Action("UserInfo","Smoke")" class="weui-tabbar__item @MenuClassActive("Smoke", "UserInfo")">
+            <div class="weui-tabbar__icon">
+                <i class="iconfont">&#xe62a;</i>
+            </div>
+            <p class="weui-tabbar__label">我的</p>
+        </a>
+    </div>
+    @*<script>
+            var issbonde =@(isbonde.ToString().ToLower());
+            function switchOpeation(){
+            if (issbonde) {
+                window.location.href = "/Smoke/AddDevices";
+
+            } else {
+                window.location.href = "/Smoke/BondeDevices";
+            }
+        }
+    </script>*@
+}
+

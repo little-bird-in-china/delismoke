@@ -1,0 +1,115 @@
+﻿.gu_breadcrumbs {
+    width: 100%;
+    height: 56px;
+    top: 0;
+    left: 0;
+    position: relative;
+    background-color: #272936;
+    background: linear-gradient(#303440, #232633);
+}
+
+.deli_logo {
+    padding-left: 10px;
+    padding-top: 15px;
+    float: left;
+}
+
+.header_setUp {
+    float: right;
+}
+
+    .header_setUp > .setUp_icon {
+        width: 56px;
+        height: 56px;
+        display: inline-block;
+        text-align: center;
+        line-height: 65px;
+        float: right;
+        cursor: pointer;
+        position: relative;
+    }
+    /*.header_setUp>.setUp_icon:hover{
+	background-color: #313440;
+}*/
+    .header_setUp > .sidebar:hover::before {
+        animation: enlarge5 2s ease-out;
+        -moz-animation: enlarge5 2s ease-out;
+        -moz-animation-iteration-count: infinite;
+        -o-animation: enlarge5 2s ease-out;
+        -o-animation-iteration-count: infinite;
+        -webkit-animation: enlarge5 2s ease-out;
+        -ms-animation: enlarge5 2s ease-out;
+        -webkit-animation-iteration-count: infinite;
+        animation-iteration-count: infinite;
+    }
+
+.setUp_icon > .dropdown-menu {
+    min-width: 100px;
+    background-color: rgba(49,52,64,.85);
+    position: absolute;
+    top: 62px;
+    right: 0;
+    left: auto;
+    cursor: default;
+    display: none;
+    line-height: 20px;
+    border: 1px solid #313440;
+    box-shadow: 3px 0 7px rgba(39,41,54,.15);
+}
+
+    .setUp_icon > .dropdown-menu.on {
+        display: block;
+    }
+
+    .setUp_icon > .dropdown-menu:before {
+        display: inline-block;
+        position: absolute;
+        width: 0;
+        height: 0;
+        vertical-align: middle;
+        content: "";
+        top: -7px;
+        right: 10px;
+        color: #30333f;
+        border-bottom: .4em solid;
+        border-right: .4em solid transparent;
+        border-left: .4em solid transparent;
+    }
+
+    .setUp_icon > .dropdown-menu > a {
+        color: #989db2;
+        padding: 10px 15px;
+        font-size: 14px;
+        display: block;
+    }
+
+        .setUp_icon > .dropdown-menu > a:hover {
+            background-color: #272936;
+            color: #575c71;
+        }
+
+.header_setUp > .sidebar:before {
+    width: 23px;
+    height: 23px;
+    content: '';
+    display: block;
+    margin-top: 16px;
+    margin-left: 16px;
+    background: url(../img/setUp.png) no-repeat;
+}
+
+.share:before {
+    width: 23px;
+    height: 23px;
+    content: '';
+    display: block;
+    margin-top: 16px;
+    margin-left: 16px;
+    background: url(../img/share.png) no-repeat;
+}
+
+.dropdown-menu > .share_pic {
+    width: 140px;
+    height: 140px;
+    margin: 15px;
+}

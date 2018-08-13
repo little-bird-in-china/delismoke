@@ -1,0 +1,21 @@
+﻿.jstree-td{
+    background-image: url("32px.png");
+    background-position: -296px -4px;
+    background-repeat: repeat-y;
+    padding-left: 4px !important;
+    width:8px;
+
+}
+
+
+.jstree-div{
+    line-height: 24px;
+    color: inherit;
+    display: inline-block;
+    margin: 0;
+    padding: 0 4px 0 1px;
+    vertical-align: top;
+    white-space:normal;
+    font-size:12px;
+    font-weight:normal;
+}

@@ -1,0 +1,155 @@
+﻿@using BlueStone.Utility.Web
+@using BlueStone.Utility.Web.Auth.Models
+@{
+    string rawUrl = Request.RawUrl.ToLower();
+    List<AuthMenuModel> menuItemList = AuthMgr.GetUserMenuList();
+    List<AuthMenuModel> breadcrumbs = new List<AuthMenuModel>();
+    var locatedMenuItem = menuItemList.Find(item =>  rawUrl.Equals(item.LinkPath.ToLower()));
+    if(locatedMenuItem==null)
+    {
+        var tlist = menuItemList.FindAll(item => !string.IsNullOrWhiteSpace(item.LinkPath) && rawUrl.StartsWith(item.LinkPath.ToLower()));
+        tlist.Sort((i1, i2) => i2.LinkPath.Length - i1.LinkPath.Length);
+        locatedMenuItem = tlist.Count>0? tlist[0]:null;
+    }
+    Func<string, AuthMenuModel, string> getBreadCrumbs = null;
+    var index = 0;
+    getBreadCrumbs = (breadCrumbs, menu) =>
+    {
+        if (menu == null) return "";
+
+        if (index == 0 || string.IsNullOrWhiteSpace(menu.LinkPath))
+        {
+            breadCrumbs = string.Format("<li><span>{0}</span></li>", menu.MenuName) + breadCrumbs;
+        }
+        else
+        {
+            breadCrumbs = string.Format("<li><a href='{0}'>{1}</a></li>", Url.Content("~" + menu.LinkPath), menu.MenuName) + breadCrumbs;
+        }
+
+        index++;
+        if (menuItemList.Exists(p => p.SysNo == menu.ParentSysNo))
+        {
+            return getBreadCrumbs(breadCrumbs, menuItemList.Where(p => p.SysNo == menu.ParentSysNo).First());
+        }
+        return breadCrumbs;
+    };
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="shortcut icon" href="~/Content/favicon/favicon.ico" type="image/x-icon">
+    <title>烟感平台服务中心后台管理系统-@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/base")
+    @Scripts.Render("~/Content/assets/zTree/jquery.ztree.core.js")
+    @Styles.Render("~/Content/assets/zTree/zTreeStyle.css")
+    <script type="text/javascript">
+        var GlobalDefine = {
+            //Image服务器地址
+            ImageUploadServerDomain: "@System.Web.Configuration.WebConfigurationManager.AppSettings["ImageUploadServerDomain"]",
+            ImageStorageServerDomain: "@System.Web.Configuration.WebConfigurationManager.AppSettings["ImageStorageServerDomain"]",
+            GetImageUploadServerDomain: function (appName) {
+               return GlobalDefine.ImageUploadServerDomain + "/Handler/FileUploadHandler.ashx?appName=" + appName;
+            },
+            NoneImageUrl: "@System.Web.Configuration.WebConfigurationManager.AppSettings["DefaultImageUrl"]"
+        }
+        var GlobalPageBody = document.getElementById('PageBody');
+        var __htmlEncodeEle = null;
+        var encodeHtml = function (content) {
+            if (__htmlEncodeEle == null) __htmlEncodeEle = document.createElement("div");
+            __htmlEncodeEle.innerText = content;
+            return __htmlEncodeEle.innerHTML;
+        }
+    </script>
+    @RenderSection("rsHeader", required: false)
+    <style>
+        .breadcrumb {
+            background-color: transparent;
+        }
+
+
+
+
+    </style>
+    
+</head>
+<body>
+
+    <!-- Main Container -->
+    <div class="main-container container-fluid" style="padding-left: 0px;">
+        <!-- Page Container -->
+        <div class="page-container">
+            @Html.Partial("_Menu")
+            <!-- Page Content -->
+            <div class="page-content @(ViewBag.NoSubMenu != null && ViewBag.NoSubMenu ? "nosubmenu" : "")">
+                <!-- Page Breadcrumb -->
+                <div class="page-breadcrumbs">
+            <ul class="breadcrumb">
+
+                <li>
+                    <i class="fa fa-home"></i>
+                    <a href="@Url.Content("~/Home/Index")">主页</a>
+                </li>
+
+                @{
+                    @MvcHtmlString.Create(getBreadCrumbs(string.Empty, locatedMenuItem));
+                }
+            </ul>
+        </div>
+
+
+                @*<div class="gu_breadcrumbs clearfix">
+                    <div class="deli_logo">
+                        <a href="#"><img src="~/Content/assets/img/deli.png"></a>
+                    </div>
+                    <div class="header_setUp">
+                        <span href="#" id="sidebar" class="sidebar setUp_icon">
+                            <div class="dropdown-menu">
+                                <a href="javascript:;" class="cancel">注销</a>
+                            </div>
+                        </span>
+                        <span href="#" class="share setUp_icon">
+                            <div class="dropdown-menu">
+                                <img src="~/Content/assets/img/timg.jpg" class="share_pic">
+                            </div>
+                        </span>
+                    </div>
+                </div>*@
+
+
+
+
+
+                <!-- /Page Breadcrumb -->
+                <!-- Page Body -->
+                <div class="page-body" id="PageBody">
+                    @RenderBody()
+                    <!-- /Page Body -->
+                    <div class="Btn-box">
+                        @RenderSection("bottomBox", required: false)
+                    </div>
+                </div>
+                <!-- /Page Content -->
+            </div>
+            <!-- /Page Container -->
+        </div>
+        <!-- Main Container -->
+    </div>
+    @RenderSection("scripts", required: false)
+
+</body>
+</html>
+
+<script>
+    $(".setUp_icon").click(function () {
+        if ($(this).find(".dropdown-menu").hasClass("on")) {
+            $(this).find(".dropdown-menu").removeClass("on");
+            $(this).siblings().find(".dropdown-menu").removeClass("on");
+        } else {
+            $(this).find(".dropdown-menu").addClass("on").siblings;
+            $(this).siblings().find(".dropdown-menu").removeClass("on");
+        }
+    });
+</script>

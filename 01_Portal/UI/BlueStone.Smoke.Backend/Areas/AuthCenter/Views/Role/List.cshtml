@@ -1,0 +1,182 @@
+﻿@{
+    ViewBag.Title = "角色列表";
+}
+@section rsHeader{
+}
+@section rsContent{
+    <section class="content">
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <h3 class="box-title">查询条件</h3>
+                <div class="box-tools pull-right">
+                    <button class="btn btn-box-tool" type="button" data-widget="collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form class="form-horizontal">
+                <div class="box-body">
+                    <div class="row">
+
+                        <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4">
+                            <div class="form-group">
+                                <label class="col-sm-3 col-sm-offset-1 control-label col-xs-offset-1 col-xs-3" for="Search_RoleName">角色名：</label>
+                                <div class="col-sm-7 col-xs-7">
+                                    <input id="Search_RoleName" class="form-control" placeholder="角色名" type="text">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4">
+                            <div class="form-group">
+                                <label class="col-sm-3 col-sm-offset-1 control-label col-xs-offset-1 col-xs-3" for="Search_CommonStatus">状态：</label>
+                                <div class="col-sm-7 col-xs-7">
+                                    <select class="form-control select2" style="width: 100%;" id="Search_CommonStatus">
+                                        <option value="">所有</option>
+                                        @{
+                                            var commonStatus = BlueStone.Utility.EnumHelper.GetDescriptions<BlueStone.Smoke.Entity.CommonStatus>();
+                                            commonStatus.Remove(BlueStone.Smoke.Entity.CommonStatus.Deleted);
+                                            foreach (var item in commonStatus)
+                                            {
+                                                <option value="@((int)item.Key)">@item.Value</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4" style="display:none">
+                            <div class="form-group">
+                                <label class="col-sm-3 col-sm-offset-1 control-label col-xs-offset-1 col-xs-3" for="Search_ApplicationID">系统：</label>
+                                <div class="col-sm-7 col-xs-7">
+                                    <select class="form-control select2" style="width: 100%;" id="Search_ApplicationID">
+                                        <option value="">所有</option>
+                                        @{
+                                            var allApps = BlueStone.Smoke.Service.AuthServiceLocal.LoadAllSystemApplication();
+                                            foreach (var item in allApps)
+                                            {
+                                                <option value="@(item.ApplicationID)"  @(item.ApplicationID== BlueStone.Smoke.Entity.ConstValue.ApplicationID ? "selected=selected":"")>@item.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="box-footer">
+                    <div class="row">
+                        <div class="btn-group col-md-offset-5 col-lg-offset-5 col-sm-offset-4 col-xs-offset-4">
+                            <button class="btn btn-info btn-sm" type="button" id="SearchBtn"><i class="fa fa-search"></i> 查询</button>
+                            <button class="btn btn-default btn-sm"  id="reset" type="reset"><i class="fa fa-edit"></i> 重置</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+
+        <div class="box">
+            <div class="box-header">
+                <h3 class="box-title">查询结果</h3>
+                <div class="box-tools">
+                    <div class="btn-group">
+                        <a class="btn btn-primary btn-sm" href="@Url.Action("RoleEdit","Role")" target="_blank">
+                            <i class="fa fa-plus-square"></i> 添加
+                        </a>
+                        <button class="btn btn-danger btn-sm" type="button" id="remove-roles">
+                            <i class="fa fa-minus-square"></i> 删除
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="box-body" id="result_table">
+                @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/DataTableTemplate.cshtml")
+            </div>
+        </div>
+
+    </section>
+
+}
+
+@section rsFooter{
+    <script>
+        var RoleList_PageMgr = function ()
+        {
+            var editPageUrl = '@Url.Action("RoleEdit", "Role")';
+            var queryUrl = '@Url.Action("Query", "Role")';
+            var deleteUserUrl = '@Url.Action("DeleteRoles", "Role")';
+
+            var table = new KODataTable('result_table', queryUrl);
+            table.SetTableColumns([
+            { cText: '编号', cName: 'SysNo', cSortable: true, cWidth: '5%', cSortName: 'r.SysNo' },
+            {
+                cText: '角色名称', cName: 'RoleName', cWidth: '20%', cType: 'html',
+                cRender: function (row, rowindex) {
+                    var result = '<a href="' + editPageUrl + '?RoleSysNo=' + row.SysNo + '" target="_blank"  >' + row.RoleName + '</a>';
+                    return result;
+                }
+            }, 
+            { cText: '状态', cName: 'CommonStatusStr', cWidth: '10%' },
+            { cText: '备注', cName: 'Memo', cWidth: '55%' }
+            ]);
+            table.ReLoad(bulidSearchQuery());
+
+            function bulidSearchQuery() {
+                return {
+                    RoleName: $('#Search_RoleName').val(),
+                    CommonStatus: $('#Search_CommonStatus').val(),
+                    ApplicationID: $('#Search_ApplicationID').val()
+                }
+            }
+
+            $('#SearchBtn').on('click', function (event) {
+                table.ReLoad(bulidSearchQuery());
+            });
+
+
+            $("#reset").on('click', function (event) {
+                $("#Search_RoleName").val("");
+                $("#Search_CommonStatus").val("");
+                $("#Search_CommonStatus").select2();
+                $("#Search_ApplicationID").val("");
+                $("#Search_ApplicationID").select2();
+                table.ReLoad();
+            });
+
+            $('#remove-roles').on('click', function (event) {
+                var datas = table.GetSelectRows();
+                if (datas.length == 0) {
+                    $.alert("请选择数据！");
+                    return;
+                }
+                var sysnos = [];
+                for (var i = 0; i < datas.length; i++) {
+                    sysnos.push(datas[i].SysNo);
+                }
+                $.confirm('确定要删除所选择的所有项', function (res) {
+                    if (!res) {
+                        return;
+                    }
+                    $.ajax({
+                        url: deleteUserUrl,
+                        type: "POST",
+                        dataType: "json",
+                        data: { data: JSON.stringify(sysnos) },
+                        success: function (result) {
+                            if (result.Success) {
+                                $.showSuccess('删除成功!');
+                                table.ReLoad(bulidSearchQuery());
+                            }
+                        }
+                    });
+                });
+            });
+            return {
+            }
+        }();
+
+    </script>
+
+}

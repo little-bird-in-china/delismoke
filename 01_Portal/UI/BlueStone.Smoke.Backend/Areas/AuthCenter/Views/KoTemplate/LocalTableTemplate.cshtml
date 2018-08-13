@@ -1,0 +1,32 @@
+﻿<table class="table table-hover">
+    <thead>
+        <tr role="row">
+            <th class="checkbox-td" data-bind="visible:showCheckBox"><div class="icheckbox_square-blue" data-bind="css:{'checked':allSelected},click:$root.allCheckBoxClick" /></th>
+            <!-- ko foreach: columns -->
+            <th style="min-width:30px;text-align:center;" data-bind="text:cText,visible:cVisible,style:{width:cWidth}"></th>
+            <!-- /ko -->
+        </tr>
+    </thead>
+    <tbody>
+        <!-- ko foreach: data -->
+        <tr data-bind="visible:$root.showCheckBox,click:$root.rowClick">
+            <td class="checkbox-td">
+                <div class="icheckbox_square-blue" data-bind="css:{'checked':_isSelected}" />
+            </td>
+            <!-- ko foreach: cells -->
+            <!--ko if : cType=='data'-->
+            <td style="text-align:center" data-bind="text:cellData"></td>
+            <!-- /ko -->
+            <!--ko if : cType=='html'-->
+            <td data-bind="html:cHtml"></td>
+            <!-- /ko -->
+            <!-- /ko -->
+        </tr>
+        <!-- /ko -->
+        <!--ko if : data().length==0 -->
+        <tr>
+            <td style="text-align:center" data-bind="attr:{colspan:columns().length+1}">没有任何数据 !</td>
+        </tr>
+        <!-- /ko -->
+    </tbody>
+</table>

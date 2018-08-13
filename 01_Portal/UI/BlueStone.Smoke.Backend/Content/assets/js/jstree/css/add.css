@@ -1,0 +1,20 @@
+﻿.icon-add {
+    background-image: url(add32px.png) !important;
+    width:18px;
+    height:18px;
+    line-height:18px;
+    display:inline-block;
+    background-repeat:no-repeat; 
+}
+.icon-add-default {
+    background-position: -6px -5px !important;
+}
+.icon-add-building {
+    background-position: -36px -5px !important;
+}
+.icon-add-floor {
+    background-position: -66px -5px !important;
+}
+.icon-add-room {
+    background-position: -96px -5px !important;
+}

@@ -1,0 +1,171 @@
+﻿@using BlueStone.Smoke.Msite.Models
+@model NoticeModel
+@{
+    ViewBag.Title = "历史通知";
+    var warningList = new List<MessageCenter.Entity.QR_Message>();
+    var offLineList = new List<MessageCenter.Entity.QR_Message>();
+    var otherList = new List<MessageCenter.Entity.QR_Message>();
+    if (Model != null && Model.MassageList.Count > 0)
+    {
+        foreach (var item in Model.MassageList)
+        {
+            if (item.ActionCode == "DevicesWarning")
+            {
+                warningList.Add(item);
+            }
+            else if (item.ActionCode == "DevicesOffLine")
+            {
+                offLineList.Add(item);
+            }
+            else
+            {
+                otherList.Add(item);
+            }
+        }
+    }
+}
+@section rsHeader
+{
+
+}
+<div class="weui-cells weui-cells_form">
+    <div class="weui-cell">
+        <div class="weui-cell__hd"><i class="iconfont">&#xe62f;</i></div>
+        <div class="weui-cell__bd">
+            <input class="weui-input" style="font-size: 14px" id="date-start" type="text" placeholder="开始时间" value="@Model.BeginInDateStr">
+        </div>
+        <label class="weui-date-label">至</label>
+        <div class="weui-cell__hd"><i class="iconfont">&#xe62f;</i></div>
+        <div class="weui-cell__bd">
+            <input class="weui-input" id="date-end" style="font-size: 14px" type="text" placeholder="结束时间" value="@Model.EndInDateStr">
+        </div>
+        <div class="date-search">
+            <i class="iconfont">&#xe63c;</i>
+            <label id="searchBtn">搜索</label>
+        </div>
+    </div>
+</div>
+<div class="weui-tab">
+    <div class="weui-navbar">
+        <a class="weui-navbar__item weui-bar__item--on" href="#tab1">
+            报警通知
+        </a>
+        <a class="weui-navbar__item" href="#tab2">
+            离线通知
+        </a>
+        <a class="weui-navbar__item" href="#tab3">
+            其他
+        </a>
+    </div>
+    <div class="weui-tab__bd">
+        <div id="tab1" class="weui-tab__bd-item weui-tab__bd-item--active">
+            @if (warningList.Count > 0)
+            {
+                foreach (var item in warningList)
+                {
+                    <div class="weui-panel">
+                        <div class="weui-panel__bd">
+                            <div class="weui-media-box weui-media-box_text">
+                                <h4 class="weui-media-box__title">@(item.Code + "报警")</h4>
+                                <p class="weui-media-box__desc">@(item.AddressName + item.Position)</p>
+                                <ul class="weui-media-box__info">
+                                    <li class="weui-media-box__info__meta">@item.InDateStr</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="weui-panel">
+                    <div class="weui-panel__bd">
+                        <div class="weui-media-box weui-media-box_text">
+                            <h4 class="weui-media-box__title" style="text-align:center">暂无内容</h4>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div id="tab2" class="weui-tab__bd-item">
+            @if (offLineList.Count > 0)
+            {
+                foreach (var item in offLineList)
+                {
+                    <div class="weui-panel">
+                        <div class="weui-panel__bd">
+                            <div class="weui-media-box weui-media-box_text">
+                                <h4 class="weui-media-box__title">@(item.Code + "离线")</h4>
+                                <p class="weui-media-box__desc">@(item.AddressName + item.Position)</p>
+                                <ul class="weui-media-box__info">
+                                    <li class="weui-media-box__info__meta">@item.InDateStr</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="weui-panel">
+                    <div class="weui-panel__bd">
+                        <div class="weui-media-box weui-media-box_text">
+                            <h4 class="weui-media-box__title" style="text-align:center">暂无内容</h4>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div id="tab3" class="weui-tab__bd-item">
+            @if (otherList.Count > 0)
+            {
+                foreach (var item in otherList)
+                {
+                    <div class="weui-panel">
+                        <div class="weui-panel__bd">
+                            <div class="weui-media-box weui-media-box_text">
+                                <h4 class="weui-media-box__title">@("设备"+item.Code + "绑定用户")</h4>
+                                <p class="weui-media-box__desc">@(item.AddressName + item.Position)</p>
+                                <ul class="weui-media-box__info">
+                                    <li class="weui-media-box__info__meta">@item.InDateStr</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="weui-panel">
+                    <div class="weui-panel__bd">
+                        <div class="weui-media-box weui-media-box_text">
+                            <h4 class="weui-media-box__title" style="text-align:center">暂无内容</h4>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+@section rsFooter{
+    <script type="text/javascript">
+        $("#date-start").calendar({
+            onChange: function (p, values, displayValues) {
+                console.log(values, displayValues);
+            }
+        });
+        $("#date-end").calendar({
+            onChange: function (p, values, displayValues) {
+                console.log(values, displayValues);
+            }
+        });
+        $("#searchBtn").click(function () {
+
+            var BeginInDate = $("#date-start").val();
+            var EndInDate = $("#date-end").val();
+            window.location = "/Smoke/Notice?BeginInDate=" + BeginInDate + "&EndInDate=" + EndInDate
+
+        })
+    </script>
+}

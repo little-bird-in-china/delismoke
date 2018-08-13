@@ -1,0 +1,56 @@
+﻿<div class="jstree jstree-1 jstree-default" style="min-height:300px;">
+    <ul class="jstree-container-ul jstree-children">
+        <!-- ko foreach:$root.data -->
+        <li class="jstree-node" data-bind="css:{'jstree-last':$data.isLast && $data.isLast==true,'jstree-leaf':$data.childrens.length==0,'jstree-open':$data.open() ,'jstree-closed':!$data.open()}">
+            <i class="jstree-icon jstree-ocl" data-bind="click:$root.OpenClick.bind($data)"></i>
+            <div class="jstree-div" style="font-size:15px;padding:2px;">
+                <i class="jstree-icon jstree-themeicon"></i>
+                <div class="menu-tree-node">
+                    <span data-bind="text:$data.text"></span>
+                    <button class="btn btn-xs btn-default menu-tree-btn" data-bind="click:$root.editClick.bind($data,$element)" type="button" style="margin-left:2px;">
+                        <i class="fa fa-edit" title="修改"></i>
+                    </button>
+                    <button class="btn btn-xs btn-default menu-tree-btn" data-bind="click:$root.addClick.bind($data,$element)" type="button" style="margin-left:2px;">
+                        <i class="fa fa-plus" title="新增"></i>
+                    </button>
+
+                    <button class="btn btn-xs btn-default menu-tree-btn" data-bind="click:$root.deleteClick.bind($data,$element)" type="button" style="margin-left:2px;">
+                        <i class="fa fa-trash-o" title="删除"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- ko if: $data.childrens.length>0 -->
+            <div data-bind='template: "MenuTreeChildrenTemplate"'></div>
+            <!-- /ko -->
+        </li>
+        <!-- /ko -->
+    </ul>
+</div>
+<script id='MenuTreeChildrenTemplate' type='text/html'>
+    <ul class="jstree-children" data-bind="koVisible:$data.open">
+        <!-- ko foreach: $data.childrens -->
+        <li class="jstree-node" data-bind="css:{'jstree-last':$data.isLast && $data.isLast==true,'jstree-leaf':$data.childrens.length==0,'jstree-open':$data.open() ,'jstree-closed':!$data.open()}">
+            <i class="jstree-icon jstree-ocl" data-bind="click:$root.OpenClick.bind($data)"></i>
+            <div class="jstree-div" style="font-size:15px;padding:2px;">
+                <i class="jstree-icon jstree-themeicon"></i>
+                <div class="menu-tree-node">
+                    <span data-bind="text:$data.text"></span>
+                    <button class="btn btn-xs btn-default menu-tree-btn" data-bind="click:$root.editClick.bind($data,$element)" type="button" style="margin-left:2px;">
+                        <i class="fa fa-edit" title="修改"></i>
+                    </button>
+                    <button class="btn btn-xs btn-default menu-tree-btn" data-bind="click:$root.addClick.bind($data,$element)" type="button" style="margin-left:2px;">
+                        <i class="fa fa-plus" title="新增"></i>
+                    </button>
+
+                    <button class="btn btn-xs btn-default menu-tree-btn" data-bind="click:$root.deleteClick.bind($data,$element)" type="button" style="margin-left:2px;">
+                        <i class="fa fa-trash-o" title="删除"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- ko if: $data.childrens.length>0 -->
+            <div data-bind='template: "MenuTreeChildrenTemplate"'></div>
+            <!-- /ko -->
+        </li>
+        <!-- /ko -->
+    </ul>
+</script>

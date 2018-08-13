@@ -1,0 +1,1119 @@
+﻿@model int
+@{
+    ViewBag.Title = "文件管理";
+    var curUser = ViewBag.CurrUser as CurrentUser;
+}
+
+@section rsHeader
+{
+    <link href="~/Content/assets/ZoomMarker-master/css/zoom-marker.css" rel="stylesheet" />
+    <link href="~/Content/assets/ZoomMarker-master/css/easy-loading.css" rel="stylesheet" />
+    @Styles.Render("~/Content/jstree")
+    @Scripts.Render("~/bundles/jstree")
+    <style type="text/css">
+        body {
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -khtml-user-select: none;
+            user-select: none;
+        }
+        .page-body {
+            height:94vh;
+            overflow-x:hidden;
+        }
+        .addpattern {
+            border: solid 1px #F2F2F2;
+            width: 100%;
+            text-align: center;
+        }
+
+            .addpattern td, .addpattern th {
+                border: solid 1px #D9D9D9;
+                padding: 5px;
+                text-align: center;
+            }
+
+                .addpattern td input {
+                    text-align: center;
+                    width: 80px;
+                }
+
+                .addpattern td select {
+                    height: 28px;
+                    padding: 4px 6px;
+                    width: 90px;
+                }
+
+
+        /*.label-img {
+            display:block;
+            margin-bottom:5px;
+            text-align:left;
+        }*/
+
+        .widgetbtn {
+            display: block;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        .page-content {
+            background-color: #f3f3f3
+        }
+        .zoom-marker-div {
+            padding-top:0;
+        }
+
+        .zoom-marker-img {
+            /*height:600px;*/
+            width: 100%;
+            margin-left:0;
+        }
+
+        .btns {
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40.88%;
+            height: 32px;
+            border-radius: 3px;
+            font-size: 15px;
+        }
+
+
+        /* 烟感列表开始 */
+
+        .smokelistdiv {
+            width: 100%;
+            /*height:100%;*/
+            /*overflow-y: scroll;*/
+            display: flex;
+            flex-direction: column;
+            /*align-items: center;*/
+            border: solid 1px #ececec;
+            padding-bottom: 10px;
+            /*margin-top: 45px;*/
+            /*max-height: 600px;*/
+            overflow-x:hidden;
+            max-height:100%;
+        }
+
+        .smokelistcontainer {
+            display: flex;
+            flex-direction: column;
+            width: 110%;
+            /*height:99%;*/
+            overflow-y: scroll;
+            /*max-height: 700px;*/
+        }
+
+        .smokelistcontainerheight {
+            max-height: 100%;
+        }
+
+        /*@@media (max-height: 1080px) {
+            .smokelistcontainerheight {
+                max-height: 100%;
+            }
+        }
+
+        @@media (max-height: 900px) {
+            .smokelistcontainerheight {
+                max-height: 580px;
+            }
+        }*/
+
+
+        .smokelistheader {
+            margin-top: 19px;
+            margin-left:41%;
+            margin-bottom: 10px;
+            font-size: 15px;
+            color: #999999;
+        }
+
+        .smokediv {
+            margin-left:3%;
+            height: 28px;
+            width: 91.83%;
+            display: flex;
+            align-items: center;
+            border-radius: 3px;
+            border: solid 1px #ececec;
+            box-shadow: 0px 4px 6px 0px rgba(195, 195, 195, 0.2);
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        .smokeimg {
+            width: 20px;
+            height: 20px;
+            margin-left: 11px;
+        }
+
+        .smokename {
+            margin-left: 8px;
+        }
+
+        .zoom-marker-hover-dialog {
+            border-width: 1px;
+            padding: 0 10px 0 10px;
+            background-color: white;
+            color: black;
+            border-radius: 5px;
+        }
+
+    </style>
+}
+
+
+
+@if (Model == 0)
+{
+    <div class="row" style="padding:20px;height:200px;">
+        客户信息不存在可能已经被删除，请刷新页面重试。
+    </div>
+}
+else
+{
+
+    <div class="row" style="height:90%">
+        <div class="col-sm-3 col-xs-12" style="width:17.89%;height:100%">
+
+            <div class="widget" style="height:100%;overflow-y:hidden;overflow-x:hidden;">
+                <div class="widget-body" id="tree_content" style="height:100%;overflow-y:scroll;overflow-x:auto; width:110%;padding-right:10%">
+
+                    <div id="treeIsEmptyContainer" data-tag="0" style="display:none;">
+                        <span>还没有地址信息,请先</span>
+                        <a class="btn btn-sm btn-primary " href="@(curUser.CompanySysNo>0 ? Url.RouteUrl("SmokeList"): Url.RouteUrl("SmokeListManager",new { CompanySysNo =Model }))">维护地址</a>
+                    </div>
+                    <div id="treeAddress">
+                    </div>
+                </div>
+            </div>
+
+
+            @*<div style="height:645px;overflow-y:hidden;overflow-x:hidden;">
+
+            </div>*@
+
+        </div>
+        <div class="col-sm-7 col-xs-12" style="width:64.89%;height:100%; display:flex;flex-direction:column; margin-left:1.17%">
+            <div class="row grayback form-group " style="background-color:white; padding-left:0;margin:0;padding:0; height:48px;flex-shrink: 0;">
+                <div id="" style="margin-top:1%;">
+                    <span style="color: #999999;">当前位置：</span> 
+                    <span id="addressPath" style="color: #3c8dbc;">(请在左侧选择地址)</span>
+                </div>
+            </div>
+            <div style="height:94%">
+                <div id="zoom-marker-div" class="zoom-marker-div" style="background-color: #f9f9f9;height:100%">
+                    <center id="zoom-marker-none" style="margin-top:13%;"> 
+                        <div style="display:flex; width:625px;height:416px; flex-direction:column;  align-items:center; 	background-color: #ffffff;border-radius: 3px;border:solid 2px #e7e7e7;">
+                            <img style="margin-top:102px;width:83px;height:73px" src="~/Content/assets/img/smokemap/addpic.png" />
+                            @*<button style="margin-top:31px; width:180px;height:46px;	font-size: 16px;color: #ffffff;background-color: #e0064a;border-radius: 3px;">点击上传图片</button>*@
+
+                            <div onclick="handler.uploadClick()" style="display:flex;justify-content:center;align-items:center; margin-top:31px; width:180px;height:46px;	font-weight: normal;
+	                                font-stretch: normal;	font-size: 16px;color: #ffffff;background-color: #e0064a;border-radius: 3px; cursor:pointer;">
+                                点击上传图片
+                            </div>
+
+                            <div style="margin-top:18px; font-size: 14px;color: #999999;">图片大小仅限于5M之内</div>
+                        </div>
+                    </center>
+                    <img class="zoom-marker-img" id="zoom-marker-img" alt="..." name="viewArea" draggable="false" />
+                </div>
+            </div>
+            <div class="hidden">
+                @*<button id="save" type="button" class="btn btn-sm btn-primary "><i class="fa fa-save"></i>保  存</button>*@
+                <div class="hide">
+                    <input id="imgupload" />
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-2 col-xs-12" style="width:13.69%;height:100%; display:flex;flex-direction:column; margin-left:1.17%;overflow-x:hidden;overflow-y:hidden;">
+            <div style=" width:100%; height:48px; float:right;flex-shrink: 0; padding-top:5px;">
+                <span class="pull-right btns" id="save" style="background-color:#1888de; font-size: 15px;color: #ffffff; ">保存</span>
+                <span id="changeImg" class="pull-right btns hidden" onclick="handler.uploadClick()" style="border: solid 1px #1888de;font-size: 15px;color: #1888de;margin-right:10px">更换图片</span>
+            </div>
+
+            <div style="flex:1;display:flex;flex-direction:column;">
+                <div id="addresstaglist" class="smokelistdiv" style="display:none">
+                    <div class="smokelistcontainer smokelistcontainerheight">
+                        <span class="smokelistheader">位置</span>
+                    </div>
+
+
+                </div>
+                <div id="smoketaglist" class="smokelistdiv" style="display:none">
+                    <div class="smokelistcontainer smokelistcontainerheight">
+                        <span class="smokelistheader">烟感器</span>
+                    </div>
+                </div>
+
+
+                
+
+                
+
+            </div>
+
+            <div style="display:none">
+                <div class="widget hidden">
+                    <div class="widget-header">
+                        <span class="widget-caption">地图</span>
+                        <div class="widget-buttons">
+                            <button onclick="handler.uploadClick()" class="btn shiny btn-xs" type="button">上传</button>
+                            <button id="imgeditbtn" class="btn shiny btn-xs" type="button">修改名称</button>
+                            <button id="imgdelbtn" class="btn shiny btn-xs" type="button">删除</button>
+                        </div>
+                    </div>
+                    <div id="imagediv" class="widget-body">
+
+                    </div>
+                </div>
+
+                <hr class="hidden">
+
+                <div class="widget hidden" style="margin-top:10px">
+                    <div class="widget-header">
+                        <span class="widget-caption">烟感器</span>
+                    </div>
+                    <div id="smokeDiv" class="widget-body">
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+}
+
+<a href="" type="" target="_blank"></a>
+@*<script src="~/Content/assets/ZoomMarker-master/js/jquery-1.11.3.min.js"></script>*@
+<script src="~/Content/assets/ZoomMarker-master/js/jquery.mousewheel.min.js"></script>
+<script src="~/Content/assets/ZoomMarker-master/js/hammer.min.js"></script>
+<script src="~/Content/assets/ZoomMarker-master/js/zoom-marker.js"></script>
+<script src="~/Content/assets/ZoomMarker-master/js/easy-loading.js"></script>
+<script src="~/Scripts/Company/SmokeMap.js"></script>
+<script src="~/Content/assets/js/simupload/imageupload.js"></script>
+<script>
+    //var markerSize = 30;
+    var markerWidth = 30, markerHeight=30;
+    
+    
+    var operateMarker = [];
+
+
+
+
+    //var marker = null;
+
+    $(function () {
+
+
+
+        handler.init();
+
+        $("#save").click(function () {
+            handler.save();
+        });
+
+
+    });
+
+    var imageArea = {
+        minx: null,
+        maxx: null,
+        miny: null,
+        maxy: null,
+    }
+
+    var handler = {
+
+        data: null,
+        addressMapSysNo: null,
+        selectedImgBtn: null,
+        addressSysNo:null,
+        imgNoneText: '当前没有地图,请先<a href="javascript:;" onclick="handler.uploadClick()" >上传</a>地图',
+        smokeNoneText: '当前没有烟感器,请先添加',
+        companySysNo:@Model,
+        reloadAddressSmoke: function (addressSysNo) {
+            var self = this;
+            $.post("/Company/GetAddressMapSmokes", { addressSysNo: addressSysNo, companySysNo: self.companySysNo }, function (result) {
+                if (result.Success) {
+                    self.addressSysNo = addressSysNo;
+                    self.selectedImgBtn = null;
+                    self.data = result.Data;
+                    self.reloadImage(self.data.AddressMaps);
+                    //self.reloadSmokes(self.data.Smokes);
+                    self.reloadAddressAndSmokes(self.data.Smokes);
+                }
+            }, 'json');
+        },
+
+        reloadImage: function (addressMapData,defaultClickLastImg) {
+            $("#zoom-marker-none").show();
+
+            var imgdiv = $("#imagediv");
+            imgdiv.empty();
+
+            var self = this;
+            if (!addressMapData || addressMapData.length == 0) {
+                $('#zoom-marker-img').zoomMarker_CleanMarker();
+                $('#zoom-marker-img').zoomMarker_LoadImage(null);
+                $('#zoom-marker-img').zoomMarker_SetImageArea(true);
+                $("#imagediv").append(self.imgNoneText);
+                $("#changeImg").addClass("hidden");
+                return;
+            }
+
+            $("#changeImg").removeClass("hidden");
+
+            $.each(addressMapData, function (i, n) {
+                //var label = $("<label class='label-img'>" + n.Name + "</label>");
+                //label.attr("SysNo", n.SysNo);
+                //label.attr("MapImage", n.MapImage);
+                //imgdiv.append(label);
+
+                var label = $('<a class="label-img widgetbtn btn btn-default shiny btn-xs " href="javascript:void(0);">' + n.Name + '</a>');
+                label.attr("SysNo", n.SysNo);
+                label.attr("MapImage", n.MapImage);
+                imgdiv.append(label);
+
+            });
+
+            $(".label-img").unbind("click");
+            $(".label-img").click(function () {
+                self.data.Markers = [];
+                self.addressMapSysNo = $(this).attr("SysNo");
+                self.selectedImgBtn = $(this);
+                var url = GlobalDefine.ImageStorageServerDomain + $(this).attr("MapImage");
+                $("#zoom-marker-none").hide();
+                $('#zoom-marker-img').zoomMarker_CleanMarker();
+
+                //var img = new Image();
+                //img.src = url;
+                //img.onload = function () {
+                    
+                //};
+
+                $('#zoom-marker-img').zoomMarker_LoadImage(url, function () {
+                    $.each(self.data.AddressMaps, function (i, n) {
+                        if (n.SysNo == self.addressMapSysNo) {
+                            var markers = JSON.parse(n.SmokeCoordinate);
+                            if (markers) {
+                                self.loadMarkers(markers);
+                                self.data.Markers = markers;
+                            }
+                            return false;
+                        }
+                    });
+                });
+                $('#zoom-marker-img').zoomMarker_ImgSizeReset();
+            });
+
+            if (defaultClickLastImg) { $(".label-img", imgdiv).last().click(); }
+            else { $(".label-img", imgdiv).first().click(); }
+        },
+
+        reloadSmokes: function (SmokeData) {
+            var somkediv = $("#smokeDiv");
+            somkediv.empty();
+
+            if (!SmokeData || SmokeData.length == 0) {
+                $("#smokeDiv").text(this.smokeNoneText);
+                return;
+            }
+
+            $.each(SmokeData, function (i, n) {
+                //var label = $("<label class='dragtag'>" + n.Name + "</label><br/>");
+                //label.attr("data", JSON.stringify(n));
+                //somkediv.append(label);
+
+                var label = $('<a class="dragtag widgetbtn btn btn-default shiny btn-xs " href="javascript:void(0);">' + n.Name + '</a>');
+                label.attr("data", JSON.stringify(n));
+                somkediv.append(label);
+            });
+
+            this.addMarkerHandler();
+
+        },
+
+
+        reloadAddressAndSmokes: function (SmokeData) {
+            $("#addresstaglist").hide();
+            $("#smoketaglist").hide();
+            if (!SmokeData || SmokeData.length == 0) {
+                return;
+            }
+
+            var address = [];
+            var smokes = [];
+            $.each(SmokeData, function (i, n) {
+                if (n.Type == 1) {
+                    smokes.push(n);
+                }
+                else if (n.Type == 2) {
+                    address.push(n);
+                }
+            });
+
+            this.reloadAddressOrSmokes($("#addresstaglist"), address);
+            this.reloadAddressOrSmokes($("#smoketaglist"), smokes);
+
+            this.setDragTagDivStyle(address.length,smokes.length);
+
+
+            this.addMarkerHandler();
+        },
+
+        reloadAddressOrSmokes(ele, SmokeData) {
+            var somkediv = ele;
+            $(".smokediv", somkediv).remove();
+
+            if (!SmokeData || SmokeData.length == 0) {
+                somkediv.hide();
+                //somkediv.parent().hide();
+                return;
+            }
+            
+            somkediv.show();
+            //somkediv.parent().show();
+            $.each(SmokeData, function (i, n) { 
+                var divTemp = '<div class="dragtag smokediv">'
+                    + '<img class="smokeimg"';
+                if (n.Type == 1) {
+                    divTemp += ' src="/Content/assets/img/smokemap/smoke.png"> ';
+                }
+                else {
+                    divTemp += ' src="/Content/assets/img/smokemap/pozition.png" > ';
+                }
+                divTemp += '<span class="smokename">' + n.Name + '</span>'
+                    + '</div>'
+                var div = $(divTemp);
+                div.attr("data", JSON.stringify(n));
+
+                somkediv.children().first().append(div);
+
+                //var label = $("<label class='dragtag'>" + n.Name + "</label><br/>");
+                //label.attr("data", JSON.stringify(n));
+                //somkediv.append(label);
+
+                //var label = $('<a class="dragtag widgetbtn btn btn-default shiny btn-xs " href="javascript:void(0);">' + n.Name + '</a>');
+                //label.attr("data", JSON.stringify(n));
+                //somkediv.append(label);
+            });
+
+            somkediv.children().first().scrollTop(0);
+        },
+
+        setDragTagDivStyle: function (addresscount, smokescount) {
+            if (addresscount > 0 && smokescount > 0) {
+                $("#addresstaglist").css("height", "auto").css("max-height", "50%");
+                $("#smoketaglist").css("height", "auto").css("margin-top", "5px").css("max-height", "50%");;
+            } else if (addresscount > 0 && smokescount <= 0) {
+                $("#addresstaglist").css("height", "auto").css("max-height", "100%");;
+            } else if (addresscount <= 0 && smokescount > 0) {
+                $("#smoketaglist").css("height", "auto").css("margin-top", "0").css("max-height", "100%");;
+            }
+        },
+
+        addMarkerHandler: function () {
+            var self = this;
+            $(".dragtag").unbind("mousedown");
+            $(".dragtag").mousedown(function (e) {
+
+                var markerData = JSON.parse($(this).attr("data"));
+                $("[class='zoom-marker'][SysNo='" + markerData.SysNo + "']").attr("SAMEDELETE", "SAMEDELETE");
+
+                var marker = self.createMarkerObj(markerData);
+                var p = getMousePos(e);
+                //marker.trigger("mousemove");
+                $(document).mousemove(function (e) {
+                    p = getMousePos(e);
+                    offset = { left: p.x - (markerWidth / 2), top: p.y - markerHeight }
+                    marker.offset(offset);
+                });
+
+                $(document).mouseup(function (e) {
+                    operateMarker = [];
+                    $(document).unbind("mousemove");
+                    $(document).unbind("mouseup");
+                    $("[class='zoom-marker']").removeAttr("SAMEDELETE");
+
+                    p = getMousePos(e);
+                    if (p.y < imageArea.miny || p.y > imageArea.maxy || p.x < imageArea.minx || p.x > imageArea.maxx) {
+                        marker.remove();
+                        operateMarker = [];
+                    }
+                });
+
+
+
+                //$("#zoom-marker-div").append(marker);
+                var markersDiv = $("#zoom-marker-div").next();
+                console.log();
+                if (markersDiv.length==0) {
+                    markersDiv = $("<div></div>");
+                    $("#zoom-marker-div").after(markersDiv);
+                }
+                markersDiv.append(marker);
+
+                //marker.offset({ left: pozition.left, top: pozition.top });
+
+                var offset = { left: p.x - (markerWidth / 2), top: p.y - markerHeight }
+                //marker.offset({ left: p.x - (markerSize / 2), top: p.y - markerSize });
+                marker.offset(offset);
+
+                operateMarker.push(marker);
+            });
+        },
+
+        createMarkerObj: function (markerData) { 
+            var self = this;
+            var markerTemp = '<div class="zoom-marker">';
+            if (markerData.Type == 1) {
+                markerTemp += '<img draggable="false" src="/Content/assets/img/smokemap/smoke.png" >'
+            }
+            else {
+                markerTemp += '<img draggable="false" src="/Content/assets/img/smokemap/pozition.png">'
+            }
+            markerTemp += '<span style="color: rgb(255, 255, 255); left: 10px;"></span></div>';
+            var marker = $(markerTemp);
+
+            var img = $("img", marker);
+            img.css("height", markerHeight);
+            img.css("width", markerWidth);
+
+            marker.Text = markerData.Name;
+            marker.Data = markerData;
+            marker.attr("SysNo", markerData.SysNo);
+
+            marker.mousedown(function (e) {
+                marker.PAtive = false;
+                operateMarker.push(marker);
+                offset = marker.offset();
+
+                //marker.trigger("mousemove");
+                $(document).mousemove(function (e) {
+                    p = getMousePos(e);
+                    offset = { left: p.x - (markerWidth / 2), top: p.y - markerHeight }
+                    marker.offset(offset);
+                });
+
+
+                $(document).mouseup(function (e) {
+                    operateMarker = [];
+                    $(document).unbind("mousemove");
+                    $(document).unbind("mouseup");
+                    $("[class='zoom-marker']").removeAttr("SAMEDELETE");
+
+                    p = getMousePos(e);
+                    if (p.y < imageArea.miny || p.y > imageArea.maxy || p.x < imageArea.minx || p.x > imageArea.maxx) {
+                        marker.remove();
+                        operateMarker = [];
+                        self.deleteMarker(markerData.SysNo);
+                    }
+
+                });
+            });
+
+            return marker;
+        },
+
+        init: function () {
+            var self = this;
+            $("#imgdelbtn").click(function () {
+                if (!self.selectedImgBtn) {
+                    $.showError("请选择地图");
+                    return;
+                }
+
+                $.confirm("确认要删除" + self.selectedImgBtn.text() + "吗?", function (result) {
+                    if (result) {
+                        self.deleteImage();
+                    }
+                });
+
+            });
+
+            $("#imgeditbtn").click(function () {
+                if (!self.selectedImgBtn) {
+                    $.showError("请选择地图");
+                    return;
+                }
+
+                if (self.selectedImgBtn.parent().find("input").length > 0) {
+                    return;
+                }
+
+                var sysNo = self.selectedImgBtn.attr("SysNo");
+                var name = self.selectedImgBtn.text();
+                self.selectedImgBtn.hide();
+
+                var input = $('<input class="form-control input-xs" maxlength="20" id="xsinput" name="xsinput" placeholder="输入新的图片名称" type="text" value="">');
+                input.val(name);
+
+                input.focusout(function () {
+                    name = $(this).val();
+                    if (name == null || name == "") {
+                        $.showError("图片名称不能为空");
+                        return;
+                    }
+
+
+                    $.post("/Company/UpdateAddressMapName", { sysNo: sysNo, name: ReplaceObjHtmlTag(name) }, function (result) {
+                        if (result.Success) {
+                            self.selectedImgBtn.text(name);
+                            self.selectedImgBtn.show();
+                            input.remove();
+                        }
+                    }, "json");
+                });
+
+                self.selectedImgBtn.after(input);
+                input.focus();
+
+            });
+
+            $("#imagediv").append(self.imgNoneText);
+
+            $("#smokeDiv").text(self.smokeNoneText);
+
+            self.imgUploadInit();
+        },
+
+        imgUploadInit: function () {
+            var selfObj = this;
+            var option = {
+                url: GlobalDefine.GetImageUploadServerDomain("product"),
+                imgServier: GlobalDefine.ImageStorageServerDomain,
+                //maxImgCount: 4,
+                allowedFileExtensions: ['jpg', 'png', 'jpeg'],
+                maxImgSize:5120,
+                onUploadSuccess: function (uploadResult) {
+                    if (!(selfObj.data && selfObj.data.AddressNo)) {
+                        return;
+                    }
+
+                    var index = uploadResult.FileName.lastIndexOf(".");
+                    if (index > -1) {
+                        uploadResult.FileName = uploadResult.FileName.substring(0, index);
+                    }
+
+                    var fileName = uploadResult.FileName.length > 20 ? uploadResult.FileName.substring(0, 20) : uploadResult.FileName;
+
+                    var data = { AddressSysNo: selfObj.data.AddressNo, Name: fileName, MapImage: uploadResult.ImagePath };
+
+                    //$.ajax({
+                    //    url: "/Company/AddAddressMap",
+                    //    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                    //    data: data,
+                    //    type: "post",
+                    //    dataType: 'json',
+                    //    success: function (result) {
+                    //        if (result.Success) {
+                    //            selfObj.data.AddressMaps.push(result.Data);
+                    //            selfObj.reloadImage(selfObj.data.AddressMaps);
+                    //        }
+                    //    }
+                    //});
+
+                    $.post("/Company/InsertOrUpdateAddressMapImg", data, function (result) {
+                        if (result.Success) {
+                            var addressMap = result.Data;
+                            var index = -1;
+                            $.each(selfObj.data.AddressMaps, function (i, n) {
+                                if (n.SysNo == addressMap.SysNo) {
+                                    index = i;
+                                    return false;
+                                }
+                            })
+
+                            if (index > -1) {
+                                selfObj.data.AddressMaps[index].MapImage = addressMap.MapImage;
+                                selfObj.data.AddressMaps[index].SmokeCoordinate = null;
+                            } else {
+                                selfObj.data.AddressMaps.push(addressMap);
+                            }
+
+                            selfObj.reloadImage(selfObj.data.AddressMaps, true);
+
+                            //selfObj.data.AddressMaps.push(result.Data);
+                            //selfObj.reloadImage(selfObj.data.AddressMaps, true);
+                            //selfObj.reloadAddressSmoke(selfObj.addressSysNo);
+                        }
+                    }, 'json');
+                },
+            };
+
+
+            $("#imgupload").imguploader(option);
+
+
+            $("#uploadbtn").click(function () {
+                selfObj.uploadClick();
+            });
+        },
+
+        uploadClick: function () {
+            var self = this;
+            if (!(self.data && self.data.AddressNo)) {
+                $.showError("请先选择左侧地址");
+                return;
+            }
+
+            $(".add-img").trigger('click');
+
+
+
+        },
+
+        afterReaseMarker: function (data) {
+            var markers = this.data.Markers;
+            if (!markers) {
+                markers = [];
+            }
+
+            if (data) {
+                var marker = data.marker.Data;
+                marker.X = data.param.x;
+                marker.Y = data.param.y;
+
+                var index = -1;
+                for (var i = 0; i < markers.length; i++) {
+                    if (markers[i].SysNo == marker.SysNo) {
+                        index = i;
+                    }
+                }
+                if (index > -1)
+                    markers.splice(index, 1);
+
+                markers.push(marker);
+
+                this.data.Markers = markers;
+            }
+        },
+
+        save: function () {
+            var self = this;
+            var sysNo = this.addressMapSysNo;
+            if (!sysNo) {
+                return;
+            }
+
+            var markerStr = JSON.stringify(this.data.Markers);
+            $.post("/Company/UpdateAddressMapCoordinate", { sysNo: sysNo, markerStr: markerStr }, function (result) {
+                if (result.Success) {
+
+                    $.each(self.data.AddressMaps, function (i, addressMap) {
+                        if (addressMap.SysNo == sysNo) {
+                            addressMap.SmokeCoordinate = markerStr;
+                            return false;
+                        }
+                    });
+
+
+                    $.showSuccess("保存成功");
+                }
+            }, 'json');
+        },
+
+        loadMarkers: function (markerData) {
+            var self = this;
+            if (!(markerData && markerData.length)) {
+                return;
+            }
+
+            var initMarkers = [];
+            $.each(markerData, function (i, n) {
+                var markerObj = self.createMarkerObj(n);
+                $("#zoom-marker-div").append(markerObj);
+
+                var item = {};
+                item.option = {
+                    src: "/Content/assets/ZoomMarker-master/img/marker.svg",
+                    x: n.X,
+                    y: n.Y,
+                    size: 30,
+                    dialog: {
+                        value: n.Name ,
+                        offsetX: 20,
+                        style: {
+                            "border-color": "#bfbfbf"
+                        }
+                    },
+                    hint: { value: 1, style: { color: "#ffffff", left: "10px" } }
+                };
+                item.markerObj = markerObj;
+
+                initMarkers.push(item);
+            });
+
+
+            $('#zoom-marker-img').zoomMarker_LoadMarker(initMarkers);
+
+
+        },
+
+        deleteImage: function () {
+            var self = this;
+            if (!this.selectedImgBtn) return;
+
+            var sysno = this.selectedImgBtn.attr("SysNo");
+            $.post("/Company/DeleteAddressMap", { sysNo: sysno }, function (result) {
+                if (result.Success) {
+                    self.data.Markers = [];
+                    self.selectedImgBtn.remove();
+                    self.selectedImgBtn = null;
+                    $('#zoom-marker-img').zoomMarker_CleanMarker();
+                    $('#zoom-marker-img').zoomMarker_LoadImage(null);
+
+                    var index = -1;
+                    var addressMaps = self.data.AddressMaps;
+                    for (var i = 0; i < addressMaps.length; i++) {
+                        if (addressMaps[i].SysNo == sysno) {
+                            index = i;
+                        }
+                    }
+                    if (index > -1)
+                        addressMaps.splice(index, 1);
+
+
+                    $(".label-img").first().trigger("click");
+                }
+            }, 'json');
+        },
+
+        deleteMarker: function (sysNo) {
+
+            var markers = this.data.Markers;
+            var index = -1;
+            for (var i = 0; i < markers.length; i++) {
+                if (markers[i].SysNo == sysNo) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index > -1)
+                markers.splice(index, 1);
+        }
+    }
+
+
+
+    function getMousePos(event) {
+        var e = event || window.event;
+        var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
+        var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+        var x = e.pageX || e.clientX + scrollX;
+        var y = e.pageY || e.clientY + scrollY;
+        //alert('x: ' + x + '\ny: ' + y);
+        return { x: x, y: y };
+    }
+
+
+    /******************* init navigator button, no need for users' initialization *********************/
+    var picTag = 0;
+    var tagNumber = 1;
+    //$('#zoom-marker-btn-switch').click(function (e) {
+    //    $('#zoom-marker-img').zoomMarker_CleanMarker();
+    //    if (picTag === 0) {
+    //        $('#zoom-marker-img').zoomMarker_LoadImage("img/rail.jpg");
+    //    }
+    //    else if (picTag === 1) {
+    //        $('#zoom-marker-img').zoomMarker_LoadImage("img/mountain.jpg");
+    //    }
+    //    picTag = 1 - picTag;
+    //});
+
+    $('#zoom-marker-btn-clean').click(function (e) {
+        $('#zoom-marker-img').zoomMarker_CleanMarker();
+    });
+
+    // this array stores the styles for EASY-LOADING
+    var styleList = [
+        "BALL_PULSE",
+        "BALL_CLIP_ROTATE", "BALL_CLIP_ROTATE_PULSE", "SQURE_SPIN", "BALL_CLIP_ROTATE_MULTIPLE",
+        "BALL_PULSE_RISE", "BALL_ROTATE", "CUBE_TRANSITION", "BALL_ZIP_ZAG", "BALL_ZIP_ZAG_DEFLECT",
+        "BALL_TRIANGLE_PATH", "BALL_SCALE", "LINE_SCALE", "LINE_SCALE_PARTY", "BALL_SCALE_MULTIPLE",
+        "BALL_PULSE_SYNC", "BALL_BEAT", "LINE_SCALE_PULSE_OUT", "LINE_SCALE_PULSE_OUT_RAPID",
+        "BALL_SCALE_RIPPLE", "BALL_SCALE_RIPPLE_MULTIPLE", "BALL_SPIN_FADE_LOADER", "LINK_SPIN_FADE_LOADER",
+        "TRIANGLE_SKEW_SPIN", "PACMAN", "SEMI_CIRCLE_SPIN"
+    ];
+    var stylePosition = 0;
+    $('#zoom-marker-btn-loading').click(function (e) {
+        EasyLoading.show({
+            text: $("<span>" + styleList[stylePosition] + "</span>"),
+            button: $("<span>dismiss</span>"),
+            type: EasyLoading.TYPE[styleList[stylePosition]],
+            //timeout: EasyLoading.TIMEOUT.FAST,
+            callback: function (event, data) {
+                switch (event) {
+                    case 'on_btn_click': console.log(data); break;
+                    case 'on_loaded': console.log("callback with options:" + JSON.stringify(data)); break;
+                }
+            }
+        });
+        if (++stylePosition >= styleList.length)
+            stylePosition = 0;
+    });
+
+    // handle "TAP" event and add marker to image
+    //$("#zoom-marker-img").on("zoom_marker_mouse_click", function (event, position) {
+    //    console.log("Mouse click on: " + JSON.stringify(position));
+    //    $('#zoom-marker-img').zoomMarker_AddMarker({
+    //        src: "/Content/assets/ZoomMarker-master/img/marker.svg",
+    //        x: position.x,
+    //        y: position.y,
+    //        size: 30,
+    //        dialog: {
+    //            value: "<h4>content for dialog_" + tagNumber + "</h4>",
+    //            offsetX: 20,
+    //            style: {
+    //                "border-color": "#86df5f"
+    //            }
+    //        },
+    //        hint: { value: tagNumber, style: { color: "#ffffff", left: "10px" } }
+    //    });
+    //    if (++tagNumber >= 10)
+    //        tagNumber = 1;
+    //});
+
+    // listen to marker click event, print to console and delete the marker
+    $('#zoom-marker-img').on("zoom_marker_click", function (event, marker) {
+        //console.log(JSON.stringify(marker));
+        $('#zoom-marker-img').zoomMarker_RemoveMarker(marker.id);
+    });
+
+    // message for the beginning of image loading process
+    //$('#zoom-marker-img').on("zoom_marker_img_load", function (event, src) {
+    //    console.log("loading started for image : " + src);
+    //    EasyLoading.show({
+    //        text: $("<span>loading image</span>"),
+    //        button: $("<span>dismiss</span>"),
+    //        type: EasyLoading.TYPE.PACMAN
+    //    });
+    //});
+
+    // message for image loaded
+    $('#zoom-marker-img').on("zoom_marker_img_loaded", function (event, size) {
+        //console.log("image has been loaded with size: " + JSON.stringify(size));
+        //// we have to set a timer in order to watching the loader in local environment, cause the loading speed is too fast
+        //setTimeout(function () {
+        //    EasyLoading.hide();
+        //}, 3000);
+    });
+
+    /******************** INIT ZoomMarker here *****************************/
+    $(document).ready(function () {
+        $('#zoom-marker-img').zoomMarker({
+            //src: "/Content/assets/ZoomMarker-master/img/mountain.jpg",
+            rate: 0.2,
+            //width: 600,
+            max: 3000,
+            markers: [
+                { src: "/Content/assets/ZoomMarker-master/img/marker.svg", x: 500, y: 500 }
+            ],
+            afterReaseMarker: function (data) {
+                handler.afterReaseMarker(data);
+            }
+        });
+    })
+    /******************** INIT ZoomMarker here *****************************/
+</script>
+<script type="text/javascript">
+    var addressPageManager =
+        {
+            companySysNo: @Model,
+            getAddressUrl: "@Url.Action("GetAddressTree", "Company")",
+            selectAddressInfo: null,
+            addressTree: null,
+            loadTree: function (selectedSysNo) {
+                var url = addressPageManager.getAddressUrl;
+                $('#treeAddress').jstree({
+                    "core": {
+                        "multiple": false,
+                        "themes": {
+                            "responsive": false,
+                            'variant': 'small',
+                            'stripes': false
+                        },
+                        "check_callback": true,
+                        'data': {
+                            'url': url,
+                            "dataType": "json",
+                            data: function (node) {
+                                return { ParentSysNo: node.id, CompanySysNo: addressPageManager.companySysNo };
+                            },
+                            success: function (d) {
+                                var jqEmpty = $("#treeIsEmptyContainer");
+                                if (d == null || d.length == 0) {
+                                    var tag = jqEmpty.attr("data-tag");
+                                    if (tag == "0") {
+                                        jqEmpty.show();
+                                    }
+                                } else {
+                                    addressPageManager.rootAddress = d[0];
+                                    jqEmpty.hide();
+                                }
+                                jqEmpty.attr("data-tag", "1");
+                            }
+                        }
+                    },
+                    "types": {},
+                    "plugins": ["types"]
+                });
+                addressPageManager.addressTree = $('#treeAddress').jstree(true);
+
+                var jqTree = $('#treeAddress');
+                jqTree.on('select_node.jstree', function (e, data) {
+                    var addInfo = data.node.data;
+                    if (data.node.parent == "#") {
+                        $("#addressPath").text(addInfo.Name);
+                    }
+                    else {
+                        $("#addressPath").text(addInfo.PathName);
+                    } 
+                    handler.reloadAddressSmoke(data.node.data.SysNo);
+
+                    // var link = $('#' + data.selected).find('li');
+                    addressPageManager.selectAddressInfo = null;
+                    if (data && data.node) {
+                        addressPageManager.selectAddressInfo = addInfo;
+                        var grade= addressPageManager.selectAddressInfo.Grade;
+                        $('input[type="checkbox"][data-grade]').each(function () {
+                            var jqThis = $(this);
+                            var g = jqThis.attr("data-grade");
+                            if (g < grade || (grade >= 2 && g == grade)) {
+                                jqThis.prop("checked", false);
+                                jqThis.prop("disabled", true);
+                            }
+                            else {
+                                jqThis.prop("checked", g > grade );
+                                jqThis.prop("disabled", false);
+                            }
+                        });
+                    }
+                });
+
+
+                jqTree.on('loaded.jstree', function (e, data) {
+                    if (addressPageManager.rootAddress != null) {
+                        addressPageManager.addressTree.select_node(addressPageManager.rootAddress.id);
+                    }
+                });
+            },
+            ini: function () {
+                $(function () {
+                    addressPageManager.loadTree();
+                });
+
+            }
+        };
+    addressPageManager.ini();
+</script>

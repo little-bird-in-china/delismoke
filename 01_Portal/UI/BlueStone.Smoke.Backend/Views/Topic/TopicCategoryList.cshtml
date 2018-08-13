@@ -1,0 +1,146 @@
+﻿@using BlueStone.Smoke.Entity;
+@using BlueStone.Smoke.Service;
+@model List<TopicCategory>
+@{
+    ViewBag.Title = "类别列表";
+    var masterName = "Topic";
+}
+@section rsHeader
+{
+    <!--datatable-->
+    @Styles.Render("~/Content/datatable")
+    @Scripts.Render("~/bundles/datatable")
+
+}
+
+<form id="listForm">
+    <div class="row form-horizontal grayback">
+        <div class="col-lg-12 col-sm-12 col-xs-12">
+            <div class="widget">
+                <div class="widget-header">
+                    <span class="widget-caption">
+                        <a href="javascript:void(0)" onclick="EditTopicCategory(0)" class="btn btn-sm btn-primary" name="EditTopicCategory">
+                            <i class="fa fa-plus"></i>
+                            新增类别
+                        </a>
+                    </span>
+                </div><!--Widget Header-->
+                <div class="widget-body">
+                    <div class="row">
+                        <div class="col-lg-12 col-sm-12 col-xs-12">
+                            <div class="widget">
+                                <div class="widget-body">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:10%;">操作</th>
+                                                <th style="width:10%;">类别名称</th>
+                                                <th style="width:8%;">自定义标识</th>
+                                                <th style="width:5%;">排序编号</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model != null && Model.Count > 0)
+                                        {
+                                            int index = 1;
+                                            foreach (var item in Model)
+                                            {
+                                                    <tr class="row_topiccategory" sysNo="@item.SysNo">
+                                                        <td>
+                                                            <a  style="cursor:pointer" onclick="EditTopicCategory('@item.SysNo')">修改</a>
+                                                            <a style="cursor:pointer"  onclick="DeleteTopicCategory('@item.SysNo')">删除</a>
+                                                        </td>
+                                                        <td>@item.CategoryName</td>
+                                                        <td>@item.CustomFlag</td>
+                                                        <td>
+                                                            <div class='form-group'>
+                                                                <input class="form-control priority" name="txtPriority@(index)" id="txtPriority@(index)" value="@item.Priority"
+                                                                       data-bv-notempty="true" data-bv-notempty-message="优先级不能为空"
+                                                                       maxlength="8" data-bv-regexp="true" data-bv-regexp-regexp="^\d+$" data-bv-regexp-message="优先级只能输入正整数" />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                index++;
+                                            }
+                                        }
+                                        </tbody>
+                                    </table>
+                                    <a href="javascript:void(0)" id="SaveCategoryPriority" style="margin-top:10px" class="btn btn-sm btn-primary" name="EditTopicCategory" >
+                                        <i class="fa fa-plus"></i>
+                                        保存排序编号
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+@Html.Partial("~/Views/Shared/_ModalPartial.cshtml")
+
+@section Scripts
+    {
+
+    <script type="text/javascript">
+
+        $(function () {
+            $("#listForm").bootstrapValidator().on("success.form.bv", function (e) {
+                  var data = [];
+                  $(".row_topiccategory").each(function () {
+                    var $this = $(this);
+                    data.push(
+                        {
+                            SysNo: $this.attr("sysNo"),
+                            Priority: $.trim($this.find('input.priority').val()),
+                        });
+                })
+                $.ajax({
+                    url: "/Topic/SaveTopicCategoryPriority",
+                    type: "POST",
+                    dataType: "json",
+                    data: { Data: $.toJSON(data) },
+                    success: function (result) {
+                        if (result.Success) {
+                                $.showSuccess('操作成功!');
+                                window.location.reload();
+                        }
+                    }
+                });
+
+            });
+
+            $("#SaveCategoryPriority").click(function () {
+                $("#listForm").bootstrapValidator('validate');
+            });
+        })
+        function EditTopicCategory(sysNo) {
+            showModal("/Topic/TopicCategoryInfo?sysNo=" + sysNo +"&MasterName="+'@masterName', function (data) {
+                window.location.reload();
+            },true);
+        }
+        function DeleteTopicCategory(sysNo) {
+            bootbox.confirm({
+                animate: false,
+                size: 'small',
+                message: "确认要删除当前记录吗?",
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/Topic/DeleteCategory?id=" + sysNo,
+                            type: "POST",
+                            dataType: "json",
+                            success: function (result) {
+                                if (result.Success) {
+                                    $.showSuccess('操作成功');
+                                    window.location.reload();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    </script>
+}

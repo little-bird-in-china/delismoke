@@ -1,0 +1,158 @@
+﻿@using BlueStone.Smoke.Entity;
+@using BlueStone.Smoke.Service;
+@model BlueStone.Smoke.Backend.Models.PickerParamModel
+@{
+    string sltVal = "";
+    if (string.IsNullOrWhiteSpace(Model.ValueType))
+    {
+        Model.ValueType = "";
+    }
+
+    List<TopicCategory> allCategoryList = new List<TopicCategory>();
+    List<TopicCategory> categoryList = TopicService.QueryAllTopicCategoryListByMasterName(Model.MasterName);
+    if(categoryList==null)
+    {
+        categoryList = new List<TopicCategory>();
+    }
+    var activeCategoryList = categoryList.Where(p => p.CommonStatus == CommonStatus.Actived);
+    if (activeCategoryList != null)
+    {
+        allCategoryList = activeCategoryList.ToList();
+    }
+    
+    List < TopicCategory > category1List = allCategoryList.Where(x => string.IsNullOrEmpty(x.ParentCategoryID.Trim())).ToList();
+    
+}
+
+<select style="width:100%;" id="@(Model.PickerID.Trim())" name="@(Model.PickerID.Trim())" data-model="@(Model.PickerID.Trim())" class="select2" @(Model.IsDisabled ? " disabled=disabled" : "")>
+    @if (!string.IsNullOrWhiteSpace(Model.PickerType) && Model.PickerType == "All")
+    {
+        <option value="0">--所有--</option>
+    }
+    else
+    { 
+        <option value="0">--请选择--</option>
+    }
+    
+    @if (category1List != null && category1List.Count > 0)
+    {
+        foreach (var c1 in category1List)
+        {
+            if (c1.IsLeaf == CommonYesOrNo.No)
+            {
+                var c2List = allCategoryList.Where(x => x.ParentCategoryID == c1.CategoryID && x.CommonStatus == CommonStatus.Actived).ToList();
+                if (!string.IsNullOrWhiteSpace(Model.PickerType) && Model.PickerType == "IsOnlyChooseLeaf")
+                {
+                    <optgroup label="@(c1.CategoryName)">
+                        @if (c2List != null && c2List.Count > 0)
+                        {
+                            //*****二级类别 ：
+                            foreach (var c2 in c2List)
+                            {
+                                if (c2.IsLeaf == CommonYesOrNo.Yes)
+                                {
+                                    switch (Model.ValueType.ToString().ToLower())
+                                    {
+                                        case "code":
+                                            sltVal = c2.CategoryID.Trim();
+                                            break;
+                                        default:
+                                            sltVal = c2.SysNo.ToString();
+                                            break;
+                                    }
+                                    <option value="@(sltVal)" @(!string.IsNullOrWhiteSpace(Model.SelectValue) && Model.SelectValue.Trim() == sltVal ? "selected='selected'" : "")>@c1.CategoryName > @c2.CategoryName</option>
+                                }
+                                else
+                                {
+                                    //*****三级类别 ：
+                                    var c3List = allCategoryList.Where(x => x.ParentCategoryID == c2.CategoryID && x.CommonStatus == CommonStatus.Actived).ToList();
+                                    if (null != c3List && c3List.Count > 0)
+                                    {
+                                        foreach (var c3 in c3List)
+                                        {
+                                            switch (Model.ValueType.ToString().ToLower())
+                                            {
+                                                case "code":
+                                                    sltVal = c3.CategoryID.Trim();
+                                                    break;
+                                                default:
+                                                    sltVal = c3.SysNo.ToString();
+                                                    break;
+                                            }
+                                            <option value="@(sltVal)" @(!string.IsNullOrWhiteSpace(Model.SelectValue) && Model.SelectValue.Trim() == sltVal ? "selected='selected'" : "")>@c1.CategoryName > @c2.CategoryName > @c3.CategoryName</option>
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    </optgroup>
+                }
+                else
+                {
+                    switch (Model.ValueType.ToString().ToLower())
+                    {
+                        case "code":
+                            sltVal = c1.CategoryID.Trim();
+                            break;
+                        default:
+                            sltVal = c1.SysNo.ToString();
+                            break;
+                    }
+                    <option value="@(sltVal)" @(!string.IsNullOrWhiteSpace(Model.SelectValue) && Model.SelectValue.Trim() == c1.SysNo.ToString() ? "selected='selected'" : "")>@c1.CategoryName</option>
+                    if (c2List != null && c2List.Count > 0)
+                    {
+                        //*****二级类别 ：
+                        foreach (var c2 in c2List)
+                        {
+                            switch (Model.ValueType.ToString().ToLower())
+                            {
+                                case "code":
+                                    sltVal = c2.CategoryID.Trim();
+                                    break;
+                                default:
+                                    sltVal = c2.SysNo.ToString();
+                                    break;
+                            }
+                            <option value="@(sltVal)" @(!string.IsNullOrWhiteSpace(Model.SelectValue) && Model.SelectValue.Trim() == sltVal ? "selected='selected'" : "")>@c1.CategoryName > @c2.CategoryName</option>
+                            //*****三级类别 ：
+                            var c3List = allCategoryList.Where(x => x.ParentCategoryID == c2.CategoryID && x.CommonStatus == CommonStatus.Actived).ToList();
+                            if (null != c3List && c3List.Count > 0)
+                            {
+                                foreach (var c3 in c3List)
+                                {
+                                    switch (Model.ValueType.ToString().ToLower())
+                                    {
+                                        case "code":
+                                            sltVal = c3.CategoryID.Trim();
+                                            break;
+                                        default:
+                                            sltVal = c3.SysNo.ToString();
+                                            break;
+                                    }
+                                    <option value="@(sltVal)" @(!string.IsNullOrWhiteSpace(Model.SelectValue) && Model.SelectValue.Trim() == sltVal ? "selected='selected'" : "")>@c1.CategoryName > @c2.CategoryName > @c3.CategoryName</option>
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+            }
+            else
+            {
+                //*****一级类别 ：
+                switch (Model.ValueType.ToString().ToLower())
+                {
+                    case "code":
+                        sltVal = c1.CategoryID.Trim();
+                        break;
+                    default:
+                        sltVal = c1.SysNo.ToString();
+                        break;
+                }
+                <option value="@(sltVal)" @(!string.IsNullOrWhiteSpace(Model.SelectValue) && Model.SelectValue.Trim() == sltVal ? "selected='selected'" : "")>@c1.CategoryName</option>
+            }
+
+        }
+    }
+</select>

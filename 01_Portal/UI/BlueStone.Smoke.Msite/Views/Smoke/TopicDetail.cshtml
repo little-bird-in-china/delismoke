@@ -1,0 +1,28 @@
+﻿@using BlueStone.Smoke.Entity
+@model TopicInfo
+@{
+    TopicInfo topic = Model ?? new TopicInfo();
+    ViewBag.Title = topic.Title;
+    Layout = "~/views/shared/wechatweb/_nomain.cshtml"; 
+
+}
+<style type="text/css">
+
+    #topic_detatil img {
+        width: 100%
+    }
+</style>
+<article class="weui-article"> 
+    <ul class="weui-media-box__info">
+        @*<li class="weui-media-box__info__meta"><a href="#">烟感平台</a></li>*@
+        @*@if (topic.SysNo != 1)
+        {
+        <li class="weui-media-box__info__meta" style="width:100%; text-align:center;list-style-type:none">@topic.InDateStr</li>
+        }*@
+        <!--<li class="weui-media-box__info__meta weui-media-box__info__meta_extra">其它信息</li>-->
+    </ul>
+    <section id="topic_detatil">
+        @Html.Raw(topic.Content)
+    </section>
+</article>
+

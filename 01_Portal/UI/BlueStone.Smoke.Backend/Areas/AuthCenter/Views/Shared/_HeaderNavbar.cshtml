@@ -1,0 +1,80 @@
+﻿@{
+    BlueStone.Utility.Web.Auth.Models.AuthUserModel CurrUser = ViewBag.CurrUser as BlueStone.Utility.Web.Auth.Models.AuthUserModel;
+}
+<header class="main-header">
+    <!-- Logo -->
+    <a href="javascript:;" class="logo">
+        <!-- mini logo for sidebar mini 50x50 pixels -->
+        <span class="logo-mini"><b>A</b>uth</span>
+        <!-- logo for regular state and mobile devices -->
+        <span class="logo-lg"><b>Auth</b>Center</span>
+    </a>
+    <!-- Header Navbar: style can be found in header.less -->
+    <nav class="navbar navbar-static-top">
+        <!-- Sidebar toggle button-->
+        <a href="javascript:;" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </a>
+        <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+                <!-- User Account: style can be found in dropdown.less -->
+                <li class="dropdown user user-menu">
+                    <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
+                        <img src="~/Content/AuthCenter/adminlet/img/user2-160x160.jpg" class="user-image" alt="User Image">
+                        <span class="hidden-xs">@CurrUser.UserDisplayName</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <!-- User image -->
+                        <li class="user-header">
+                            <img src="~/Areas/AuthCenter/Content/adminlet/img/user2-160x160.jpg" class="img-circle" alt="User Image">
+                            <p>
+                                @CurrUser.UserID - @CurrUser.UserDisplayName
+                                <small>登录时间 : @CurrUser.UILoginTime</small>
+                            </p>
+                        </li>
+                        <!-- Menu Body -->
+                        <li class="user-body">
+                            <div class="row">
+                                <div class="col-xs-4 text-center">
+                                    <a href="javascript:;">Followers</a>
+                                </div>
+                                <div class="col-xs-4 text-center">
+                                    <a href="javascript:;">Sales</a>
+                                </div>
+                                <div class="col-xs-4 text-center">
+                                    <a href="javascript:;">Friends</a>
+                                </div>
+                            </div>
+                            <!-- /.row -->
+                        </li>
+                        <!-- Menu Footer-->
+                        <li class="user-footer">
+                            <div class="pull-right">
+                                <a href="javascript:;" id="GlobalLogout" class="btn btn-default btn-flat">退出</a>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <!-- Control Sidebar Toggle Button -->
+                @*<li>
+                    <a href="javascript:;" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+                </li>*@
+            </ul>
+        </div>
+    </nav>
+</header>
+
+<script>
+    $(function () {
+        $('#GlobalLogout').on('click', function (event) {
+            $.confirm("确定要退出系统吗?", function (result) {
+                if (result) {
+                    window.location.href = '@Url.Action("Logout", "Account")';
+                }
+            });
+        });
+    })
+</script>

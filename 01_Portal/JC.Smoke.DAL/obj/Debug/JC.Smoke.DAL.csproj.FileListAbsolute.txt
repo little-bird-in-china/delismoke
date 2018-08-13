@@ -1,0 +1,16 @@
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\JC.Smoke.DAL.dll
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\JC.Smoke.DAL.pdb
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\JC.Smoke.Model.dll
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\MySql.Data.dll
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\JC.Smoke.Model.pdb
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\obj\Debug\JC.Smoke.DAL.csprojResolveAssemblyReference.cache
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\obj\Debug\JC.Smoke.DAL.csproj.CoreCompileInputs.cache
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\obj\Debug\JC.Smoke.DAL.dll
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\obj\Debug\JC.Smoke.DAL.pdb
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\JC.Smoke.Utility.dll
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\NLog.dll
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\JC.Smoke.Utility.pdb
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\NLog.xml
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\Dapper.dll
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\Dapper.pdb
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.DAL\bin\Debug\Dapper.xml

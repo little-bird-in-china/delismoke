@@ -1,0 +1,10 @@
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.Entity\bin\Debug\BlueStone.Smoke.Entity.dll.config
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.Entity\bin\Debug\BlueStone.Smoke.Entity.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.Entity\bin\Debug\BlueStone.Smoke.Entity.pdb
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.Entity\bin\Debug\BlueStone.Utility.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.Entity\bin\Debug\BlueStone.Utility.Web.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.Entity\bin\Debug\Newtonsoft.Json.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.Entity\bin\Debug\Newtonsoft.Json.xml
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.Entity\obj\Debug\BlueStone.Smoke.Entity.csproj.CoreCompileInputs.cache
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.Entity\obj\Debug\BlueStone.Smoke.Entity.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.Entity\obj\Debug\BlueStone.Smoke.Entity.pdb

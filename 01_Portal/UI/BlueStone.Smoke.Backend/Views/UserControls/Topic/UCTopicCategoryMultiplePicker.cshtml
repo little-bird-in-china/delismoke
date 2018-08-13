@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="js/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+    <style type="text/css">
+        ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        .select {
+            position: absolute;
+            height: auto;
+            width: 200px;
+            margin: 10px 0 0 -1px;
+            border: 1px solid #d4d4d4;
+            border-radius: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+            background: #ffffff;
+            color: #808080;
+            font-weight: 300;
+            z-index: 1;
+            font-size: 14px;
+            padding: 4px;
+        }
+
+        .select-tit {
+            display: block;
+            font-weight: bold;
+            padding: 6px 0;
+            margin: 0 6px;
+            font-size: 15px;
+            cursor: pointer;
+            background: url(img/nc.png) no-repeat right center;
+        }
+
+            .select-tit:hover {
+                color: #333;
+            }
+
+        .select-tit-bg {
+            border-bottom: 1px solid #f7f7f7;
+            background: url(img/close.png) no-repeat right center;
+        }
+
+        .select li {
+            background-color: #fff;
+            cursor: pointer;
+            overflow: hidden;
+            padding: 6px 0;
+            padding-left: 10px;
+            border-bottom: 1px solid #f7f7f7;
+        }
+
+            .select li:hover {
+                background-color: #f7f7f7;
+            }
+
+            .select li .checkbox {
+                cursor: pointer;
+                float: left;
+            }
+
+            .select li label {
+                cursor: pointer;
+                display: block;
+            }
+
+        .select .on {
+            height: 33px;
+            overflow: hidden;
+        }
+    </style>
+
+    <div style="width: 500px; margin: 0 auto;">
+
+
+        <div class="select">
+            <div class="select-con">
+                <span class="select-tit">閫夋嫨鍛€</span>
+                <ul>
+                    <li>
+                        <input type="checkbox" id="c1" name="checkbox" class="checkbox">
+                        <label for="c1">閫夐」涓€</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="c2" name="checkbox" class="checkbox" />
+                        <label for="c2">閫夐」涓€</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="c3" name="checkbox" class="checkbox" />
+                        <label for="c3">閫夐」涓€</label>
+                    </li>
+                </ul>
+            </div>
+            <div class="select-con">
+                <span class="select-tit">
+                    蹇€?/span>
+                    <ul>
+                        <li>
+                            <input type="checkbox" id="c4" name="checkbox" class="checkbox">
+                            <label for="c4">閫夐」涓€</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="c5" name="checkbox" class="checkbox" />
+                            <label for="c5">閫夐」涓€</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="c6" name="checkbox" class="checkbox" />
+                            <label for="c6">閫夐」涓€</label>
+                        </li>
+                    </ul>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script type="text/javascript">
+
+			$(".select-tit").click(function() {
+				if($(this).parents(".select-con").hasClass("on")) {
+					$(this).parents(".select-con").removeClass("on");
+					$(this).removeClass("select-tit-bg");
+				} else {
+					$(this).parents(".select-con").addClass("on");
+					$(this).addClass("select-tit-bg");
+				}
+			});
+
+    </script>
+
+</body>
+</html>

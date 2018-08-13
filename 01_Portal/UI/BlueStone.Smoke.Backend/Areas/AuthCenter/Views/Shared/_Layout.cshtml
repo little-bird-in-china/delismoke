@@ -1,0 +1,23 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section rsHeader
+{
+@System.Web.Optimization.Styles.Render("~/Content/basic_css")
+@System.Web.Optimization.Scripts.Render("~/bundles/basic_js")
+@Scripts.Render("~/Content/assets/zTree/jquery.ztree.core.js")
+@Styles.Render("~/Content/assets/zTree/zTreeStyle.css")
+@RenderSection("rsHeader", required: false)
+}
+@section bottomBox
+{
+    @RenderSection("bottomBox", required: false)
+}
+@section scripts
+{
+    @RenderSection("rsFooter", required: false)
+    @RenderSection("scripts", required: false)
+}
+@RenderSection("rsContent", required: true)
+

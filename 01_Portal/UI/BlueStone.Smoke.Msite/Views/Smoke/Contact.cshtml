@@ -1,0 +1,163 @@
+﻿@model BlueStone.Smoke.Entity.Client
+
+@{
+    ViewBag.Title = "添加紧急联系人";
+}
+@section rsHeader{
+    <style>
+        .weui-cell__ft i {
+            color: #e64340;
+        }
+        .weui-btn_disabled {
+            background-color: #8B8B7A;
+            color: white;
+        }
+
+            .weui-btn_disabled:active {
+                background-color: #8B8B7A;
+            }
+    </style>
+}
+
+
+
+<input id="SysNo" type="hidden" value="@Model.SysNo" />
+<div class="gu-form-content">
+    <div class="gu-form-con-bg">
+        <div class="weui-cells weui-cells_form">
+            <div class="weui-cell">
+                <i class="iconfont phone">&#xe633;</i>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" id="CellPhone" type="text" placeholder="第一联系人" value="@Model.CellPhone">
+                </div>
+                <div class="weui-cell__ft">
+                    <i class="weui-icon-warn"></i>
+                </div>
+            </div>
+        </div>
+        <div class="weui-cells weui-cells_form">
+            <div class="weui-cell">
+                <i class="iconfont phone">&#xe633;</i>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" id="CellPhone2" type="text" placeholder="第二联系人" value="@Model.CellPhone2">
+                </div>
+                <div class="weui-cell__ft">
+                    <i class="weui-icon-warn"></i>
+                </div>
+            </div>
+        </div>
+        <div class="weui-cells weui-cells_form">
+            <div class="weui-cell">
+                <i class="iconfont phone">&#xe633;</i>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" id="CellPhone3" type="text" placeholder="第三联系人" value="@Model.CellPhone3">
+                </div>
+                <div class="weui-cell__ft">
+                    <i class="weui-icon-warn"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="weui-cells weui-cells_form">
+            <div class="weui-cell" style="color: #535d6a;">
+                *请至少填写一个报警通知电话
+            </div>
+        </div>
+    </div>
+</div>
+<div class='demos-content-padded'>
+    <a href="javascript:;" id='save' class="weui-btn weui-btn_disabled">保 存 </a>
+</div>
+
+@section rsFooter{
+    <script>
+
+        $("body").on("blur", "#CellPhone,#CellPhone2,#CellPhone3", function () { 
+            var $cellPhone = $("#CellPhone");
+            var $cellPhone2 = $("#CellPhone2");
+            var $cellPhone3 = $("#CellPhone3");
+            if ($cellPhone.val() == "" && $cellPhone2.val() == "" && $cellPhone3.val() == "") {
+                $("#save").removeClass("weui-btn_primary").addClass("weui-btn_disabled");
+            }
+            else {
+                $("#save").removeClass("weui-btn_disabled").addClass("weui-btn_primary");
+            }
+        })
+
+        $("#save").click(function () {
+
+
+            var model = {};
+            model.SysNo = $("#SysNo").val();
+            model.CellPhone = $("#CellPhone").val();
+            model.CellPhone2 = $("#CellPhone2").val();
+            model.CellPhone3 = $("#CellPhone3").val();
+
+            if (model.CellPhone == "" && model.CellPhone2 == "" && model.CellPhone3 == "") {
+                return false;
+            }
+
+            if (!(phoneCheck($("#CellPhone")) && phoneCheck($("#CellPhone2")) && phoneCheck($("#CellPhone3")))) {
+                return;
+            }
+
+            if (!model.CellPhone && !model.CellPhone2 && !model.CellPhone3) {
+                $.toptip("请至少填写一个报警通知电话");
+                return;
+            }
+
+            var array = [];
+            if (model.CellPhone) array.push(model.CellPhone);
+            if (model.CellPhone2) array.push(model.CellPhone2);
+            if (model.CellPhone3) array.push(model.CellPhone3);
+
+            if (array.length > 1) {
+                var uniqueArray = unique(array);
+                if (array.length != uniqueArray.length) {
+                    $.toptip("请不要输入相同的联系电话");
+                    return;
+                }
+            }
+
+
+            $.post("/Smoke/SaveContact", model, function (result) {
+                if (result.Success) {
+                    $.toast("操作成功");
+                }
+            }, 'json');
+
+        });
+
+        function phoneCheck(obj) {
+            var rex = /^1[3-9]{1}\d{9}$/;
+            var data = obj.val();
+
+            if (data && !(rex.test(data))) {
+                getDiv(obj).addClass("weui-cell_warn");
+                //$("#CellPhone").parent().parent().addClass("weui-cell_warn");
+                $.toptip('请输入正确手机号');
+                return false;
+            } else {
+                getDiv(obj).removeClass("weui-cell_warn");
+            }
+            return true;
+        }
+
+        function getDiv(obj) {
+            return obj.parent().parent();
+        }
+
+
+
+        function unique(array) {
+            var n = [];//临时数组
+            for (var i = 0; i < array.length; i++) {
+                if (n.indexOf(array[i]) == -1) n.push(array[i]);
+            }
+            return n;
+        }
+    </script>
+}
+
+
+

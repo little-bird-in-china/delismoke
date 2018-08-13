@@ -1,0 +1,15 @@
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\BlueStone.Smoke.DataAccess.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\BlueStone.Smoke.DataAccess.pdb
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\BlueStone.Smoke.Entity.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\BlueStone.Utility.DataAccess.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\BlueStone.Utility.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\BlueStone.Utility.Web.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\MySql.Data.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\Newtonsoft.Json.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\BlueStone.Smoke.Entity.pdb
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\BlueStone.Smoke.Entity.dll.config
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\bin\Debug\Newtonsoft.Json.xml
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\obj\Debug\BlueStone.Smoke.DataAccess.csprojResolveAssemblyReference.cache
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\obj\Debug\BlueStone.Smoke.DataAccess.csproj.CoreCompileInputs.cache
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\obj\Debug\BlueStone.Smoke.DataAccess.dll
+H:\My projects\smoke\代码\01_Portal\Service\BlueStone.Smoke.DataAccess\obj\Debug\BlueStone.Smoke.DataAccess.pdb

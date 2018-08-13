@@ -1,0 +1,505 @@
+﻿@using BlueStone.Smoke.Entity;
+
+@{
+    ViewBag.Title = "客户列表";
+    var status = BlueStone.Utility.EnumHelper.GetDescriptions<CompanyStatus>();
+}
+@section rsHeader
+{
+    @Styles.Render("~/Content/datatable")
+    @Scripts.Render("~/bundles/datatable")
+    @Scripts.Render("~/content/assets/js/jquery.form.js")
+    <style>
+        .modal-body .control-label {
+            margin-right: 10px;
+            margin-bottom: 6px;
+        }
+        .table.dataTable td.select-checkbox:before {
+            margin-top:5px;
+        }
+        .table.dataTable tr.selected td.select-checkbox:after {
+            margin-top:3px;
+        }
+    </style>
+}
+<div class="row grayback">
+    <a href="javascript:void(0)" class="btn btn-sm btn-primary" id="CreateBtn"><i class="fa fa-plus"></i>新增客户</a>
+    @*<a href="javascript:void(0)" class="btn btn-sm btn-primary" id="InputBtn" onclick="BatchCreateDistributor()"><i class="fa fa-plus"></i>批量导入客户</a>*@
+</div>
+
+<div class="row form-horizontal grayback">
+    <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+        <label class="col-xs-4 control-label">关键字：</label>
+        <div class="col-xs-8">
+            <input id="Search_Name" maxlength="10" class="form-control input-sm" placeholder="客户名称/联系人/联系电话" />
+        </div>
+    </div>
+    
+    <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+        <div class="col-xs-8 col-xs-offset-4">
+            <button id="QueryBtn" class="btn btn-sm btn-primary "><i class="fa fa-search"></i>查询</button>
+            <button id="ResetBtn" class="btn btn-sm btn-default"><i class="fa  fa-undo"></i>重置</button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="tabbable">
+        <ul class="nav nav-tabs" id="statusTab">
+            <li onclick="TableQuery(null)" id="allcompany">
+                <a data-toggle="tab" href="#home" name="companystatus">
+                    所有
+                </a>
+            </li>
+            <li onclick="TableQuery(@((int)CompanyStatus.Init))" name="companystatus">
+                <a data-toggle="tab" href="#home">
+                    待审核
+                </a>
+            </li>
+            <li name="companystatus" onclick="TableQuery(@((int)CompanyStatus.Authenticated))">
+                <a data-toggle="tab" href="#home">
+                    审核通过
+                </a>
+            </li>
+            <li name="companystatus" onclick="TableQuery(@((int)CompanyStatus.Invalid))">
+                <a data-toggle="tab" href="#home">
+                    审核驳回
+                </a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane in active">
+                <table id="ResultGrid" class="table table-hover"></table>
+                <div class="action" style="height:26px;">
+                    <a href="javascript:void(0)" class="btn btn-sm btn-primary" id="MarkAsInit"><i class="fa fa-inbox"></i>提交审核</a>
+                    <a href="javascript:void(0)" class="btn btn-sm btn-primary" id="MarkAsAuthenticated"><i class="fa fa-check"></i>审核通过</a>
+                    <a href="javascript:void(0)" class="btn btn-sm btn-primary" id="MarkAsInvalid"><i class="fa fa-hand-rock-o"></i>审核驳回</a>
+                    <a href="javascript:void(0)" class="btn btn-sm btn-primary" id="MarkAsDelete"><i class="fa fa-warning"></i>删除</a>
+                    @*<a href="javascript:void(0)" class="btn btn-sm btn-primary" id="SetInstallerBtn">设置安装人员</a>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="setInstallerDiv" style="z-index: 1060; display:none;" class="modal fade bs-modal-lg in" data-keyboard="false" data-backdrop="static" role="basic" aria-hidden="false">
+
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">×</button>
+                <h4 class="modal-title" id="myModalLabel">设置安装人员</h4>
+            </div>
+            <div id="installerBody" class="modal-body">
+            </div>
+            <div class="modal-footer text-center">
+                <button id="savebtn" type="button" class="btn btn-sm btn-primary"><i class="fa fa-check"></i>确定</button>
+                <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal"><i class="fa  fa-times"></i>取消</button>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+
+@section bottomBox{
+
+}
+
+@section scripts{
+    <script>
+
+        var CompanyStatus = null;
+        var CompanyListMgr = {}
+        $(function () {
+            $("#allcompany").attr("class","active")
+            
+
+            CompanyListMgr = {
+                addUrl:"@Url.RouteUrl("CompanyAddressManager",new { CompanySysNo ="0"})",
+                smokeUrl:"@Url.RouteUrl("SmokeListManager", new { CompanySysNo ="0"})",
+                mapUrl:"@Url.RouteUrl("CompanyMapManager", new { CompanySysNo ="0"})",
+                result_table: new Datatable(),
+                init: function () {
+                    //初始化DataTable
+                    CompanyListMgr.result_table.init({
+                        src: $('#ResultGrid'),
+                        dataTable: {
+                            ajax: {
+                                url: '/Company/QueryCompany',
+                                type: "POST",
+                                datatype: "json",
+                                data: function (data) {
+                                    data["queryfilter[]"] = JSON.stringify({
+                                        CompanyStatus: CompanyStatus,
+                                        Name: $.trim($("#Search_Name").val()),
+                                        //AreaCitySysNo: $.trim($("#Search_CityList").val()),
+                                    });
+                                }
+                            },
+                            columns: [
+                                { data: 'SysNo', title: '编号', orderable: false, sName: 'SysNo', visible: false },
+                                {
+                                    data: 'SysNo', title: '操作', orderable: false, sName: 'c.SysNo', render: function (data, type, full, row) {
+                                        return '<a target="_blank"  href="' + CompanyListMgr.smokeUrl + full.SysNo + '">地址管理/设备查询</a>&nbsp' +
+                                          //  '<a target="_blank"  href="' + CompanyListMgr.smokeUrl + full.SysNo + '">地址管理</a>&nbsp' +
+                                            '<a target="_blank"  href="' + CompanyListMgr.mapUrl + full.SysNo + '">地图管理</a>';
+                                    }
+                                },
+                                {
+                                    data: 'Name', title: '公司名称', orderable: false, sName: 'Name', render: function (data, type, full, row) {
+                                        var temp = '';
+                                        if (full.Logo != null && full.Logo != "") {
+                                            temp += '<img src=' + GlobalDefine.ImageStorageServerDomain +full.Logo + ' style="width:40px; height:40px;margin-right:5px;"></img>';
+                                        }
+                                        else {
+                                            temp += '<img src="/Content/assets/img/default_logo.png" style="width:40px; height:40px;margin-right:5px;"></img>';
+                                        }
+                                        return temp + '<a target="_blank"  href="/Company/Maintain?SysNo=' +  full.SysNo + '">' + $.removeHtml(data) + '</a>';
+                                    }
+                                },
+                                { data: 'CompanyStatusStr', title: '状态', orderable: false, sName: 'CompanyStatus' },
+                                { data: 'Phone', title: '公司电话', orderable: true, sName: 'Phone' },
+                                {
+                                    data: 'ContactName', title: '联系人', orderable: true, sName: 'ContactName', render: function (data, type, full, row) {
+                                        return $.removeHtml(data);
+                                    }
+                                },
+                                { data: 'ContactCellPhone', title: '联系电话', orderable: false, sName: 'ContactCellPhone' },
+                                { data: 'Address', title: '地址', orderable: true, sName: 'Address' },
+                                {
+                                    data: 'InDateStr', title: '创建时间', orderable: true,
+                                    sName: 'InDate'
+                                },
+                                {
+                                    data: 'EditUserName', title: '编辑人', orderable: true,
+                                    sName: 'EditUserName'
+                                },
+                                {
+                                    data: 'EditDateStr', title: '编辑时间', orderable: true,
+                                    sName: 'EditDate'
+                                }
+
+                            ],
+                            select: 'multiple',
+                            order: [[0, 'desc']]
+                        }
+                    });
+                    //注册查询按钮点击事件
+                    $("#QueryBtn").on("click", function () {
+                        CompanyListMgr.reloadTable();
+                    })
+
+
+                    //注册重置按钮点击事件
+                    $("#ResetBtn").on("click", function () {
+                        $("#Search_Name").val("");
+                        CompanyListMgr.reloadTable();
+                        //$("#Search_Keywords").val("");
+                        //$("#Search_ProvinceList").select2().select2('val', $('#Search_ProvinceList option:eq(0)').val());
+                        //$("#Search_CityList").html('<option value="" selected>请选择</option>');
+                        //$("#Search_CityList").select2().select2('val', $('#Search_CityList option:eq(0)').val());
+                        //$("#Search_DistrictList").html('<option value="" selected>请选择</option>');
+                        //$("#Search_DistrictList").select2().select2('val', $('#Search_DistrictList option:eq(0)').val());
+                    })
+                    //注册新增按钮点击事件
+                    $('#CreateBtn').on("click", function () {
+                        window.open('@Url.Action("Maintain", "Company")');
+                    })
+
+                    $("#MarkAsInit").on("click", function () {
+                        var datas = CompanyListMgr.result_table.getSelectedRowsData();
+                        if (datas.length == 0) {
+                            $.showError("请选择数据！");
+                            return;
+                        }
+                        for (var i = 0; i < datas.length; i++) {
+                            if (datas[i].CompanyStatus != 20) {
+                                $.showError("仅驳回的客户才可提交审核！");
+                                return;
+                            };
+                        }
+                        bootbox.confirm({
+                            animate: false,
+                            size: 'small',
+                            message: "您确认要提交审核吗?",
+                            callback: function (result) {
+                                if (result) {
+                                    var sysnos = [];
+                                    for (var i = 0; i < datas.length; i++) {
+                                        sysnos.push(datas[i].SysNo);
+                                    }
+                                    $.ajax({
+                                        url: "/Company/MarkAsInit",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: { data: JSON.stringify(sysnos) },
+                                        success: function (result) {
+                                            if (result.Success) {
+                                                $.showSuccess('提交成功');
+                                                CompanyListMgr.reloadTable();
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+
+                        })
+                    });
+
+                    //审核通过
+                    $("#MarkAsAuthenticated").on("click", function () {
+                        var datas = CompanyListMgr.result_table.getSelectedRowsData();
+                        if (datas.length == 0) {
+                            $.showError("请选择数据！");
+                            return;
+                        };
+                        for (var i = 0; i < datas.length; i++) {
+                            if (datas[i].CompanyStatus != 0) {
+                                $.showError("仅待审核的客户可进行审核！");
+                                return;
+                            };
+                        }
+                        bootbox.confirm({
+                            animate: false,
+                            size: 'small',
+                            message: "您确认审核通过吗?",
+                            callback: function (result) {
+                                if (result) {
+                                    var sysnos = [];
+                                    for (var i = 0; i < datas.length; i++) {
+                                        sysnos.push(datas[i].SysNo);
+                                    }
+                                    $.ajax({
+                                        url:"/Company/MarkAsAuthenticated",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: { data: JSON.stringify(sysnos) },
+                                        success: function (result) {
+                                            if (result.Success) {
+                                                $.showSuccess('操作成功');
+                                                CompanyListMgr.reloadTable();
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+
+                        })
+                    });
+                    //审核不通过
+                    $("#MarkAsInvalid").on("click", function () {
+                        var datas = CompanyListMgr.result_table.getSelectedRowsData();
+                        if (datas.length == 0) {
+                            $.showError("请选择数据！");
+                            return;
+                        };
+                        for (var i = 0; i < datas.length; i++) {
+                            if (datas[i].CompanyStatus != 0) {
+                                $.showError("仅待审核客户可进行审核！");
+                                return;
+                            };
+                        };
+                        bootbox.confirm({
+                            animate: false,
+                            size: 'small',
+                            message: "您确认审核驳回吗?",
+                            callback: function (result) {
+                                if (result) {
+                                    var sysnos = [];
+                                    for (var i = 0; i < datas.length; i++) {
+                                        sysnos.push(datas[i].SysNo);
+                                    }
+                                    $.ajax({
+                                        url: "/Company/MarkAsInvalid",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: { data: JSON.stringify(sysnos) },
+                                        success: function (result) {
+                                            if (result.Success) {
+                                                $.showSuccess('操作成功');
+                                                CompanyListMgr.reloadTable();
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+
+                        })
+                    });
+
+                    //审核不通过
+                    $("#MarkAsDelete").on("click", function () {
+                        var datas = CompanyListMgr.result_table.getSelectedRowsData();
+                        if (datas.length == 0) {
+                            $.showError("请选择数据！");
+                            return;
+                        };
+                        for (var i = 0; i < datas.length; i++) {
+                            if (datas[i].CompanyStatus != @((int)CompanyStatus.Init) && datas[i].CompanyStatus != @((int)CompanyStatus.Invalid) ) {
+                                $.showError("仅待审核和审核驳回的客户可删除！");
+                                return;
+                            };
+                        };
+                        bootbox.confirm({
+                            animate: false,
+                            size: 'small',
+                            message: "您确认删除选中客户吗?",
+                            callback: function (result) {
+                                if (result) {
+                                    var sysnos = [];
+                                    for (var i = 0; i < datas.length; i++) {
+                                        sysnos.push(datas[i].SysNo);
+                                    }
+                                    $.ajax({
+                                        url: "/Company/MarkAsDelete",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: { data: JSON.stringify(sysnos) },
+                                        success: function (result) {
+                                            if (result.Success) {
+                                                $.showSuccess('操作成功');
+                                                CompanyListMgr.reloadTable();
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+
+                        })
+                    });
+
+                },
+                reloadTable: function () {
+                    CompanyListMgr.result_table.getDataTable().ajax.reload();
+                }
+            }
+
+
+
+
+
+            CompanyListMgr.init();
+            CompanyListMgr.reloadTable();
+
+            LoadAllInstaller();
+
+            $("#SetInstallerBtn").click(function () {
+                var datas = CompanyListMgr.result_table.getSelectedRowsData();
+                if (datas.length == 0) {
+                    $.showError("请选择数据！");
+                    return;
+                }
+
+                var companySysNos = [];
+                $.each(datas, function (i, n) {
+                    companySysNos.push(n.SysNo);
+                });
+
+                ShowInstallModel(function (selectNos) {
+                    UpdateInstaller(companySysNos, selectNos);
+
+                }, null);
+            });
+
+
+        })
+
+        function TableQuery(status) {
+            if (status == 0) {
+                $("#MarkAsInit").hide();
+                $("#MarkAsAuthenticated").show();
+                $("#MarkAsInvalid").show();
+                $("#MarkAsDelete").show();
+            } else if (status == 10) {
+                $("#MarkAsInit").hide();
+                $("#MarkAsAuthenticated").hide();
+                $("#MarkAsInvalid").hide();
+                $("#MarkAsDelete").hide();
+            } else if (status == 20) {
+                $("#MarkAsInit").show();
+                $("#MarkAsAuthenticated").hide();
+                $("#MarkAsInvalid").hide();
+                $("#MarkAsDelete").show();
+            } else if (status == null) {
+                $("#MarkAsInit").show();
+                $("#MarkAsAuthenticated").show();
+                $("#MarkAsInvalid").show();
+                $("#MarkAsDelete").show();
+            }
+
+            CompanyStatus = status;
+            CompanyListMgr.reloadTable();
+        }
+
+        function LoadAllInstaller() {
+            $.post("/Company/QueryInstallers", {}, function (result) {
+                if (result.Success) {
+                    var installerBody = $("#installerBody");
+                    $.each(result.Data, function (i, user) {
+                        var label = $('<label class="control-label"><input type="checkbox" value="' + user.SysNo + '" class="form-control"><span class="text">' + user.UserFullName + '</span></label>');
+                        installerBody.append(label);
+                    });
+                }
+
+            }, 'json');
+
+        }
+
+        function ShowInstallModel(handler, companySysNo) {
+            var modal = $("#setInstallerDiv");
+            $("input:checked", modal).prop("checked", "");
+
+            if (companySysNo && companySysNo > 0) {
+                $.post("/Company/QueryCompnayInstallers", { companySysNo: companySysNo }, function (result) {
+                    if (result.Success) {
+                        var installerBody = $("#installerBody");
+                        $.each(result.Data, function (i, n) {
+                            $("input", installerBody).each(function (j, m) {
+                                if ($(m).attr("value") == n.InstallerSysNo) {
+                                    $(m).prop("checked","checked");
+                                }
+                            });
+                        });
+                    }
+                }, 'json');
+            }
+
+            modal.modal("show");
+
+            $("#savebtn", modal).unbind("click");
+            $("#savebtn", modal).click(function () {
+                var nos = [];
+                $("input:checked", modal).each(function (i, n) {
+                    nos.push($(n).attr("value"));
+                });
+
+                if (handler) {
+                    handler(nos);
+                    modal.modal("hide");
+                }
+            });
+        }
+
+        function SetCompnayInstaller(companySysNo) {
+            ShowInstallModel(function (selectNos) {
+                UpdateInstaller([companySysNo], selectNos);
+
+
+            }, companySysNo);
+        }
+
+        function UpdateInstaller(companySysNos, installNos) {
+            $.post("/Company/UpdateInstaller", { companySysNostr: JSON.stringify(companySysNos), installerSysNoStr: JSON.stringify(installNos) }, function (result) {
+                if (result.Success) {
+                    $.showSuccess("设置成功");
+                    $("tr", "#ResultGrid").removeClass("selected");
+                    $("th input", "#ResultGrid_wrapper").prop("checked",false);
+                }
+            }, 'json');
+        }
+
+    </script>
+}

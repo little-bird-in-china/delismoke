@@ -1,0 +1,183 @@
+﻿        html{
+            height:100%;
+        }
+        body{
+            height:100%;
+            min-height:650px;
+        }
+        .wraper{
+            width:1200px;
+            margin: 0 auto;
+        }
+        .login-header{
+            height:80px;
+            line-height:80px;
+            background-color:#242434;
+        }
+
+            .login-header .logo {
+                width: 176px;
+                height: 44px;
+                display: inline-block;
+                position: relative;
+                top: 12px;
+                background: url(/Content/assets/img/login_logo2.png) center no-repeat;
+            }
+        .login-header .logo:before{
+            position:absolute;top:60px;
+            left:66px;
+            content:'';
+            width:0;height:0;
+            z-index:2;
+            border-top:14px solid #242434;
+            border-left:25px solid transparent;
+            border-right:25px solid transparent;
+        }
+        .login-header .sys-name{
+            line-height:80px;
+            margin-left:20px;
+            display:inline-block;
+            font-size:26px;
+            color:#fff;
+        }
+        .login-main{
+            height:calc(100% - 160px);
+            height:-webkit-calc(100% - 160px);
+            height:-moz-calc(100% - 160px);
+            background-color:#5bc0de;
+            position:relative;
+        }
+        .login-main .wraper{
+            position:relative;
+            height:100%;
+        }
+        .login-main .login-bg{
+            height:100%;
+            position:absolute;
+            left:0;
+            top:calc(50% - 260px);
+            top:-webkit-calc(50% - 260px);
+            top:-moz-calc(50% - 260px);
+            height:520px;
+        }
+        @media only screen and (max-width: 1280px) {
+            .login-main .login-bg{
+                top:calc(50% - 260px);
+                top:-webkit-calc(50% - 208px);
+                top:-moz-calc(50% - 208px);
+                height:416px;
+            }
+        }
+        .login-main .login-bg img{
+            width:100%;height:100%;
+        }
+        .login-footer{
+            height:80px;
+            line-height:80px;
+            background-color:#fff;
+            text-align:center;
+            color:#999999;
+            font-size:14px;
+        }
+
+        .login-container {
+            position:absolute;right:0;
+            top:calc(50% - 200px);
+            display:inline-block;
+            float:right;
+            width:360px;
+            max-width:360px;
+            overflow:hidden;
+            margin:0;
+        }
+        @media only screen and (max-width: 1200px){
+            .login-main .login-bg{
+                display:none;
+            }
+            .wraper{
+                width:100%;
+                margin:0;
+                padding:0 40px;
+            }
+            .login-container{
+                float:none;
+                left:calc((100% - 360px) / 2);
+                left:-webkit-calc((100% - 360px) / 2);
+                left:-moz-calc((100% - 360px) / 2);
+            }
+        }
+        .login-container .loginbox {
+            width:360px !important;
+            height: auto !important;
+            padding-bottom:15px;
+            background-color:#f8f8f8;
+        }
+        .login-container .loginbox .loginbox-title {
+            background-color:#fff;
+            margin-bottom:20px;
+            height:60px;
+            line-height:60px;
+            padding:0 20px 0 48px;
+            text-align:left;
+            font-size:18px;
+            color:#242433;
+            position:relative;
+        }
+        .login-container .loginbox .loginbox-title i{
+            position:absolute;
+            top:5px;left:0;
+            display:inline-block;
+            width:48px;height:48px;
+            background:url(/Content/assets/img/login_title.png) center no-repeat;
+        }
+        .login-container .loginbox .loginbox-textbox {
+            padding: 10px 30px;
+            position:relative;
+        }
+        .login-container .loginbox .loginbox-textbox .help-block{
+            position:absolute;
+            left:30px;top:50px;
+        }
+        .login-container .loginbox .loginbox-textbox .form-control {
+            height:45px !important;
+            font-size:16px !important;
+        }
+        .login-container .loginbox .loginbox-forgot {
+            padding:10px 30px;
+            position:relative;
+        }
+        .login-container .loginbox .loginbox-forgot .help-block{
+            position:absolute;
+            left:30px;
+            top:25px;
+        }
+        .login-container .loginbox .loginbox-forgot a {
+            font-size: 14px;
+            color: #3071a9;
+        }
+
+        .login-container .loginbox .loginbox-submit {
+            padding: 10px 30px;
+        }
+        .login-container .loginbox .loginbox-submit .btn-primary{
+            height:50px;font-size:18px;
+            color:#fff;
+            background-color:#428bca !important;
+            border-color:#428bca !important;
+        }
+        .form-group {
+            margin-bottom: 0;
+        }
+        .loginbox-textbox.verifycode{
+            margin:0;
+        }
+        .loginbox-textbox.verifycode .form-group{
+            width:60%;
+            float:left;
+        }
+        .loginbox-textbox.verifycode img{
+            width:40%;
+            height:45px;
+            float:left;
+            cursor:pointer;
+        }

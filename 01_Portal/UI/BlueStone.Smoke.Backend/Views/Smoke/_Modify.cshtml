@@ -1,0 +1,124 @@
+﻿@using BlueStone.Utility;
+@model SmokeDetector
+@{
+
+}
+@Styles.Render("~/Content/jstree")
+@Scripts.Render("~/bundles/jstree")
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">×</button>
+    <h4 class="modal-title" id="myModalLabel">信息维护</h4>
+</div>
+<div class="modal-body">
+    <form class="form-horizontal" id="defaultForm">
+        <div class="row">
+            <div class="form-group col-xs-12">
+                <label class="col-sm-3 col-xs-4 control-label">设备编号：</label>
+                <label class="control-label col-sm-8 col-xs-10 text-left"> @Model.Code</label>
+            </div>
+            <div class="form-group col-xs-12">
+                <label class="col-sm-3 col-xs-4 control-label"><span class="red">*</span>ONENET编号：</label>
+                <div class="col-sm-8 col-xs-10">
+                    <input name="detail_code" id="detail_code" style="display:none" value="@Model.Code" />
+                    <input name="ONENETID" id="ONENETID" value="@Model.DeviceId"
+                           class="form-control" onkeyup="value=value.replace(/[^\d]/g,'')" placeholder="请输入ONENET编号" />
+                </div>
+            </div>
+            <div class="form-group col-xs-12">
+                <label class="col-sm-3 col-xs-4 control-label">设备位置：</label>
+                <div class="col-sm-8 col-xs-10" style="max-height:400px; overflow-y:auto;">
+                    <div style="margin-top:5px" id="detailTreeAddress">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group col-xs-12">
+                <label class="col-sm-3 col-xs-4 control-label">设备备注：</label>
+                <div class="col-sm-8 col-xs-10">
+                    <input name="Position" id="Position"
+                           class="form-control" placeholder="请输入设备备注" value=" @Model.Position" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="modal-footer text-center">
+    <button id="updatesavebtn" type="button" class="btn btn-sm btn-primary"><i class="fa fa-check"></i>确定</button>
+    <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal"><i class="fa  fa-times"></i>取消</button>
+</div>
+
+
+<script>
+    var detectorDetailPageManger = {
+        selectedAddressSysNo: '@Model.AddressSysNo',
+        selectedAddressCode: '@Model.AddressCode',
+        firstLoad: true,
+    };
+     var initDetailTree = function () {
+         $('#detailTreeAddress').jstree({
+                "core": {
+                    "themes": {
+                        "responsive": false,
+                        'variant': 'small',
+                        'stripes': false
+                    },
+                    "check_callback": true,
+                    'data': {
+                        'url': "@Url.Action("GetAddressTree", "Company")",
+                        "dataType": "json",
+                        data: function (node) {
+                            if (detectorDetailPageManger.firstLoad) {
+                                detectorDetailPageManger.firstLoad = false;
+                                return {
+                                    ParentSysNo: node.id, CompanySysNo:  @Model.CompanySysNo, SelectedAddressCode: detectorDetailPageManger.selectedAddressCode
+                                }
+                            }else {
+                                 return { ParentSysNo: node.id, CompanySysNo: @Model.CompanySysNo};
+                            }
+
+                        },
+                        success: function (d) {
+
+                        }
+                    }
+                },
+                "types": {},
+                "plugins": ["types"]
+            });
+         var jqTree = $('#detailTreeAddress');
+            jqTree.on('select_node.jstree', function (e, data) {
+                detectorDetailPageManger.selectedAddressSysNo = data.selected[0];
+            });
+         jqTree.on('loaded.jstree', function (e, data) {
+                $('#detailTreeAddress').jstree(true).select_node(detectorDetailPageManger.selectedAddressSysNo);
+            });
+    }
+    $(function () {
+        initDetailTree();
+        $("#updatesavebtn").click(function () {
+
+            var DeviceID = $.trim($("#ONENETID").val());
+            var AddressSysNo = detectorDetailPageManger.selectedAddressSysNo;
+            if (DeviceID == null || DeviceID == "") {
+                $.showError("请填写ONENET编号！")
+                return;
+            }
+            if (!/^[0-9]*$/.test(DeviceID)) {
+                $.showError("ONENET编号只能为纯数字！");
+                return;
+            }
+            var Position = $.trim($("#Position").val());
+
+            $.get("@Url.Action("UpdateSmokeInfo", "Smoke")", { code: $("#detail_code").val(), newDeviceID: DeviceID, addressSysNo: AddressSysNo ,position: Position}, function (res) {
+                if (res.Success) {
+                    $.showSuccess("修改成功");
+                    hideModal(true);
+                    setTimeout(function () {
+                        doTableAjaxQuery(grid);
+                    }, 1000)
+                }
+            }, 'json');
+
+        })
+    })
+</script>
+

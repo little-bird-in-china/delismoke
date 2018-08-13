@@ -1,0 +1,74 @@
+﻿
+@{
+    ViewBag.Title = "个人中心";
+    AppUserInfo curentUser = UserMgr.ReadUserInfo() ?? new AppUserInfo();
+}
+<header class="user-header">
+    <i><img src="@curentUser.HeadImage"></i>
+    <h1>@HttpUtility.UrlDecode(curentUser.UserID)</h1>
+</header>
+<div class="body-bottom-pd">
+    <div class="weui-cells">
+        @*<a class="weui-cell weui-cell_access" href="@Url.Action("BondeDevices","Smoke")">
+                <div class="weui-cell__hd"><i class="iconfont">&#xe62d;</i></div>
+                <div class="weui-cell__bd">
+                    <p>绑定设备</p>
+                </div>
+                <div class="weui-cell__ft"></div>
+            </a>*@
+        @*@if (curentUser.UserType == UserType.Installer)
+            {
+                <a class="weui-cell weui-cell_access" href="@Url.Action("InstallSmokedetectorList","Smoke")">
+                    <div class="weui-cell__hd"><i class="iconfont">&#xe612;</i></div>
+                    <div class="weui-cell__bd">
+                        <p>安装设备列表</p>
+                    </div>
+                    <div class="weui-cell__ft"></div>
+                </a>
+            }*@
+        <a class="weui-cell weui-cell_access" href="@Url.Action("Contact")">
+            <div class="weui-cell__hd"><i class="iconfont">&#xe633;</i></div>
+            <div class="weui-cell__bd">
+                <p>添加紧急联系人</p>
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+        <a class="weui-cell weui-cell_access" href="@Url.Action("Notice","Smoke")">
+            <div class="weui-cell__hd"><i class="iconfont">&#xe62e;</i></div>
+            <div class="weui-cell__bd">
+                <p>历史通知</p>
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+        <a class="weui-cell weui-cell_access" href="@Url.RouteUrl("DeviceInstallDescription")">
+            <div class="weui-cell__hd"><i class="iconfont">&#xe631;</i></div>
+            <div class="weui-cell__bd">
+                <p>安装说明</p>
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+        <a class="weui-cell weui-cell_access" href="@Url.Action("AdminBinding","Smoke")">
+            <div class="weui-cell__hd"><i class="iconfont">&#xe632;</i></div>
+            <div class="weui-cell__bd">
+                @if (curentUser.UserType == UserType.Common)
+                {
+                    <p>绑定管理员账号</p>
+                }
+                else
+                {
+                    <p>已绑定管理员：@HttpUtility.UrlDecode(curentUser.ManagerName)</p>
+                }
+
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+        <a class="weui-cell weui-cell_access" href="@Url.Action("LoginOut","Smoke")">
+            <div class="weui-cell__hd"><i class="iconfont">&#xe786;</i></div>
+            <div class="weui-cell__bd">
+                <p>清理缓存</p>
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+    </div>
+
+</div>

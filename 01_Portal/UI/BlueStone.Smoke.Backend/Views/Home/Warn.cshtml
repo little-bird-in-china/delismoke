@@ -1,0 +1,72 @@
+﻿
+<!--报警弹窗关闭后右下角报警图标-->
+<div class="gu_warning" style="display:none">
+    <div class="warning_con">
+        <a href="javascript:;" id="warning"><img src="~/Content/assets/img/error.png"></a>
+        <i class="shadow"></i>
+        <i class="borderStyle"></i>
+        <i class="borderStyle2"></i>
+        <i class="borderStyle3"></i>
+    </div>
+</div>
+
+
+<!--报警弹窗-->
+<div class="warning_alert" id="wAlert" style="display:none">
+    <div class="wMessage">
+        <div class="wClose"></div>
+        <div class="smoke_ico">
+            <img src="~/Content/assets/img/smoke.png">
+        </div>
+        <div class="smoke_txt">
+            <ul></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    var warnObj = $("div .gu_warning");
+    var warnAlertObj = $("div .warning_alert");
+    var warn = {
+
+        init: function () {
+            $(".warning_con", warnObj).click(function () {
+                warnAlertObj.show();
+            });
+
+            $(".wClose", warnAlertObj).click(function () {
+                warnAlertObj.hide();
+            });
+        },
+        hide: function () {
+            warnObj.hide();
+            warnAlertObj.hide();
+        },
+
+        loadData: function (warningSmokeDetectors,handler) {
+            var ul = $("ul", warnAlertObj);
+            if (!warningSmokeDetectors || warningSmokeDetectors.length == 0) {
+                warnAlertObj.hide();
+                warnObj.hide();
+                return;
+            }
+
+            var self = this;
+            ul.empty();
+            $.each(warningSmokeDetectors, function (i, warningSmokeDetector) {
+                var li = $('<li><a href="javascript:;">' + warningSmokeDetector.Name + '</a> 报警</li>');
+                li.click(function () {
+                    if (handler) {
+                        handler(warningSmokeDetector.AddressSysNo);
+                    }
+
+                    warnAlertObj.hide();
+                });
+
+                ul.append(li);
+            });
+
+            warnObj.show();
+        }
+    }
+</script>

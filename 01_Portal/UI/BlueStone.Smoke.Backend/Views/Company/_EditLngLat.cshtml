@@ -1,0 +1,349 @@
+﻿@{
+    Layout = null;
+}
+
+<script>
+    var clickCount = 0;
+    var map;
+    $(document).ready(function () {
+        var lng = '@ViewBag.lng';
+        var lat = '@ViewBag.lat';
+        //if ($.trim(lng).length === 0 && $.trim(lat).length === 0) {
+        //    lng = '121.436001';
+        //    lat = '29.294254';
+        //}
+            var cityStr = '@ViewBag.City';
+            var addressStr = '@ViewBag.Address';
+            $("#cityname").val(cityStr);
+            $("#addre").val(cityStr+addressStr);
+            $("#addhouseLongitude").val(lng);
+            $("#addhouseLatitude").val(lat);
+        
+            // 初始化百度地图
+            initBaiduMap(lng, lat);
+        if ((lng === "" || lat==="")&& (cityStr !== "" || addressStr!=="")){
+                showOptionsURL();
+            }
+           // doMark();
+            //doOptions();
+            $(".selectLan").click(function () {
+                clickCount = clickCount + 1;
+                showOptionsURL();
+               // initBaiduMap($("#addhouseLongitude").val(), $("#addhouseLatitude").val());
+                //if(clickCount%2==0){
+                //    $(".selectLan").val('查询坐标');
+                //}else{
+                //    $(".selectLan").val('刷新地图');
+                //}
+            });
+
+            $(".selectConfirm").click(function () {
+                var lngVal = $("#addhouseLongitude").val();
+                var latVal = $("#addhouseLatitude").val();
+                if (lngVal != null && latVal != null && lngVal != '' && latVal != '')
+                {
+                    hideModal(lngVal + '|' + latVal);
+                }
+            });
+        });
+        /**
+         *
+         * 初始化百度地图
+         */
+        function initBaiduMap(x, y) {
+            // 百度地图API功能
+            map = new BMap.Map("allmap");
+            var point = new BMap.Point(x, y);
+            var CurrentCity = "宁波市宁海县";
+            if (isNaN(point.x) || isNaN(point.y)) {
+                map.centerAndZoom(CurrentCity, 13);
+            } else {
+                map.centerAndZoom(point, 13);
+            }
+            map.enableScrollWheelZoom(true);
+            
+            // 设置地图显示的城市 此项是必须设置的
+            map.setCurrentCity("宁海县");
+            // 添加地图类型控件
+            map.addControl(new BMap.MapTypeControl());
+            // 左上角，添加比例尺
+            var top_left_control = new BMap.ScaleControl({
+                anchor: BMAP_ANCHOR_TOP_LEFT
+            });
+            // 左上角，添加默认缩放平移控件
+            var top_left_navigation = new BMap.NavigationControl();
+            // 右上角，仅包含平移和缩放按钮
+            var top_right_navigation = new BMap.NavigationControl({
+                anchor: BMAP_ANCHOR_TOP_RIGHT,
+                type: BMAP_NAVIGATION_CONTROL_SMALL
+            });
+            /*
+             * 缩放控件type有四种类型: BMAP_NAVIGATION_CONTROL_SMALL：仅包含平移和缩放按钮；
+             * BMAP_NAVIGATION_CONTROL_PAN:仅包含平移按钮； BMAP_NAVIGATION_CONTROL_ZOOM：仅包含缩放按钮
+             */
+            map.addControl(top_left_control);
+            map.addControl(top_left_navigation);
+         
+       
+            if (!isNaN(point.lat)&&!isNaN(lng)) {
+                     // 创建标注
+            setTimeout(function () {
+                map.clearOverlays();
+                var marker = new BMap.Marker(point);
+                // 将标注添加到地图中
+                map.addOverlay(marker);
+                map.panTo(point);
+                   }, 200);
+            }
+              
+        
+          
+
+            //鼠标点击获取坐标,并设置标注
+            map.addEventListener("click", function (e) {
+                //通过坐标获取详细地址
+                $("#addhouseLongitude").val(e.point.lng);
+                $("#addhouseLatitude").val(e.point.lat);
+                map.clearOverlays();
+                var new_point = new BMap.Point(
+                document.getElementById("addhouseLongitude").value,
+                document.getElementById("addhouseLatitude").value);
+                // 创建标注
+                var marker = new BMap.Marker(new_point);
+                // 将标注添加到地图中
+                map.addOverlay(marker);
+                map.panTo(new_point);
+            });
+        }
+
+        //通过地址推出坐标
+        var advancedOptions = "";
+        var address = "";
+        var cityname = "";
+        var SAMPLE_ADVANCED_POST = "http://api.map.baidu.com/geocoder/v2/?ak=B3f7707c25da5b29a6ff69618788a296&callback=renderOption&output=json";
+        //通过坐标反推地址的
+        var addressOptions = "";
+        var lat = "";
+        var lng = "";
+        var SAMPLE_ADDRESS_POST = "http://api.map.baidu.com/geocoder/v2/?ak=B3f7707c25da5b29a6ff69618788a296&callback=renderReverse&output=json&pois=1";
+
+        function doMark() {
+            map.clearOverlays();
+            var new_point = new BMap.Point(
+            document.getElementById("addhouseLongitude").value,
+            document.getElementById("addhouseLatitude").value);
+           setTimeout(function () {
+                // 创建标注
+                var marker = new BMap.Marker(new_point);
+                // 将标注添加到地图中
+                map.addOverlay(marker);
+                map.panTo(new_point);
+            }, 500);
+        }
+
+        function doOptions() {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+           
+            script.src = advancedOptions;
+            document.body.appendChild(script);
+        };
+        //function doAddress() {
+        //    var script = document.createElement('script');
+        //    script.type = 'text/javascript';
+        //    showAddressURL();
+        //    script.src = addressOptions;
+        //    document.body.appendChild(script);
+        //};
+
+
+   
+        function showOptionsURL() {
+            advancedOptions = SAMPLE_ADVANCED_POST;
+            address = document.getElementById("addre").value;
+            cityname = document.getElementById("cityname").value;
+            if (address === "") {
+                advancedOptions += "&address=" + encodeURIComponent(cityname);
+            } else {
+                advancedOptions += "&address=" + encodeURIComponent(address);
+            }
+            advancedOptions += "&city=" + encodeURIComponent(cityname);
+            var safe = advancedOptions;
+            GetCode(safe);
+        };
+
+        //function showAddressURL() {
+        //    addressOptions = SAMPLE_ADDRESS_POST;
+        //    lat = document.getElementById("addhouseLatitude").value;
+        //    lng = document.getElementById("addhouseLongitude").value;
+        //    addressOptions += "&location=" + lat + "," + lng;
+        //    var safe = addressOptions;
+        //    GetAddress(safe);
+        //};
+
+        function GetCode(url) {
+            $.ajax({
+                type: "get",
+                url: url,
+                dataType: "JSONP",
+                success: function (data) {
+                    renderOption(data);
+                },
+                error: function (data) {
+                    renderOption(data);
+                }
+
+            });
+        }
+
+        //function GetAddress(url) {
+        //    $.ajax({
+        //        type: "get",
+        //        url: url,
+        //        dataType: "JSONP",
+        //        success: function (data) {
+        //            renderReverse(data);
+        //        },
+        //        error: function (data) {
+        //            renderReverse(data);
+        //        }
+
+        //    });
+        //}
+
+        function renderOption(response) {
+            var html = '';
+            if (response.status) {
+                var text = "无正确的返回结果。";
+                document.getElementById('optionsNarrative').innerHTML = '<label class="control-label col-sm-4 col-xs-6">' + text + '</label>';
+                return;
+            } else {
+                var location = response.result.location;
+                var lngShow, latShow;
+                if (location.lng.toString().length > 14) {
+                    lngShow = location.lng.toString().substring(0, 14);
+                } else {
+                    lngShow = location.lng.toString();
+                }
+                if (location.lat.toString().length > 14) {
+                    latShow = location.lat.toString().substring(0, 14);
+                } else {
+                    latShow = location.lat.toString();
+                }
+                $("#addhouseLongitude").val(lngShow);
+                $("#addhouseLatitude").val(latShow);
+                document.getElementById('optionsNarrative').innerHTML = '';
+                doMark()
+                return;
+            }
+        }
+        function renderReverse(response) {
+            var html = '';
+            if (response.status) {
+                var text = "无正确的返回结果。";
+                document.getElementById('optionsNarrative').innerHTML = '<label class="control-label col-sm-4 col-xs-6">' + text + '</label>';
+                return;
+            } else {
+                var location = response.result;
+
+                //html += '<p>详细地址: ' + location.formatted_address + '<br/>';
+                //html += '<p>城市: ' + location.addressComponent.country + location.addressComponent.province + '<br/>';
+                //html += '<p>市区: ' + location.addressComponent.city + location.addressComponent.district + '<br/>';
+                //html += '<p>地址: ' + location.addressComponent.street + location.addressComponent.street_number + '<br/>';
+                //document.getElementById('optionsNarrative').innerHTML = html;
+                return;
+            }
+        }
+
+        function G(id) {
+            return document.getElementById(id);
+        }
+        //var ac = new BMap.Autocomplete(    //建立一个自动完成的对象
+        //    {
+        //        "input": "addre",
+        //        "location": map
+        //    });
+
+        //ac.addEventListener("onhighlight", function (e) {  //鼠标放在下拉列表上的事件
+            
+        //    var str = "";
+        //    var _value = e.fromitem.value;
+        //    var value = "";
+        //    if (e.fromitem.index > -1) {
+        //        value = _value.province + _value.city + _value.district + _value.street + _value.business;
+        //    }
+        //    str = "FromItem<br />index = " + e.fromitem.index + "<br />value = " + value;
+
+        //    value = "";
+        //    if (e.toitem.index > -1) {
+        //        _value = e.toitem.value;
+        //        value = _value.province + _value.city + _value.district + _value.street + _value.business;
+        //    }
+        //    str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
+        //    G("searchResultPanel").innerHTML = str;
+        //});
+        //var myValue;
+        //ac.addEventListener("onconfirm", function (e) {    //鼠标点击下拉列表后的事件
+        //    var _value = e.item.value;
+        //    myValue = _value.province + _value.city + _value.district + _value.street + _value.business;
+        //    G("searchResultPanel").innerHTML = "onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
+
+        //    setPlace();
+        //});
+
+        function setPlace() {
+            map.clearOverlays();    //清除地图上所有覆盖物
+            function myFun() {
+                var pp = local.getResults().getPoi(0).point;    //获取第一个智能搜索的结果
+                map.centerAndZoom(pp, 18);
+                map.addOverlay(new BMap.Marker(pp));    //添加标注
+            }
+            var local = new BMap.LocalSearch(map, { //智能搜索
+                onSearchComplete: myFun
+            });
+            local.search(myValue);
+        }
+
+</script>
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">×</button>
+    <h4 class="modal-title" id="myModalLabel">查询位置坐标</h4>
+</div>
+<div class="modal-body">
+    <div>
+        <div class="form-group col-xs-12 form-horizontal">
+            <div class="form-group col-sm-4 col-xs-6" style="display:none">
+                <label class="control-label col-sm-3 col-xs-2">省市区：</label><input type="text" id="cityname" placeholder="请选择省份" class="col-sm-9 col-xs-6">
+            </div>
+            <div class="form-group col-sm-4 col-xs-6">
+                <label class="control-label col-sm-3 col-xs-2">地&nbsp;址：</label><input type="text" placeholder="请输入地址" id="addre" class="col-sm-9 col-xs-6">
+               @* <div id="searchResultPanel" style="border:1px solid #C0C0C0;width:150px;height:auto;z-index:8888">ewrarrew</div>*@
+            </div>
+            <div class="form-group col-sm-4 col-xs-6">
+                &nbsp;&nbsp;<input type="button" class="selectLan btn btn-sm " value="查询坐标" />
+            </div>
+            <div class="form-group col-sm-4 col-xs-6 text-right">
+                &nbsp;&nbsp;<input type="button" class="selectConfirm btn btn-sm btn-primary" value="确认坐标" />
+            </div>
+        </div>
+        <div id="optionsNarrative" class="form-group col-sm-6 col-xs-12">
+        </div>
+        <div id="r-result" class="form-group col-xs-12 form-horizontal" style="display:none" >
+            <div class="form-group col-sm-4 col-xs-6" >
+                <label class="control-label col-sm-3 col-xs-2">经&nbsp;度： </label><input id="addhouseLongitude" readonly type="text" class="col-sm-9 col-xs-6" />
+            </div>
+            <div class="form-group col-sm-4 col-xs-6" >
+                <label class="control-label col-sm-3 col-xs-2">纬&nbsp;度：</label><input id="addhouseLatitude" readonly type="text" class="col-sm-9 col-xs-6" />
+            </div>
+            @*<div class="form-group col-sm-4 col-xs-6">
+                &nbsp;&nbsp;<input type="button" class="selectConfirm btn btn-sm btn-primary" value="确认坐标" />
+            </div*@>
+        </div>
+        <div id="allmap"></div>
+    </div>
+</div>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=B3f7707c25da5b29a6ff69618788a296"></script>
+<div class="modal-footer text-center">
+    @*<button id="sure_button" type="button" class="btn btn-sm btn-primary"><i class="fa fa-check"></i>确定</button>
+        <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal"><i class="fa  fa-times"></i>取消</button>*@
+</div>

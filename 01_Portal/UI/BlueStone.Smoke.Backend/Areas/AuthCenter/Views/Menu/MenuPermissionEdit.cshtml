@@ -1,0 +1,116 @@
+﻿@using BlueStone.Utility.Web
+@{
+    ViewBag.Title = "菜单权限编辑页";
+}
+
+@section rsHeader{
+}
+
+@section rsContent{
+    <section class="content">
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <h3 class="box-title">基本信息</h3>
+                <div class="box-tools pull-right">
+                    <button class="btn btn-box-tool" type="button" data-widget="collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div class="row" style="margin-bottom:20px;">
+                    <div class="col-xs-8 col-sm-6 col-md-4 col-lg-4">
+                        <select class="form-control" id="Current-Application">
+                            @{
+                                var allApps = BlueStone.Smoke.Service.AuthServiceLocal.LoadAllSystemApplication();
+                                foreach (var item in allApps)
+                                {
+                                    <option value="@(item.ApplicationID)">@item.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div id="menu-permission-tree">
+                    @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/MenuTreeTemplate.cshtml")
+                </div>
+            </div>
+            <div class="box-footer">
+            </div>
+        </div>
+
+    </section>
+
+}
+
+@section rsFooter{
+
+@Html.Partial("~/Areas/AuthCenter/Views/CustomControls/PermissionSelector.cshtml")
+
+    <script>
+
+        var MenuPermissionEdit_PageMgr = function () {
+
+            var menuTreeUrl = '@Url.Action("LoadMenusWithPermissions", "Menu")';
+            var nemuPermissionSaveUrl = '@Url.Action("SaveMenusPermission", "Menu")';
+            var nemuPermissionDeleteUrl = '@Url.Action("DeleteMenusPermission", "Menu")';
+            var menu_tree = new KOMenuTree('menu-permission-tree', menuTreeUrl);
+            menu_tree.ReLoad({ ApplicationID: $('#Current-Application').val() });
+            //重写add点击事件
+            menu_tree.AddClick = function (element, currentData, event) {
+                var menuSysNo = currentData.id;
+                var all_permissions = [];
+                for (var i = 0; i < currentData.options.length; i++) {
+                    all_permissions.push(currentData.options[i].data);
+                }
+                CustomControl_PermissionSelector.show(function (result)
+                {
+                    if (result == null || result.length <= 0) {
+                        return;
+                    }
+                    for (var i = 0; i < result.length; i++) {
+                        all_permissions.push(result[i]);
+                    }
+                    $.ajax({
+                        url: nemuPermissionSaveUrl,
+                        type: "POST",
+                        dataType: "json",
+                        data: { data: JSON.stringify(all_permissions), MenuSysNo: menuSysNo },
+                        success: function (result) {
+                            if (result.Success) {
+                                menu_tree.ReLoad({ ApplicationID: $('#Current-Application').val() });
+                            }
+
+                        }
+                    });
+                },
+                { ApplicationID: $('#Current-Application').val() });
+            }
+            //重写delete点击事件
+            menu_tree.DeleteClick = function (element, currentData, event) {
+                $.confirm('确定要删除' + currentData.text + '这个权限点!', function (res) {
+                    if (!res) {
+                        return;
+                    }
+                    $.ajax({
+                        url: nemuPermissionDeleteUrl,
+                        type: "POST",
+                        dataType: "json",
+                        data: { data: currentData.id },
+                        success: function (result) {
+                            if (result.Success) {
+                                menu_tree.ReLoad({ ApplicationID: $('#Current-Application').val() });
+                            }
+                        }
+                    });
+                });
+            }
+
+            $('#Current-Application').on("change", function () {
+                menu_tree.ReLoad({ ApplicationID: $('#Current-Application').val() });
+            });
+
+        }();
+
+    </script>
+}

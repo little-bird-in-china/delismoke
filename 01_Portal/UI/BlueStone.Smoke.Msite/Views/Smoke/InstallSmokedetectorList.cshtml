@@ -1,0 +1,144 @@
+﻿@using BlueStone.Smoke.Entity
+@{
+    ViewBag.Title = "安装列表";
+    Layout = "~/Views/Shared/WechatWeb/_Main.cshtml";
+}
+@section rsHeader
+{
+}
+<div class="body-bottom-pd" id="deveceItemView">
+
+</div>
+
+<template id="smokeTemp">
+    <div class="weui-cell weui-cell_swiped gu-swipe weui-cells_checkbox">
+        <div class="weui-cell__bd cell_position">
+            <a id="smokedetail">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        <p>
+                            <i class="gu-state"></i>
+                        </p>
+                    </div>
+                    <div class="weui-cell__ft"><i class="iconfont">&#xe634;</i></div>
+                </div>
+                <p class="weui-media-box__desc gu-list-p"><i class="iconfont" style="margin-right: 2px; font-size: 14px;">&#xe638;</i></p>
+            </a>
+        </div>
+    </div>
+</template>
+
+
+@section rsFooter{
+    <script>
+        $(function () {
+            var filter = {
+                PageIndex: 0
+            };
+            var $smoketemp = document.querySelector('#smokeTemp').content;
+            $smoketemp = $($smoketemp);
+            var Status = {
+                Online:@((int)UISmokeDetectorStatus.Online),
+                OffLine:@((int)UISmokeDetectorStatus.OffLine),
+                LowPowerWarning:@((int)UISmokeDetectorStatus.LowPowerWarning),
+                FireWarning:@((int)UISmokeDetectorStatus.FireWarning) ,
+            };
+            var $dir = $("#deveceItemView");
+            $.showLoading();
+            $.post("@Url.Action("QueryInstallList", "Smoke")",
+                {data: JSON.stringify(filter) },
+                function (res) {
+                    $.hideLoading();
+                    if (res.Success) {
+                        var data = res.Data;
+                        if (data.data.length > 0) {
+                            var smokelist = data.data;
+                            renderData(smokelist);
+                        }
+                    } else {
+                        $.toptip(res.Message, 'forbidden');
+                    }
+                },
+                'json');
+
+            var connectStr = function (data) {
+                var tempstr=""
+                if (typeof data === 'string') {
+                    if ($.trim(data).length > 0) {
+                        tempstr += $.trim(data);
+                        return tempstr;
+                    }
+                }
+                if (data instanceof Array) {
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i] !== null) {
+                            tempstr += connectStr(data[i]);
+                        }
+                    }
+                    return tempstr;
+                }
+                return tempstr;
+            }
+
+            function renderData(smokelist) {
+                for (var i = 0; i < smokelist.length; i++) {
+                    var $temp = $smoketemp.clone();
+                    var $a = $temp.find("#smokedetail");
+                    $a.attr("href", "/Smoke/DeviceDetails?code=" + smokelist[i].Code);
+                    var $weuicell = $a.find("[class='weui-cell__bd']");
+                    switch (smokelist[i].UIStatus) {
+                        case Status.FireWarning:
+                            $weuicell.attr("class", "weui-cell__bd error");
+                            $weuicell.find("i").before('<span class="heartbit"></span>');
+                            break;
+                        case Status.OffLine:
+                            $weuicell.attr("class", "weui-cell__bd offLine");
+                            break;
+                        case Status.LowPowerWarning:
+                            $weuicell.attr("class", "weui-cell__bd warning");
+                            break;
+                        default:
+                            $weuicell.attr("class", "weui-cell__bd normal");
+                            break;
+                    }
+                    $a.find("p").eq(0).append(smokelist[i].Code);
+                    $a.find("p").eq(1).append(connectStr([smokelist[i].AddressName, smokelist[i].Position]));
+                    $dir.append($temp);
+                }
+            }
+
+
+
+            $(document).scroll(function () {
+                var scrollTop = $(this).scrollTop();     //滑过的文档高度
+                var scrollHeight = $(this).height();      //文档高度
+                var windowHeight = window.innerHeight;  //浏览器窗口高度
+                if (scrollTop + windowHeight == scrollHeight) {
+                    filter.PageIndex = ++filter.PageIndex;
+                    $.showLoading();
+                    $.post(
+                        "@Url.Action("QueryInstallList", "Smoke")",
+                        {data: JSON.stringify(filter)},
+                        function (res) {
+                            $.hideLoading();
+                             if (res.Success) {
+                                 var data = res.Data;
+                                 if (data.data.length > 0) {
+                                     var smokelist = data.data;
+                                     renderData(smokelist)
+                                 } else {
+                                     $.toptip('到底儿了', 'success')
+                                     //$.toast("到底儿了", "text");
+                                     return;
+                        }
+                    } else {
+                        $.toptip(res.Message, 'forbidden');
+                    }
+                },
+                'json');
+                }
+            });
+        });
+    </script>
+
+}

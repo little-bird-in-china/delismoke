@@ -1,0 +1,172 @@
+﻿@using BlueStone.Smoke.Entity;
+@Model BlueStone.AuthCenter.Web.Model.RoleEdit_Model;
+@{
+    ViewBag.Title = "角色编辑";
+}
+@section rsHeader{
+
+}
+@section rsContent
+{
+    <section class="content">
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <h3 class="box-title">基本信息</h3>
+                <div class="box-tools pull-right">
+                    <button class="btn btn-box-tool" type="button" data-widget="collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body" id="edit_form">
+                @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/EditForm.cshtml")
+            </div>
+            <div class="box-footer">
+            </div>
+        </div>
+
+        @if (Model.RoleInfo.SysNo > 0)
+        {
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">拥有权限</h3>
+                    <div class="box-tools pull-right">
+                        <button class="btn btn-box-tool" type="button" data-widget="collapse">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body" id="has-permission-tree">
+                    @Html.Partial("~/Areas/AuthCenter/Views/KoTemplate/RoleTreeTemplate.cshtml")
+                </div>
+                <div class="box-footer">
+                    <div class="row">
+                        <div class="btn-group col-md-offset-5 col-lg-offset-5 col-sm-offset-4 col-xs-offset-4">
+                            <button class="btn btn-primary" type="button" id="save-permission">
+                                <i class="fa fa-save"></i> 保存
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        
+    </section>
+
+    @Html.Partial("~/Areas/AuthCenter/Views/CustomControls/RoleSelector.cshtml")
+}
+
+@section rsFooter{
+    <script>
+
+       
+
+        var RoleEdit_PageMgr = function () {
+            var saveRoleUrl = '@Url.Action("SaveRole", "Role")';
+            var editRoleUrl = '@Url.Action("RoleEdit", "Role")';
+            var permissionTreeUrl = '@Url.Action("LoadFunctionsWithPermissionForRole", "Role")';
+            var saveRolesPermissionUrl = '@Url.Action("SaveRolesPermission", "Role")';
+
+            var data_model = JSON.parse('@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model))');
+
+            var appSelectOptions = [];
+            for (var i = 0; i < data_model.allApps.length; i++) {
+                appSelectOptions.push({ text: data_model.allApps[i].Name, value: data_model.allApps[i].ApplicationID });
+            }
+            var display = false;
+            if (@Model.RoleInfo.SysNo > 0) {
+                display = true;
+            }
+
+            var form = new KOForm('edit_form');
+            form.SetButtons({
+                SaveBtn: {
+                    actionUrl: saveRoleUrl,
+                    text: '保存',
+                    callBack: function (result) {
+                        window.location.href = editRoleUrl + '?RoleSysNo=' + result.Data.SysNo;
+                    }
+                },
+                ResetBtn: {
+                    resetFunc: function () {
+                        form.SetData(data_model.RoleInfo);
+                    }
+                }
+            });
+            form.SetControlGroups([
+            {
+                cText: '系统编号:',
+                cName: 'SysNo',
+                cVisible: false,
+                cDefault: 0
+            }, {
+                cText: '角色名:',
+                cName: 'RoleName',
+                cRule: {
+                    required: { message: "请输入角色名" },
+                    maxLength: { params: 20, message: "角色名最大长度为20个字符" },
+                    pattern: {
+                        params: /^[a-zA-Z\u4e00-\u9fa5]+$/,
+                        message:"请输入中文或英文字符!"
+                    }
+                }
+            },  {
+                cText: '状态:',
+                cName: 'CommonStatus',
+                cType: 'radio',
+                cRadioButtuns: [
+                    {
+                        text: '有效',
+                        value: 1
+                    },
+                    {
+                        text: '无效',
+                        value: 0
+                    }
+                ],
+                cDefault: 1
+            },
+            {
+                cText: '备注:',
+                cName: 'Memo',
+                cType: 'area',
+                cRule: {
+                    pattern: {
+                        params: /^[a-zA-Z\u4e00-\u9fa5]{1,}$/,
+                        message: "请输入中文或英文字符!"
+                    }
+                }
+            }]);
+            form.SetData(data_model.RoleInfo);
+
+            if (data_model.RoleInfo.SysNo > 0) {
+                var tree = new KORoleEditTree('has-permission-tree', permissionTreeUrl);
+
+                tree.ReLoad({ RoleSysNo: data_model.RoleInfo.SysNo, ApplicationID: data_model.RoleInfo.ApplicationID });
+
+                $('#reset-permission').on('click', function (event) {
+                    tree.Reset();
+                });
+                $('#save-permission').on('click', function (event) {
+                    var selects = tree.GetCheckedData();
+                    $.ajax({
+                        url: saveRolesPermissionUrl,
+                        type: "POST",
+                        dataType: "json",
+                        data: { data: JSON.stringify(selects), RoleSysNo: data_model.RoleInfo.SysNo },
+                        success: function (result) {
+                            if (result.Success) {
+                                tree.ReLoad({ RoleSysNo: data_model.RoleInfo.SysNo, ApplicationID: data_model.RoleInfo.ApplicationID });
+                                $.showSuccess(result.Message);
+                            }
+                        }
+                    });
+                });
+            }
+            return {
+            }
+
+        }();
+
+    </script>
+}

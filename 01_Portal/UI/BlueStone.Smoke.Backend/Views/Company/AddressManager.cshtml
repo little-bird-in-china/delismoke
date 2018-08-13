@@ -1,0 +1,763 @@
+﻿@model AddressManagerModel
+@{
+    ViewBag.Title = "文件管理";
+}
+
+@section rsHeader
+{
+    @Styles.Render("~/Content/jstree")
+    @Scripts.Render("~/bundles/jstree")
+    <style type="text/css">
+
+        .addpattern {
+            border: solid 1px #F2F2F2;
+            width: 100%;
+            text-align: center;
+        }
+
+            .addpattern td, .addpattern th {
+                border: solid 1px #D9D9D9;
+                padding: 5px;
+                text-align: center;
+            }
+
+                .addpattern td input {
+                    text-align: center;
+                    width: 80px;
+                }
+
+                .addpattern td select {
+                    height: 28px;
+                    padding: 4px 6px;
+                    width: 90px;
+                }
+    </style>
+}
+@if (Model.HasError)
+{
+    <div class="row" style="padding:20px;height:200px;">
+        @Model.ErrorMessage
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-sm-3 col-xs-12">
+            <div class="widget">
+                <div class="widget-body" id="tree_content">
+                    <div id="treeIsEmptyContainer" data-tag="0" style="display:none;">
+                        <button id="btnCreateRootAddress" type="button" class="btn btn-sm btn-primary " style="margin-left:20px;"><i class="fa fa-plus"></i>创建根地址</button>
+                    </div>
+                    <div id="treeAddress">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-9 col-xs-12">
+            <div class="row grayback form-group " id="queryFile_SelectAddressContainer">
+                <span style="margin-left:5px;">选中地址：</span>
+                <span data-name="CurrentAddressPath"></span>
+                <button id="btnCreateChildAddress" type="button" class="btn btn-sm btn-primary " style="margin-left:20px;"><i class="fa fa-plus"></i>为选中节点创建子地址</button>
+                <button id="btnDelete" type="button" class="btn btn-sm" style="margin-left:20px;"><i class="fa fa-minus"></i>删除当前选中节点</button>
+                <button id="AddManager" type="button" class="btn btn-sm btn-primary" style="margin-left:20px;">为选中节点设置管理员</button>
+                <span class="fr" style="margin-right:5px;">
+                    <button id="btnCreateAddress" type="button" class="btn btn-sm btn-primary "><i class="fa fa-plus"></i>按规则创建/修改地址</button>
+                </span>
+            </div>
+
+            <div class="widget">
+                <div class="row form-horizontal grayback">
+                    <div class="col-xs-12 groupname"><strong id="addEditorTitle">地址维护</strong></div>
+                    <form id="addEditorForm">
+                        <input type="hidden" name="SysNo" data-name="SysNo" value="0" />
+                        <input type="hidden" name="Code" data-name="Code" value="0" />
+                        <input type="hidden" name="ParentSysNo" data-name="ParentSysNo" value="0" />
+                        <div class="col-lg-8 col-sm-12 col-xs-12">
+                            <div class="form-group">
+                                <label class="control-label  col-sm-2 col-xs-4">
+                                    父级地址：
+                                </label>
+                                <label class="control-label col-sm-5 col-xs-8 text-left" data-name="ParentName">
+                                </label>
+                            </div>
+                            <div class="form-group" data-prop="Area">
+                                <label class="control-label  col-sm-2 col-xs-4">所在地区：</label>
+                                <div class="col-sm-5 col-xs-8">
+                                    @Html.Partial("~/Views/UserControls/Common/UCAreaPicker.cshtml", new BlueStone.Smoke.Backend.Models.PickerParamModel() { PickerID = "selectAreaSysNo", SelectValue = Model.AreaSysNo > 0 ? Model.AreaSysNo.ToString() : "", })
+                                </div>
+                            </div>
+                            <div class="form-group" data-prop="Area">
+                                <label class="control-label  col-sm-2 col-xs-4">所在街道：</label>
+                                <div class="col-sm-5 col-xs-8">
+                                    <input name="AreaAddress" data-name="AreaAddress" maxlength="50" class="form-control" value="@Model.Address" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label  col-sm-2 col-xs-4">
+                                    <span class="red">*</span>地址类型：
+                                </label>
+                                <div class="col-sm-5 col-xs-8">
+                                    <select name="Grade" data-name="Grade">
+                                        <option value="@((int)AddressGrade.Default)">默认</option>
+                                        <option value="@((int)AddressGrade.Building)">楼栋</option>
+                                        <option value="@((int)AddressGrade.Floor)">楼层</option>
+                                        <option value="@((int)AddressGrade.Room)">房间</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label  col-sm-2 col-xs-4">
+                                    <span class="red">*</span>地址名称：
+                                </label>
+                                <div class="col-sm-5 col-xs-8">
+                                    <input name="Title" data-name="Name" maxlength="40" class="form-control" value="" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2 col-xs-4">地址编号：</label>
+                                <div class="col-sm-2 col-xs-8">
+                                    <input name="Number" data-name="Number" maxlength="8" class="form-control" value="" />
+                                </div>
+                                <label class="control-label col-sm-7 col-xs-12 text-left">按规则生成同级地址时，可以通过此编号来判断地址是否已经存在。</label>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label  col-sm-2 col-xs-4">
+                                    管理员：
+                                </label>
+                                <span class="fl">
+                                    <button id="btnSetManager" type="button" class="btn btn-sm">设置管理员</button>
+                                </span>
+                                <label class="control-label col-sm-5 col-xs-8 text-left" data-name="AddressManager">
+                                </label>
+                            </div>
+                            <div class="form-group col-xs-12 col-sm-7" style="text-align:center;">
+                                <button id="btnCreateAddress_OK" type="button" class="btn btn-sm btn-primary "><i class="fa fa-save"></i>保  存</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="createAddressContainer" class="modal fade bs-modal-lg" data-keyboard="false" data-backdrop="static" role="basic" aria-hidden="true">
+        <div class="modal-dialog" style="width:900px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">×</button>
+                    <h4 class="modal-title">按规则创建地址</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row ">
+                        <table class="addpattern grayback">
+                            <tr style="text-align:left;line-height:30px;">
+                                <td colspan="7" style="text-align:left;" class="orange">
+                                    <div>规则说明：如果楼栋名称为“得力1号楼”，则名称前缀是“得力”，编号是“1”，名称后缀是“号楼”。</div>
+                                    <div>编号在同节点下是唯一的，如果已经存在将会修改而非创建。所以如果创建错误时（如前缀或后缀输入有误），则可以通过此特性来批量修改。</div>
+                                </td>
+                            </tr>
+                            <tr style="line-height:30px;">
+                                <th>创建类型</th>
+                                <th>编号类型</th>
+                                <th>名称前缀</th>
+                                <th>开始编号</th>
+                                <th>结束编号</th>
+                                <th>名称后缀</th>
+                                <th style="width:150px;">结果例子</th>
+                            </tr>
+                            <tr id="createAdd_Building_Pattern">
+                                <td>
+                                    <label class="text-left bold"><input type="checkbox" id="createAdd_Building" data-grade="@((int)AddressGrade.Building)" /><span class="text">楼栋编号</span></label>
+                                    <input type="hidden" data-name="Grade" value="@((int)AddressGrade.Building)" />
+                                </td>
+                                <td>
+                                    <select data-name="NoType">
+                                        <option value="@((int)AddressNameNoType.Digit)">数字</option>
+                                        <option value="@((int)AddressNameNoType.Char)">字母</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" placeholder="名称前缀" data-name="PreName" style="width:215px;" maxlength="10" /></td>
+                                <td><input type="text" placeholder="开始编号" data-name="BeginNo" value="" maxlength="8" /></td>
+                                <td><input type="text" placeholder="结束编号" data-name="EndNo" maxlength="8" />  </td>
+                                <td><input type="text" placeholder="名称后缀" data-name="SufName" maxlength="10" /></td>
+                                <td id="createAdd_Building_Result"></td>
+                            </tr>
+                            <tr id="createAdd_Floor_Pattern">
+                                <td>
+                                    <label class="text-left bold"><input type="checkbox" id="createAdd_Floor" data-grade="@((int)AddressGrade.Floor)" /><span class="text">楼层编号</span></label>
+                                    <input type="hidden" data-name="Grade" value="@((int)AddressGrade.Floor)" />
+                                    <input type="hidden" data-name="NoType" value="@((int)AddressNameNoType.Digit)" />
+                                </td>
+                                <td>
+                                    数字
+                                </td>
+                                <td><input type="text" placeholder="名称前缀" data-name="PreName" style="width:215px;" maxlength="10" /></td>
+                                <td><input type="text" placeholder="开始编号" data-name="BeginNo" value="" maxlength="8" /></td>
+                                <td><input type="text" placeholder="结束编号" data-name="EndNo" maxlength="8" />  </td>
+                                <td><input type="text" placeholder="名称后缀" data-name="SufName" maxlength="10" /></td>
+                                <td id="createAdd_Floor_Result"></td>
+                            </tr>
+                            <tr id="createAdd_Room_Pattern">
+                                <td>
+                                    <label class="text-left bold"><input type="checkbox" id="createAdd_Room" data-grade="@((int)AddressGrade.Room)" /><span class="text">房间编号</span></label>
+                                    <input type="hidden" data-name="Grade" value="@((int)AddressGrade.Room)" />
+                                    <input type="hidden" data-name="NoType" value="@((int)AddressNameNoType.Digit)" />
+                                </td>
+                                <td>
+                                    <select data-name="NoLength" style="width:50px;">
+                                        <option value="1">1</option>
+                                        <option value="2" selected="selected">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select>位数字
+                                </td>
+                                <td>
+                                    <select id="createAdd_Room_PreNameType" data-name="ParentNoAsPreName">
+                                        <option value="1">楼层编号</option>
+                                        <option value="0">自定义</option>
+                                    </select>
+                                    <input type="text" placeholder="与编号的分隔符" data-name="PreName" style="width:120px;" maxlength="10" />
+                                </td>
+                                <td><input type="text" placeholder="开始编号" data-name="BeginNo" value="" maxlength="8" /></td>
+                                <td><input type="text" placeholder="结束编号" data-name="EndNo" maxlength="8" />  </td>
+                                <td><input type="text" placeholder="名称后缀" data-name="SufName" maxlength="10" /></td>
+                                <td id="createAdd_Room_Result"></td>
+                            </tr>
+                            <tr style="text-align:left;line-height:30px;">
+                                <td colspan="7">
+                                    <span id="createAdd_Check_Result" class="red"></span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+                <div class=" modal-footer" style="text-align:center">
+                    <button id="createAdd_btnOK" type="button" class="btn btn-sm btn-primary "><i class="fa fa-upload"></i>确  定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="delAddressContainer" class="modal fade bs-modal-lg" data-keyboard="false" data-backdrop="static" role="basic" aria-hidden="true">
+        <div class="modal-dialog" style="width:500px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">×</button>
+                    <h4 class="modal-title">删除地址数据</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row " style="padding:20px; text-align:center;">
+                        <div><span>确定要删除节吗?删除节点：</span><span id="delAdd_CurrentAdd" data-name="CurrentAddressPath"></span></div>
+
+                        <div style="margin-top:20px;">
+                            <label class="text-left bold"><input type="checkbox" id="delAdd_IsMore" /><span class="text">是否删除当前节点的之后的同级节点</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class=" modal-footer" style="text-align:center">
+                    <button id="delAdd_btnOK" type="button" class="btn btn-sm btn-primary "><i class="fa fa-ok"></i>确  定</button>
+                    <button id="delAdd_btnCancel" type="button" class="btn btn-sm "><i class="fa fa-cancel"></i>取  消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="setManagerContainer" style="z-index: 1060; display:none;" class="modal fade bs-modal-lg in" data-keyboard="false" data-backdrop="static" role="basic" aria-hidden="false">
+
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">×</button>
+                    <h4 class="modal-title" id="myModalLabel">分配管理员</h4>
+                </div>
+                <div id="installerBody" class="modal-body">
+                    @foreach (var item in Model.ManagerList)
+                    {
+                        <label class="control-label"><input type="checkbox" name="ManagerItem" value="@item.SysNo" id="ckManager_@item.SysNo" class="form-control"><span class="text">@item.UserFullName</span></label>
+                    }
+                </div>
+                <div class="modal-footer text-center">
+                    <button id="savemanagerbtn" type="button" class="btn btn-sm btn-primary"><i class="fa fa-check"></i>确定</button>
+
+                    <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal"><i class="fa  fa-times"></i>取消</button>
+                </div>
+
+
+            </div>
+        </div>
+    </div> 
+    <script type="text/javascript">
+    var addressPageManager =
+        {
+            companySysNo: "@Model.CompanySysNo",
+            getAddressUrl: "@Url.Action("GetAddressTree", "Company")",
+            createAddressUrl: "@Url.Action("CreateAddress", "Company")",
+            editAddressUrl: "@Url.Action("EditAddress", "Company")",
+            delAddressUrl: "@Url.Action("DeleteAddress", "Company")",
+            addManagerUrl: "@Url.Action("AddAdressManager", "Company")",
+            getManagerUrl: "@Url.Action("LoadAddressManager", "Company")",
+            selectAddressInfo: null,
+            addressTree: null,
+            areaAddress:"@Model.Address",
+            loadTree: function (selectedSysNo) {
+                var url = addressPageManager.getAddressUrl;
+                $('#treeAddress').jstree({
+                    "core": {
+                        "themes": {
+                            "responsive": false,
+                            'variant': 'small',
+                            'stripes': false
+                        },
+                        "check_callback": true,
+                        'data': {
+                            'url': url,
+                            "dataType": "json",
+                            data: function (node) {
+                                return { ParentSysNo: node.id, CompanySysNo: addressPageManager.companySysNo };
+                            },
+                            success: function (d) {
+                                var jqEmpty = $("#treeIsEmptyContainer");
+                                if (d == null || d.length == 0) {
+                                    var tag = jqEmpty.attr("data-tag");
+                                    if (tag == "0") {
+                                        jqEmpty.show();
+                                    }
+                                }
+                                else {
+                                    jqEmpty.hide();
+                                }
+                                jqEmpty.attr("data-tag", "1");
+                            }
+                        }
+                    },
+                    "types": {},
+                    "plugins": ["types"]
+                });
+                addressPageManager.addressTree = $('#treeAddress').jstree(true);
+
+                var jqTree = $('#treeAddress');
+                jqTree.on('select_node.jstree', function (e, data) {
+                    // var link = $('#' + data.selected).find('li');
+                    addressPageManager.selectAddressInfo = null;
+                    if (data && data.node) {
+
+                        addressPageManager.selectAddressInfo = data.node.data;
+                        addressPageManager.bindEditor(data.node.data);
+                        var curPathName = "";
+                        if (data.node.parent == "#") {
+                            curPathName = addressPageManager.selectAddressInfo.Name;
+                            $("#btnDelete").hide();
+                        }
+                        else {
+                            curPathName = addressPageManager.selectAddressInfo.PathName;
+                            $("#btnDelete").show();
+                        }
+
+                        if (addressPageManager.selectAddressInfo.Grade >= 3) {
+                            $("#btnCreateChildAddress").hide();
+                        }
+                        else {
+                            $("#btnCreateChildAddress").show();
+                        }
+
+                        $('[data-name="CurrentAddressPath"]').text(curPathName);
+                        $("#addEditorTitle").text("修改地址：" + curPathName);
+                        var grade= addressPageManager.selectAddressInfo.Grade;
+                        $('input[type="checkbox"][data-grade]').each(function () {
+                            var jqThis = $(this);
+                            var g = jqThis.attr("data-grade");
+                            if (g < grade || (grade >= 2 && g == grade)) {
+                                jqThis.prop("checked", false);
+                                jqThis.prop("disabled", true);
+                            }
+                            else {
+                                jqThis.prop("checked", g > grade );
+                                jqThis.prop("disabled", false);
+                            }
+                        });
+                        addressPageManager.loadManager();
+                    }
+                });
+            },
+            loadManager: function () {
+                var addressCode = addressPageManager.selectAddressInfo.Code;
+                var data = {
+                    code: addressCode,
+                    companySysNo: addressPageManager.companySysNo
+                }
+                $.ajax({
+                    url: addressPageManager.getManagerUrl,
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+                    traditional: true,
+                    success: function (r) {
+                        $('[name="ManagerItem"]').prop("checked", false);
+                        if (r.Success) {
+                            if (r.Data.length > 0) {
+                                var name = ""
+                                for (var i = 0; i < r.Data.length; i++) {
+                                    if (i > 0) name+="、"
+                                    name = name + r.Data[i].UserFullName;
+                                    $("#ckManager_" + r.Data[i].ManagerSysNo).prop("checked", true);
+                                }
+                                $('[data-name="AddressManager"]').text(name);
+                            } else {
+                                $('[data-name="AddressManager"]').text("无管理员");
+                            }
+                        }
+                    }
+                })
+            },
+            bindEditor: function (info) {
+                var jqArea = $('#addEditorForm [data-prop="Area"]');
+
+              var  parentName = info.PathName;
+                if (info.SysNo > 0) {
+                    var ref = addressPageManager.addressTree;// $('#treeAddress').jstree(true);
+                    var sel = ref.get_node(info.ParentSysNo);
+                    if (sel) {
+                        parentName = sel.data.PathName;
+                    }
+                    else {
+                        parentName = "";
+                    }
+                }
+                if (info.Grade > 1) {
+                    jqArea.hide();
+                }
+                else {
+                    jqArea.show();
+                }
+                if (info.ParentSysNo == 0) {
+                    parentName = "[无]"
+                }
+                $('#addEditorForm [data-name="ParentName"]').text(parentName);
+                $("#addEditorForm").find('[data-name]').each(function () {
+                    var jqThis = $(this);
+                    var n = jqThis.attr("data-name");
+                    jqThis.val(info[n]);
+                });
+            },
+            getEditorEntity: function () {
+                var entity = {  };
+                $("#addEditorForm" ).find('[data-name]').each(function () {
+                    var jqThis = $(this);
+                    var n = jqThis.attr("data-name");
+                    var v = jqThis.val();
+                    entity[n] = v;
+                });
+                entity.CompanySysNo = addressPageManager.companySysNo;
+                entity.AreaSysNo = $("#selectAreaSysNo").val();
+                return entity;
+            },
+            getPattern: function (patternContainerId) {
+                var pattern = { ParentNoAsPreName: false };
+                $("#" + patternContainerId).find('[data-name]').each(function () {
+                    var jqThis = $(this);
+                    var n = jqThis.attr("data-name");
+                    var v = jqThis.val();
+                    pattern[n] = v;
+                });
+                pattern.ParentNoAsPreName = pattern.ParentNoAsPreName == "1";
+                pattern.CompanySysNo = addressPageManager.companySysNo;
+                return pattern;
+            },
+
+            getAddPattern: function (patternContainerId) {
+                var buildingPattern = $("#createAdd_Building").prop("checked") ? addressPageManager.getPattern("createAdd_Building_Pattern") : null;
+                var floorPattern = $("#createAdd_Floor").prop("checked") ? addressPageManager.getPattern("createAdd_Floor_Pattern") : null;
+                var roomPattern = $("#createAdd_Room").prop("checked") ? addressPageManager.getPattern("createAdd_Room_Pattern") : null;
+
+                return {
+                    BuildingPattern: buildingPattern,
+                    FloorPattern: floorPattern,
+                    RoomPattern: roomPattern,
+                };
+            },
+            createAddress: function () {
+                var pattern = addressPageManager.getAddPattern();
+
+                $("#createAdd_Check_Result").text("");
+                var buildingPattern = pattern.BuildingPattern;
+                var floorPattern = pattern.FloorPattern;
+                var roomPattern = pattern.RoomPattern;
+                pattern = null;
+                if (buildingPattern != null) {
+                    buildingPattern.ParentSysNo = addressPageManager.selectAddressInfo.SysNo;
+                    if (roomPattern != null && floorPattern == null) {
+                        $("#createAdd_Check_Result").text("创建楼栋编号和房间编号时，楼层编号也必须创建。");
+                        return;
+                    }
+                    pattern = buildingPattern;
+                    if (pattern.BeginNo == null || pattern.BeginNo == "" || pattern.EndNo == null || pattern.EndNo == "") {
+                        $("#createAdd_Check_Result").text("楼栋的开始编号和结束编号都不能为空。");
+                        return;
+                    }
+                }
+                else if (floorPattern != null) {
+                    floorPattern.ParentSysNo = addressPageManager.selectAddressInfo.SysNo;
+                    pattern = floorPattern;
+                    if (pattern.BeginNo == null || pattern.BeginNo == "" || pattern.EndNo == null || pattern.EndNo == "") {
+                        $("#createAdd_Check_Result").text("楼层的开始编号和结束编号都不能为空。");
+                        return;
+                    }
+                }
+                else if (roomPattern != null) {
+                    roomPattern.ParentSysNo = addressPageManager.selectAddressInfo.SysNo;
+                    pattern = roomPattern;
+                    if (pattern.BeginNo == null || pattern.BeginNo == "" || pattern.EndNo == null || pattern.EndNo == "") {
+                        $("#createAdd_Check_Result").text("房间的开始编号和结束编号都不能为空。");
+                        return;
+                    }
+                }
+                else {
+                    $("#createAdd_Check_Result").text("请选择要创建编号类型。");
+                    return;
+                }
+                if (floorPattern != null && buildingPattern != null) {
+                    buildingPattern.ChildPattern = floorPattern;
+                    if (floorPattern.BeginNo == null || floorPattern.BeginNo == "" || floorPattern.EndNo == null || floorPattern.EndNo == "") {
+                        $("#createAdd_Check_Result").text("楼层的开始编号和结束编号都不能为空。");
+                        return;
+                    }
+                }
+                if (roomPattern != null && floorPattern != null) {
+                    floorPattern.ChildPattern = roomPattern;
+                    if (roomPattern.BeginNo == null || roomPattern.BeginNo == "" || roomPattern.EndNo == null || roomPattern.EndNo == "") {
+                        $("#createAdd_Check_Result").text("房间的开始编号和结束编号都不能为空。");
+                        return;
+                    }
+                }
+
+                $.ajax({
+                    url: addressPageManager.createAddressUrl,
+                    data: { data: JSON.stringify(pattern) },
+                    type: "POST",
+                    dataType: "JSON",
+                    success: function (r) {
+                        if (r.Success) {
+                            $.showSuccess('已提交服务器地址正在创建中，请稍后查看新创建的地址。');
+                            addressPageManager.addressTree.refresh();
+                            addressPageManager.createAddressDialog.modal("hide");
+                        }
+                        else {
+                            // $.showError(r.Message);
+                        }
+                    }
+                });
+            } ,
+            delAddress: function () {
+                var isMore = $("#delAdd_IsMore").prop("checked");
+                $.ajax({
+                    type: "POST",
+                    url: addressPageManager.delAddressUrl,
+                    data: { sysNo: addressPageManager.selectAddressInfo.SysNo, isDeleteMore: isMore },
+                    dataType: "JSON",
+                    success: function (r) {
+                        if (r.Success) {
+                            addressPageManager.selectAddressInfo = null;
+                            addressPageManager.addressTree.refresh();
+                            addressPageManager.delAddressDialog.modal("hide");
+                            $.showSuccess('删除成功');
+                        }
+                        else {
+                            // $.showSuccess(r.Message);
+                        }
+                    }
+                });
+            },
+            saveAddress: function () {
+                var addressInfo = addressPageManager.getEditorEntity();
+
+                if (addressInfo.Name == null || addressInfo.Name == "") {
+                    $.showError("地址名称不能为空");
+                    return;
+                }
+
+                $.ajax({
+                    url: addressPageManager.editAddressUrl,
+                    data: { data: JSON.stringify(addressInfo) },
+                    type: "POST",
+                    dataType: "JSON",
+                    success: function (r) {
+                        if (r.Success) {
+                            $.showSuccess('保存成功');
+                            addressPageManager.addressTree.refresh();
+                        }
+                        else {
+                           // $.showError(r.Message);
+                        }
+                    }
+                });
+            },
+            createRootAddress: function () {
+                var addressInfo = { Name: '#', ParentSysNo: 0, CompanySysNo: addressPageManager.companySysNo };
+                $.ajax({
+                    url: addressPageManager.editAddressUrl,
+                    data: { data: JSON.stringify(addressInfo) },
+                    type: "POST",
+                    dataType: "JSON",
+                    success: function (r) {
+                        if (r.Success) {
+                            $.showSuccess('根节点创建成功');
+                            addressPageManager.addressTree.refresh();
+                        }
+                        else {
+                            // $.showError(r.Message);
+                        }
+                    }
+                });
+            },
+            createAddressDialog: null,
+            showCreateDialog: function () {
+                if (addressPageManager.selectAddressInfo == null) {
+                    $.showError("请在左边地址树中选择地址节点");
+                    return;
+                }
+                if (addressPageManager.createAddressDialog != null) {
+                    addressPageManager.createAddressDialog.modal("show");
+                    return;
+                }
+                addressPageManager.createAddressDialog = $("#createAddressContainer").modal({
+                    show: true
+                });
+            },
+            delAddressDialog: null,
+            showDelDialog: function () {
+                if (addressPageManager.selectAddressInfo == null) {
+                    $.showError("请在左边地址树中选择要删除的节点。");
+                    return;
+                }
+                if (addressPageManager.delAddressDialog != null) {
+                    addressPageManager.delAddressDialog.modal("show");
+                    return;
+                }
+                addressPageManager.delAddressDialog = $("#delAddressContainer").modal({
+                    show: true
+                });
+            },
+            padLeft(input, length) {
+                if (input == null || input == "") return "";
+                let s = new String(input);
+                if (input.length < length) {
+                    var i = input.length;
+                    while (i < length) {
+                        input = "0" + input;
+                        i++;
+                    }
+
+                }
+                return input;
+            },
+            ini: function () {
+                $(function () {
+                    addressPageManager.loadTree();
+                    $("#btnDelete").click(function () {
+                        $("#delAdd_IsMore").prop("checked",false);
+                        addressPageManager.showDelDialog();
+                    });
+                    $("#delAdd_btnOK").click(function () {
+                        addressPageManager.delAddress();
+                    });
+                    $("#delAdd_btnCancel").click(function () {
+                        addressPageManager.delAddressDialog.modal("hide");
+                    });
+                    $("#btnCreateAddress").click(function () {
+                        addressPageManager.showCreateDialog();
+                    });
+                    $("#btnCreateRootAddress").click(function () {
+                        addressPageManager.createRootAddress();
+                    });
+                    $("#btnCreateAddress_OK").click(function () {
+                        addressPageManager.saveAddress();
+                    });
+                    $("#btnCreateChildAddress").click(function () {
+                        if (addressPageManager.selectAddressInfo == null) {
+                            $.showError("请在左边地址树中选择父级节点");
+                            //addressPageManager.bindEditor({ SysNo: 0, Code:"", Grade:0, Name: "", ParentSysNo: 0, Number: "", PathName: addressPageManager.areaAddress });
+                        }
+                        else {
+                            var curPathName = addressPageManager.selectAddressInfo.PathName;
+                            if (addressPageManager.selectAddressInfo.ParentSysNo == null || addressPageManager.selectAddressInfo.ParentSysNo==""|| addressPageManager.selectAddressInfo.ParentSysNo == 0) {
+                                curPathName = addressPageManager.selectAddressInfo.Name;
+                            }
+                            addressPageManager.bindEditor({ SysNo: 0, Code: "", Grade: addressPageManager.selectAddressInfo.Grade + 1, ParentSysNo: addressPageManager.selectAddressInfo.SysNo, Name: "", Number: "", PathName: curPathName });
+                            $('[data-name="AddressManager"]').text("");
+                            $("#addEditorTitle").text("创建子地址：" + curPathName);
+                        }
+                    });
+                    $("#createAdd_btnOK").click(function () {
+                        addressPageManager.createAddress();
+                    });
+                    $("#createAdd_Room_PreNameType").change(function () {
+                        var v = $(this).val();
+                        var jqPreName = $('#createAdd_Room_Pattern [data-name="PreName"]');
+                        if (v == 0) {
+                            jqPreName.val("").attr("placeholder", "名称前缀");
+                        }
+                        else {
+                            jqPreName.val("").attr("placeholder","与编号的分隔符");
+                        }
+                    });
+
+                    $("#createAdd_Building_Pattern").find("input,select").change(function () {
+                        var pattern = addressPageManager.getPattern("createAdd_Building_Pattern");
+                        $("#createAdd_Building_Result").text(pattern.PreName + pattern.BeginNo + pattern.SufName);
+                    });
+                    $("#createAdd_Floor_Pattern").find("input,select").change(function () {
+                        var pattern = addressPageManager.getPattern("createAdd_Floor_Pattern");
+                        $("#createAdd_Floor_Result").text(pattern.PreName + pattern.BeginNo + pattern.SufName);
+                    });
+                    $("#createAdd_Room_Pattern").find("input,select").change(function () {
+                        var pattern = addressPageManager.getPattern("createAdd_Room_Pattern");
+                        var preName = pattern.PreName;
+                        if (pattern.ParentNoAsPreName == 1) {
+                            preName="1"
+                        }
+
+                        $("#createAdd_Room_Result").text(preName + addressPageManager.padLeft(pattern.BeginNo, pattern.NoLength )+ pattern.SufName);
+                    });
+
+                    $("#AddManager,#btnSetManager").click(function () {
+                        if (addressPageManager.selectAddressInfo == null) {
+                            $.showError("请先在左边地址树中选择节点。");
+                            return;
+                        }
+                          $("#setManagerContainer").modal("show");
+                    })
+                    $("#savemanagerbtn").click(function () {
+                        var list = $("input[name=ManagerItem]:checked").map(function () {
+                            return this.value
+                        }).get();
+                        var addressCode = addressPageManager.selectAddressInfo.Code;
+                        var data = {
+                            users: list,
+                            code: addressCode,
+                            companySysNo: addressPageManager.companySysNo
+                        }
+                        $.ajax({
+                            url: addressPageManager.addManagerUrl,
+                            type: "POST",
+                            dataType: "json",
+                            data: data,
+                            traditional: true,
+                            success: function (r) {
+                                if (r.Success) {
+                                    addressPageManager.loadManager();
+                                    $.showSuccess("操作成功！");
+                                    $("#setManagerContainer").modal("hide");
+                                }
+                            }
+                        })
+
+                    })
+                });
+
+            }
+        };
+    addressPageManager.ini();
+    </script>
+
+}

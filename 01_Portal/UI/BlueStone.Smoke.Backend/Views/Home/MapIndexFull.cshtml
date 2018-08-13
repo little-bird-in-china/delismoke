@@ -1,0 +1,42 @@
+﻿@model BlueStone.Smoke.Entity.CurrentUser
+@{
+    ViewBag.Title = "MapIndexFull";
+    Layout = null;
+}
+@Styles.Render("~/Content/css")
+@Scripts.Render("~/bundles/base")
+@Scripts.Render("~/Content/assets/zTree/jquery.ztree.core.js")
+@Styles.Render("~/Content/assets/zTree/zTreeStyle.css")
+<style>
+    body:before {
+        background-color: #1c1f29;
+    }
+</style>
+<script type="text/javascript">
+        var GlobalDefine = {
+            //Image服务器地址
+            ImageUploadServerDomain: "@System.Web.Configuration.WebConfigurationManager.AppSettings["ImageUploadServerDomain"]",
+            ImageStorageServerDomain: "@System.Web.Configuration.WebConfigurationManager.AppSettings["ImageStorageServerDomain"]",
+            GetImageUploadServerDomain: function (appName) {
+               return GlobalDefine.ImageUploadServerDomain + "/Handler/FileUploadHandler.ashx?appName=" + appName;
+            },
+            NoneImageUrl: "@System.Web.Configuration.WebConfigurationManager.AppSettings["DefaultImageUrl"]"
+        }
+        var GlobalPageBody = document.getElementById('PageBody');
+        var __htmlEncodeEle = null;
+        var encodeHtml = function (content) {
+            if (__htmlEncodeEle == null) __htmlEncodeEle = document.createElement("div");
+            __htmlEncodeEle.innerText = content;
+            return __htmlEncodeEle.innerHTML;
+        }
+</script>
+
+@Html.Partial("MapIndex", Model)
+
+<script>
+    $(function () {
+        $("#sidebar").remove();
+        $(".page-content").css("margin", "0");
+    });
+
+</script>

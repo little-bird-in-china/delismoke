@@ -1,0 +1,246 @@
+﻿@using BlueStone.Utility
+@using BlueStone.Smoke.Entity
+@{
+    var statuslist = EnumHelper.GetDescriptions<CommonStatus>();
+   var  companySysNo = Request.Params["sysno"];
+    int? AccountSysNo= ViewBag.AccountSysNo;
+}
+
+@section rsHeader{
+
+    @Styles.Render("~/Content/datatable")
+    @Scripts.Render("~/bundles/datatable")
+
+}
+<ul class="nav nav-tabs">
+    <li class="">
+        <a href="@Url.Action("Maintain", "Company", new { sysNo = companySysNo })">基本信息维护</a>
+    </li>
+    <li class="active">
+        <a href="javascript:void(0)">账号管理</a>
+        <input type="hidden" id="companysysno" value="@companySysNo" />
+    </li>
+</ul>
+<div class="row grayback">
+    <a href="javascript:void(0)" class="btn btn-sm btn-primary" onclick="doEditUserInfo(0)"><i class="fa fa-plus"></i>新增账号</a>
+    <input type="hidden" id="mastersysno" value="@AccountSysNo.GetValueOrDefault()"/>
+</div>
+<div class="row form-horizontal grayback">
+    <form id="formQuery" role="form">
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <label class="col-xs-4 control-label">关键字：</label>
+            <div class="col-xs-8">
+                <input id="CellPhone" name="CellPhone" maxlength="11" class="form-control input-sm" placeholder="账号/显示名称" />
+            </div>
+        </div>
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <label class="col-xs-4 control-label">状态：</label>
+            <div class="col-xs-8">
+                <select id="CommonStatus" name="CommonStatus" class="select2">
+                    <option value="">--所有--</option>
+                    @foreach (var item in statuslist)
+                    {
+                        <option value="@((int)item.Key)">@((int)item.Key == 1 ? "正常" : "已禁用")</option>
+                    }
+                </select>
+
+            </div>
+        </div>
+        <div class="form-group col-lg-4 col-sm-6 col-xs-12">
+            <div class="col-xs-8 col-xs-offset-4">
+                <button id="btnQuery" type="button" class="btn btn-sm btn-primary "><i class="fa fa-search"></i>查 询</button>
+                <button id="btnReset" type="button" class="btn btn-sm btn-default "><i class="fa  fa-undo"></i>重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="row" style="margin-bottom:20px">
+    <div class="tabbable">
+        <table id="searchlist" class="table table-hover"></table>
+        <div class="action">
+            <a class="btn btn-primary btn-sm " href="javascript:UpdateStatusUser(1);">启用</a>
+            <a class="btn btn-primary btn-sm " href="javascript:UpdateStatusUser(0);">禁用</a>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+@Html.Partial("~/Views/shared/_modalpartial.cshtml", new ModalModel() { IsSmall = true })
+
+@section scripts{
+    <script>
+        var grid = null;
+        $(document).ready(function () {
+            initgrid();
+            doTableAjaxQuery(grid);
+        });
+
+        $("#btnQuery").click(function () {
+            doTableAjaxQuery(grid);
+        });
+
+        var DeActived =@((int)CommonStatus.DeActived);
+
+        $("#btnReset").on("click", function () {
+            $("#formQuery")[0].reset();
+            $('#CommonStatus').select2().val('');
+            doTableAjaxQuery(grid);
+        });
+        var $mastersysno = $("#mastersysno");
+
+        //初始化radio Table
+        var initgrid = function () {
+            grid = new Datatable();
+            grid.init({
+                src: $('#searchlist'),
+                dataTable: {
+                    ajax: {
+                        url: '/Company/QueryCompanyUser'
+                    },
+                    columns: [
+                        {
+                            data: 'SysNo', title: '编号', orderable: true, visible: false,
+                            sName: 'SysNo'
+                        },
+                        {
+                            orderable: false, data: "SysNo", title: "操作", render: function (data, type, full, meta) {
+                                var btns = "";
+                                //if ($mastersysno.val() !== data.toString() && full.CommonStatus !== DeActived){
+                                //    btns = "<a href='javascript:;' onclick='SetAdmin(" + data + ")'>设为系统管理员</a> &ensp;"
+                                //}
+                                btns += "<a href='javascript:void(0)' onclick='doEditUserInfo(" + data + ")'>编辑</a>&ensp;";
+                                btns += "<a href='javascript:void(0)' onclick=\"resetp('" + full.LoginName + "')\">重置密码</a> ";
+                                return btns;
+                            }
+                        },
+                        {
+                            data: 'SysNo', title: '用户类型', orderable: false, sName: 'SysNo' ,render: function (data, type, full, meta) {
+                                if ($mastersysno.val() == data.toString() ) {
+                                    return "系统管理员"
+                                } else {
+                                    return "普通用户"
+                                }
+                            }
+                        },
+                        {
+                            data: 'LoginName', title: '账号', orderable: false, sName: 'CellPhone'
+                        },
+                        {
+                            data: 'UserFullName', title: '显示名称', orderable: false, sName: 'UserFullName'
+                        },
+                        {
+                            data: 'CommonStatus', title: '状态', orderable: true, sName: 'CommonStatus',
+                            render: function (data, type, full, meta) {
+                                if (data === 1) {
+                                    return "<span>正常</span>";
+                                }
+                                if (data === 0) {
+                                    return "<span >已禁用</span>"
+                                }
+                            }
+                        },
+                        {
+                            data: 'EditDateStr', title: '更新时间', orderable: true,
+                            sName: 'EditDate'
+                        },
+                    ],
+                    select: 'multiple',
+                    order: [[0, 'desc']]
+                }
+            });
+        };
+
+        var doTableAjaxQuery = function (grid) {
+            grid.clearAjaxParams();
+            var queryFilter = {
+                    KeyWords: $.trim($("#CellPhone").val()),
+                CommonStatus: $.trim($("#CommonStatus").val()),
+                MasterSysNo: $("#companysysno").val()
+            };
+            ReplaceObjHtmlTag(queryFilter);
+            grid.addAjaxParam("queryfilter", JSON.stringify(queryFilter));
+            grid.getDataTable().ajax.reload();
+        };
+
+        function SetAdmin(data) {
+            $.post("@Url.Action("SetAdmin", "Company")", { usersysno: data, companysysno:@companySysNo}, function (res) {
+                if (res.Success) {
+                    $.showSuccess("设为管理员成功");
+                    $mastersysno.val(data);
+                    grid.refresh();
+                    //doTableAjaxQuery(grid);
+                }
+            }, "json");
+        }
+
+        function GetSelectedRows() {
+            var data = grid.getSelectedRowsData();
+            var sysnos = [];
+            for (var i = 0; i < data.length; i++) {
+                sysnos.push(data[i].SysNo);
+            }
+            return sysnos;
+        };
+        function UpdateStatusUser(confirmText) {
+            var sysnos = GetSelectedRows();
+            if (sysnos.length === 0) {
+                $.showWarning("请勾选顾客后再操作!");
+                return;
+            }
+            if (confirmText === 1) {
+                confirmT = "启用";
+            }
+            if (confirmText === 0) {
+                confirmT = "禁用";
+            }
+                $.confirm("确定要" + confirmT + "所选中的账号吗?", function (result) {
+                    if (result) {
+                        $.post("@Url.Action("UpdateSystemUserStatus", "Company")", { customerSysNos: JSON.stringify(sysnos), status: confirmText}, function (res) {
+                    if (res.Success) {
+                        $.showSuccess("成功操作" + res.Data + "条!");
+                        grid.refresh();
+                        //doTableAjaxQuery(grid);
+                    }
+                   }, 'json');
+                    }
+                });
+        }
+
+        function doEditUserInfo(sysNo) {
+            showModal("/Company/UserInfo?sysNo=" + sysNo +"&companysysno=@companySysNo", function (data) {
+                if (data > 0) {
+                    grid.refresh();
+                    //doTableAjaxQuery(grid);
+                }
+            },true);
+        }
+
+
+        function resetp(loginname) {
+            bootbox.confirm({
+                animate: false,
+                size: 'small',
+                message: "确认要将密码重置为登录账号吗?",
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/Company/ResetPwd",
+                            type: "POST",
+                            data: { loginname: loginname },
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.Success) {
+                                    $.showSuccess('操作成功');
+                                    //window.location.reload(true);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    </script>
+}

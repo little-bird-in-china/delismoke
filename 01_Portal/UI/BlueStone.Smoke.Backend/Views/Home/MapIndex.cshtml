@@ -1,0 +1,941 @@
+﻿@*@model BlueStone.Smoke.Entity.HomeMap*@
+
+@model BlueStone.Smoke.Entity.CurrentUser
+@{
+    ViewBag.Title = "MapIndex";
+    ViewBag.NoSubMenu = true;
+}
+
+
+
+
+<link href="~/Content/assets/ZoomMarker-master/css/zoom-marker.css" rel="stylesheet" />
+<link href="~/Content/assets/css/homemarker.css" rel="stylesheet" />
+<script src="~/Content/assets/js/echart/echarts.js"></script>
+<style>
+
+    .page-breadcrumbs {
+        display: none;
+    }
+
+    .page-body {
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        border: 0; 
+        background-color: #1c1f29;
+    }
+
+    .widget {
+        margin: 0;
+        height: 100%;
+    }
+
+    .widget-body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: transparent;
+    }
+
+    .mapHeader {
+        float: left;
+        height: 150px;
+        /*line-height: 200px;*/
+        width: 100%;
+        /*background-color: #0a213B;*/
+        /*vertical-align: middle;*/
+        display: flex;
+        justify-content: center;
+        align-items: Center;
+        margin-top: 10px;
+    }
+
+    .mapHeaderMiddle {
+        width: 98%;
+        height: 100%;
+        display: flex;
+        align-items: Center;
+    }
+
+    .headerLeft {
+        width: 60%;
+    }
+
+    .headerRight {
+        width: 40%;
+        height: 100%;
+    }
+
+    .mapbody {
+        /*height: 100%;*/
+        background-color: #272936;
+        position: absolute;
+        top: 170px;
+        bottom: 0px;
+        left: 1%;
+        width: 98%;
+        display: flex;
+        justify-content: center;
+        /*align-items: Center;*/
+        /*left: 0px;*/
+    }
+
+    .deviceInfo {
+        width: 15%;
+        margin-left: 10%;
+        float: left;
+        line-height: normal;
+    }
+
+    .text1 {
+        color: white;
+        font-size: 20px;
+        font-weight: bold
+    }
+
+    .text2 {
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 12px;
+    }
+
+    .widthobj {
+        background-color: #3C4D62;
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    #imgBtnGroup {
+        position: absolute;
+        z-index: 100;
+        /*top:150px;*/
+        right: 0;
+    }
+
+    .treediv {
+        position: absolute;
+        z-index: 500;
+        left: 0;
+    }
+
+    .moveSlow {
+        transition: margin-top .5s;
+        /*height:300px;*/
+
+    }
+
+
+
+    /*heardivstart*/
+
+    .headerDiv {
+        width: 19.52%;
+        height: 150px;
+        background-color: #272936;
+        margin-left: 0.6%;
+    }
+
+    .headerDivHead {
+        height: 26.6%;
+        width: 100%;
+        background-color: #313440;
+        display: flex;
+        align-items: Center;
+    }
+
+    .headerDivHeadText {
+        margin-left: 3%;
+        font-size: 20px;
+        color: #989db2;
+    }
+
+    .headerDivBody {
+        height: 73.4%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: Center;
+    }
+
+    .headerDivBodyNum {
+        font-family: PingFang-SC-Heavy;
+        line-height: 72px;
+        font-size: 36px;
+        font-weight: normal;
+        font-stretch: normal;
+        color: #ffffff;
+    }
+
+    .headerDivBodyProgress {
+        width: 80%;
+        margin-bottom: 0;
+        border-radius: 9px;
+        background-color: #313440;
+    }
+
+    .headerDivRate {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        margin-left: 15%;
+    }
+
+    .headerDivRateLine {
+        width: 20px;
+        height: 5px;
+        margin-top: 49px;
+        background-color: #26e5a3;
+        background-color: #28deac;
+        border-radius: 2px;
+    }
+
+    .headerDivRateText {
+        font-family: PingFang-SC-Regular;
+        font-size: 20px;
+        font-weight: normal;
+        font-stretch: normal;
+        line-height: 62px;
+        letter-spacing: 0px;
+        color: #989db2;
+    }
+</style>
+
+<style type="text/css">
+
+    .addpattern {
+        border: solid 1px #F2F2F2;
+        width: 100%;
+        text-align: center;
+    }
+
+        .addpattern td, .addpattern th {
+            border: solid 1px #D9D9D9;
+            padding: 5px;
+            text-align: center;
+        }
+
+            .addpattern td input {
+                text-align: center;
+                width: 80px;
+            }
+
+            .addpattern td select {
+                height: 28px;
+                padding: 4px 6px;
+                width: 90px;
+            }
+
+
+    .zoom-marker-div {
+        margin: 0;
+        padding: 0;
+    }
+
+    .zoom-marker-hover-dialog {
+        padding:0;
+    }
+
+    .zoom-marker-img {
+        height:100%;
+    }
+
+    .widgetbtn {
+        display: block;
+        margin-bottom: 5px;
+        text-align: left;
+    }
+
+    #treeAddress li a {
+        color:white;
+    }
+
+    .jstree-default .jstree-hovered {
+        background-color: #5a7f90 !important;
+    }
+
+    .jstree-default .jstree-clicked {
+        background-color: #5a7f90 !important;
+    }
+
+</style>
+
+
+@*<div class="gu_number">
+    <a href="#" class="gu_number_normal"></a>
+</div>*@
+
+
+<input id="Authority" type="hidden" value="@this.Request.Url.Authority" />
+<div class="widget">
+    <div class="widget-header hide  ">
+        <i class="fa fa-check widget-icon "></i><span class="widget-caption">Default Widget</span>
+        <div class="widget-buttons">
+            <a href="#" data-toggle="maximize"><i class="fa fa-expand "></i></a>
+            <a href="#" data-toggle="collapse"><i class="fa fa-minus "></i></a>
+            <a href="#" data-toggle="dispose"><i class="fa fa-times "></i></a>
+            <input type="hidden" value="" />
+        </div>
+    </div>
+    <div class="widget-body ">
+        <div class="mapHeader">
+            <div class="mapHeaderMiddle">
+
+                <div class="headerDiv" style="margin-left:0">
+                    <div class="headerDivHead">
+                        <span class="headerDivHeadText">设备总数</span>
+                    </div>
+                    <div class="headerDivBody">
+                        <span id="DeviceTotal" class="headerDivBodyNum">0</span>
+                        <div class="headerDivBodyProgress progress" id="progress1">
+                            <div id="DeviceTotalBar" aria-valuemax="100" aria-valuemin="0" aria-valuenow="80" class="progress-bar progress-bar-info" id="progressbar1" role="progressbar" style="width:20%;background-color:#ffffff !important"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="headerDiv">
+                    <div class="headerDivHead">
+                        <span class="headerDivHeadText">在线设备数</span>
+                    </div>
+                    <div class="headerDivBody">
+                        <span id="DeviceOnline" class="headerDivBodyNum" style="color:#26e5a3">0</span>
+                        <div class="headerDivBodyProgress progress" id="progress1">
+                            <div id="DeviceOnlineBar" aria-valuemax="100" aria-valuemin="0" aria-valuenow="20" class="progress-bar progress-bar-info" id="progressbar1" role="progressbar" style="width:20%;background-color:#26e5a3 !important;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="headerDiv">
+                    <div class="headerDivHead">
+                        <span class="headerDivHeadText">离线设备数</span>
+                    </div>
+                    <div class="headerDivBody">
+                        <span id="DeviceOffline" class="headerDivBodyNum" style="color:#9a9a9a">0</span>
+                        <div class="headerDivBodyProgress progress" id="progress1">
+                            <div id="DeviceOfflineBar" aria-valuemax="100" aria-valuemin="0" aria-valuenow="20" class="progress-bar progress-bar-info" id="progressbar1" role="progressbar" style="width:20%;background-color:#9a9a9a !important;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="headerDiv">
+                    <div class="headerDivRate" style="float:left">
+                        <div class="headerDivRateLine"></div>
+                        <span class="headerDivRateText">在线率</span>
+                    </div>
+                    <div id="onlineCharDiv" style="width:55%;height:100%; float:right;">
+
+                    </div>
+                </div>
+
+                <div class="headerDiv">
+                    <div class="headerDivRate" style="float:left">
+                        <div class="headerDivRateLine" style="background-color: #dd354e;"></div>
+                        <span class="headerDivRateText">离线率</span>
+                    </div>
+
+                    <div id="offlineCharDiv" style="width:55%;height:100%; float:right;">
+
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+        <div class="mapbody">
+
+            @Html.Partial("Tree",Model.CompanySysNo)
+
+            <div id="imgBtnGroup" class="btn-group-vertical hide">
+            </div>
+
+            <div id="zoom-marker-div" class="zoom-marker-div " style=" background-color:transparent; height:100%;width:100%;">
+                @*<center id="zoom-marker-none" style="margin-top:200px"> <h2 style="display:block">当前没有地图</h2></center>*@
+                <img class="zoom-marker-img" id="zoom-marker-img" alt="..." name="viewArea" draggable="false" style="height:100%;" />
+            </div>
+
+        </div>
+
+        @Html.Partial("Warn")
+
+    </div>
+</div>
+
+
+<script>
+
+    var onlineRate = 0;
+    var offlineRate = 0;
+
+    var labelTopOnline = {
+        normal: {
+            color: '#26e5a3',
+            label: {
+                show: true,
+                position: 'center',
+                formatter: '{b}',
+                textStyle: {
+                    baseline: 'bottom',
+
+                }
+            },
+            labelLine: {
+                show: false,
+
+            }
+        }
+    };
+
+    var labelTopOffline = {
+        normal: {
+            label: {
+                show: true,
+                position: 'center',
+                formatter: '{b}',
+                textStyle: {
+                    baseline: 'bottom',
+
+                }
+            },
+            labelLine: {
+                show: false,
+
+            }
+        }
+    };
+    var labelFromatter = {
+        normal: {
+            label: {
+                formatter: function (params) {
+                    return 100 - params.value + '%'
+                },
+                textStyle: {
+                    baseline: 'top',
+                    color: '#ffffff',
+                }
+            }
+        },
+    }
+    var labelBottom = {
+        normal: {
+            color: '#313440',
+            label: {
+                show: true,
+                position: 'center'
+            },
+            labelLine: {
+                show: false
+            }
+        },
+        emphasis: {
+            color: 'rgba(0,0,0,0)'
+        }
+    };
+    var radius = [30, 45];
+
+    var onlineSeries = [
+        {
+            type: 'pie',
+            center: ['40%', '50%'],
+            radius: radius,
+            x: '0%', // for funnel
+            itemStyle: labelFromatter,
+            data: [
+                { name: '', value: 100 - onlineRate, itemStyle: labelBottom },
+                { name: '', value: onlineRate, itemStyle: labelTopOnline }
+            ]
+        },
+    ];
+
+    var offlineSeries = [
+        {
+            type: 'pie',
+            center: ['40%', '50%'],
+            radius: radius,
+            x: '0%', // for funnel
+            itemStyle: labelFromatter,
+            data: [
+                { value: 100 - offlineRate, itemStyle: labelBottom },
+                { value: offlineRate, itemStyle: labelTopOffline }
+            ]
+        },
+
+    ];
+
+    option = {
+        toolbox: {
+            show: false,
+            feature: {
+                dataView: { show: false, readOnly: false },
+                magicType: {
+                    show: true,
+                    type: ['pie', 'funnel'],
+                    option: {
+                        funnel: {
+                            width: '20%',
+                            height: '10%',
+                            itemStyle: {
+                                normal: {
+                                    label: {
+                                        formatter: function (params) {
+                                            return 'other\n' + params.value + '%\n'
+                                        },
+                                        textStyle: {
+                                            baseline: 'middle'
+                                        }
+                                    }
+                                },
+                            }
+                        }
+                    }
+                },
+                restore: { show: false },
+                saveAsImage: { show: false }
+            }
+        },
+        series: [
+            {
+                type: 'pie',
+                center: ['10%', '50%'],
+                radius: radius,
+                x: '0%', // for funnel
+                itemStyle: labelFromatter,
+                data: [
+                    { name: 'other', value: 100 - onlineRate, itemStyle: labelBottom },
+                    { name: '在线率', value: onlineRate, itemStyle: labelTopOnline }
+                ]
+            },
+            {
+                type: 'pie',
+                center: ['40%', '50%'],
+                radius: radius,
+                x: '20%', // for funnel
+                itemStyle: labelFromatter,
+                data: [
+                    { name: 'other', value: 100 - offlineRate, itemStyle: labelBottom },
+                    { name: '离线率', value: offlineRate, itemStyle: labelTopOffline }
+                ]
+            },
+
+        ]
+    };
+
+    //function getOnlineRate() {
+    //    return onlineRate;
+    //}
+    //function getOfflineRate() {
+    //    return offlineRate;
+    //}
+
+</script>
+
+<script>
+    //// 基于准备好的dom，初始化echarts实例
+    //var myChart = echarts.init(document.getElementById('main'));
+
+    //// 使用刚指定的配置项和数据显示图表。
+    //myChart.setOption(option);
+
+    option.series = onlineSeries;
+    var chartOnline = echarts.init(document.getElementById('onlineCharDiv'));
+    chartOnline.setOption(option);
+
+    option.series = offlineSeries;
+    var chartOffline = echarts.init(document.getElementById('offlineCharDiv'));
+    chartOffline.setOption(option);
+
+</script>
+
+
+<script src="~/Content/assets/ZoomMarker-master/js/jquery.mousewheel.min.js"></script>
+<script src="~/Content/assets/ZoomMarker-master/js/hammer.min.js"></script>
+<script src="~/Content/assets/ZoomMarker-master/js/zoom-marker.js"></script>
+<script src="~/Scripts/Company/SmokeMap.js"></script>
+<script>
+    var markerSize = 30;
+    var operateMarker = [];
+    var companySysNo =@Model.CompanySysNo;
+
+
+
+    $(function () {
+
+        handler.init();
+    });
+
+    var imageArea = {
+        minx: null,
+        maxx: null,
+        miny: null,
+        maxy: null,
+    }
+
+    var handler = {
+        data: null,
+        addressMapSysNo: null,
+        addressMap: [],
+        addressSysNo: null,
+        selectedImgBtn: null,
+
+        createMarkerObj: function (markerData) {
+            var self = this;
+            //var marker = $(
+            //    '<div class="zoom-marker">'
+            //    + '<img draggable="false" src="/Content/assets/ZoomMarker-master/img/marker.svg">'
+            //    + '<span style="color: rgb(255, 255, 255); left: 10px;"></span></div>');
+
+            //var img = $("img", marker);
+            //img.css("height", markerSize);
+            //img.css("width", markerSize);
+
+            //marker.Text = markerData.Name;
+            //marker.Data = markerData;
+            //marker.attr("SysNo", markerData.SysNo);
+
+            //if (markerData.IsWarning) {
+            //    img.attr("src", "/Content/assets/ZoomMarker-master/img/markerred.svg");
+            //}
+
+
+            var marker = $('<div class="gu_number"><a href="javascript:;" class="gu_number_normal" ></a></div>');
+            //markerData.IsWarning = true;
+            if (markerData.IsWarning) {
+                marker = $(
+                    '<div class="gu_number">'
+                    + '<div class="gu_location">'
+                    + '<span class="gu_enlarge"></span>'
+                    + '<span class="gu_enlarge2"></span>'
+                    + '<a href="javascript:;" class="gu_number_normal gu_number_error"></a>'
+                    + '</div >'
+                    + '</div >'
+                );
+            }
+
+            return marker;
+        },
+
+        init: function () {
+            var self = this;
+            addressPageManager.companySysNo = companySysNo;
+            addressPageManager.ini();
+
+            //self.loadAddressMap();
+
+            warn.init();
+        },
+
+        loadMarkers: function (addressMapSysNo) {
+            console.log('loadmarker');
+
+            var markerData = this.getAddressMapMarkers(addressMapSysNo);
+            var self = this;
+            if (!(markerData && markerData.length)) {
+                return;
+            }
+
+            var initMarkers = [];
+            $.each(markerData, function (i, n) {
+                var option = self.getDefaultMarkerOption(n.X, n.Y, "");
+                var markerObj = self.createMarkerObj(n);
+                $("#zoom-marker-div").append(markerObj);
+
+                var dialogContent = $('<div class="gu_alert"></div>');
+                var ul = $('<ul></ul>');
+                if (n.Type == 1) {
+                    if (n.Name) {
+                        ul.append('<li style="margin-bottom:0"> <span class="equipment_name">' + n.Name + '</span> </li>');
+                        dialogContent.append(ul);
+                        option.dialog.value = dialogContent;
+                    } else {
+                        option.dialog = null;
+                    }
+                }
+                else if (n.Type == 2) {
+                    var nameLi = $('<li> <a href="javascript:;" class="equipment_name" onclick="handler.loadAddressMap(' + n.SysNo+')" >' + n.Name + '</a></li>');
+                    ul.append(nameLi);
+
+                    ul.append('<li> <span class="equipment_all">设备总数：' + n.DeviceTotal + '</span></li>');
+                    ul.append('<li><span class="equipment_normal">在线设备：' + n.DeviceOnline + '</span></li>');
+                    ul.append('<li><span class="equipment_offLine">离线设备：' + n.DeviceOffline + '</span></li>');
+                    
+                    dialogContent.append(ul);
+                    dialogContent.append(a);
+                    option.dialog.value = dialogContent;
+                }
+
+
+                var item = {};
+                item.option = option;
+                item.markerObj = markerObj;
+
+                initMarkers.push(item);
+            });
+
+
+            $('#zoom-marker-img').zoomMarker_LoadMarker(initMarkers);
+
+
+        },
+
+        getDefaultMarkerOption: function (x, y, name) {
+            var option = {
+                src: "/Content/assets/ZoomMarker-master/img/marker.svg",
+                x: x,
+                y: y,
+                size: 30,
+                dialog: {
+                    value: "<h4>" + name + "</h4>",
+                    offsetX: 20,
+                    style: {
+                        "background-color": "transparent",
+                        //"border-color": "transparent",
+                        "border":"0",
+                    }
+                },
+                hint: { value: 1, style: {  } }
+            };
+            return option;
+        },
+
+        //获取某张图上的标记点
+        getAddressMapMarkers: function (addressMapSysNo) {
+            var self = this;
+            var markers = null;
+            $.each(self.addressMap, function (i, addressMap) {
+                if (addressMap.SysNo == addressMapSysNo) {
+                    markers = addressMap.Markers;
+                    return false;
+                }
+            });
+
+            return markers;
+        },
+
+        //加载数据
+        loadAddressMap: function (addressSysNo) {
+            var self = this;
+            var postAddressSysNo = null;
+            if (addressSysNo) {
+                postAddressSysNo = addressSysNo;
+            }
+            $.post("/Home/GetShowData", { addressSysNo: postAddressSysNo }, function (result) {
+                if (result.Success) {
+                    var data = result.Data;
+                    $("#zoom-marker-hover-dialog").hide();
+
+                    var addressMaps = data.AddressMaps;
+                    if (!addressMaps || addressMaps.length == 0) {
+                        $.showError("选择的节点没有地图,请在[地图维护]上传地图");
+                        self.showNoData();
+                        return;
+                    }
+                    self.addressSysNo = data.Address.SysNo;
+                    self.addressMap = addressMaps;
+
+                    var imgBtnGroup = $("#imgBtnGroup");
+                    imgBtnGroup.empty();
+                    $.each(addressMaps, function (i, n) {
+                        var btn = $('<button class="btn  " type="button">' + n.Name + '</button>');
+                        btn.click(function () {
+                            var url = GlobalDefine.ImageStorageServerDomain + n.MapImage;
+                            $("#zoom-marker-none").hide();
+                            $('#zoom-marker-img').zoomMarker_CleanMarker();
+                            
+                            
+
+                            $('#zoom-marker-img').zoomMarker_LoadImage(url, function () {
+                                self.loadMarkers(n.SysNo);
+                            });
+                            //$('#zoom-marker-img').zoomMarker_ImgSizeReset();
+                            self.addressMapSysNo = n.SysNo;
+                        });
+                        imgBtnGroup.append(btn);
+                    });
+
+                    imgBtnGroup.find("button").first().click();
+                    self.loadHeaderData(data.Address);
+
+                    warn.loadData(data.WarningSmokeDetectors, function (addressSysNo) {
+                        self.loadAddressMap(addressSysNo);
+                    });
+                }
+            }, 'json');
+        },
+
+        loadHeaderData: function (headerData) {
+            if (headerData) {
+                $("#DeviceTotal").text(headerData.DeviceTotal);
+                $("#DeviceOnline").text(headerData.DeviceOnline);
+                $("#DeviceOffline").text(headerData.DeviceOffline);
+
+                var DeviceTotalBarWidth = 0; DeviceOnlineRate = 0; DeviceOfflineRate = 0;
+
+                //headerData.DeviceTotal = 14;
+                //headerData.DeviceOnline = 6;
+                //headerData.DeviceOffline = 8;
+                //debugger;
+                if (headerData.DeviceTotal > 0) {
+                    DeviceTotalBarWidth = "100%";
+                    DeviceOnlineRate = (headerData.DeviceOnline / headerData.DeviceTotal).toFixed(2) * 1000/10;
+                    DeviceOfflineRate = (headerData.DeviceOffline / headerData.DeviceTotal).toFixed(2) * 1000/10;
+                }
+
+                $("#DeviceTotalBar").css("width", DeviceTotalBarWidth);
+                $("#DeviceOnlineBar").css("width", DeviceOnlineRate + "%");
+                $("#DeviceOfflineBar").css("width", DeviceOfflineRate + "%");
+
+                onlineSeries[0].data[0].value = 100 - DeviceOnlineRate;
+                onlineSeries[0].data[1].value = DeviceOnlineRate;
+                offlineSeries[0].data[0].value = 100 - DeviceOfflineRate;
+                offlineSeries[0].data[1].value = DeviceOfflineRate;
+                option.series = onlineSeries;
+                chartOnline.setOption(option);
+                option.series = offlineSeries;
+                chartOffline.setOption(option);
+            }
+        },
+
+        showNoData: function () {
+            this.loadHeaderData({ DeviceTotal: 0, DeviceOnline: 0, DeviceOffline: 0 });
+            $("#zoom-marker-img").removeAttr("src").hide();
+        },
+
+    }
+
+
+
+    function getMousePos(event) {
+        var e = event || window.event;
+        var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
+        var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+        var x = e.pageX || e.clientX + scrollX;
+        var y = e.pageY || e.clientY + scrollY;
+        //alert('x: ' + x + '\ny: ' + y);
+        return { x: x, y: y };
+    }
+
+    var picTag = 0;
+    var tagNumber = 1;
+
+    $('#zoom-marker-btn-clean').click(function (e) {
+        $('#zoom-marker-img').zoomMarker_CleanMarker();
+    });
+
+    $('#zoom-marker-img').on("zoom_marker_click", function (event, marker) {
+        //console.log(JSON.stringify(marker));
+        $('#zoom-marker-img').zoomMarker_RemoveMarker(marker.id);
+    });
+
+ 
+    $(document).ready(function () {
+        $('#zoom-marker-img').zoomMarker({
+            //src: "/Content/assets/ZoomMarker-master/img/mountain.jpg",
+            rate: 0.2,
+            //width: 600,
+            max: 3000,
+            markers: [
+                { src: "/Content/assets/ZoomMarker-master/img/marker.svg", x: 500, y: 500 }
+            ],
+            //imgzoom: false,
+            //imgdrag: false,
+            showdialogtype: 'click',
+            resetimgafterload: true,
+        });
+    })
+</script>
+
+
+<script type="text/javascript">
+    var websocket = null;
+    //判断当前浏览器是否支持WebSocket
+    if ('WebSocket' in window) {
+        websocket = new WebSocket("ws://" + $("#Authority").val() + "/Handler/WebSocketHandler.ashx?no=@Model.UserSysNo");
+    }
+    else {
+        alert('当前浏览器 Not support websocket')
+    }
+
+    //连接发生错误的回调方法
+    websocket.onerror = function () {
+        setMessageInnerHTML("WebSocket连接发生错误");
+    };
+
+    //连接成功建立的回调方法
+    websocket.onopen = function () {
+        //        setMessageInnerHTML("WebSocket连接成功");
+        //websocket.send("测试消息");
+
+    }
+
+    //接收到消息的回调方法
+    websocket.onmessage = function (event) {
+        if (event.data) {
+            var obj = JSON.parse(event.data);
+            if (obj && obj.action == 'reload') {
+                handler.loadAddressMap(handler.addressSysNo);
+                //if (handler.addressSysNo) {
+                //    handler.loadAddressMap(handler.addressSysNo);
+                //}
+            }
+        }
+        //console.log(event.data);
+        //setMessageInnerHTML(event.data);
+    }
+
+    //连接关闭的回调方法
+    websocket.onclose = function () {
+        setMessageInnerHTML("WebSocket连接关闭");
+    }
+
+
+    //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+
+    window.onbeforeunload = function () {
+
+        closeWebSocket();
+
+    }
+
+    //将消息显示在网页上
+
+    function setMessageInnerHTML(innerHTML) {
+        console.log('setMessageInnerHTML' + innerHTML);
+    }
+
+    function closeWebSocket() {
+
+        websocket.close();
+
+    }
+
+
+    function clear() {
+        document.getElementById('message').innerHTML = "";
+    }
+
+    //发送消息
+
+    function send() {
+
+        var message = document.getElementById('text').value;
+
+        websocket.send(message);
+
+    }
+</script>
+<script>
+            /*
+
+            $(function () {
+                var data = [];
+                data.push({ dev_id: '247704', Status: '0100', CDatetime: '2018-7-6 09:44:55' });
+                var str = JSON.stringify(data);
+
+                $.post("http://localhost:8026/api/SyncDeviceStatus", str, function (result) {
+                    console.log(result);
+                }, 'json');
+            });
+            */
+</script>
+
+
+

@@ -1,0 +1,6 @@
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.Model\bin\Debug\JC.Smoke.Model.dll
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.Model\bin\Debug\JC.Smoke.Model.pdb
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.Model\obj\Debug\JC.Smoke.Model.csproj.CoreCompileInputs.cache
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.Model\obj\Debug\JC.Smoke.Model.dll
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.Model\obj\Debug\JC.Smoke.Model.pdb
+H:\My projects\smoke\代码\01_Portal\JC.Smoke.Model\obj\Debug\JC.Smoke.Model.csprojResolveAssemblyReference.cache

@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4D7750CE-84A0-4A8B-A084-C5CF32CCA5DC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BlueStone.Smoke.Entity</RootNamespace>
+    <AssemblyName>BlueStone.Smoke.Entity</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>548e1046</NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Pre|AnyCPU'">
+    <OutputPath>bin\Pre\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BlueStone.Utility, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\00_ReferenceLib\Framework\BlueStone.Utility.dll</HintPath>
+    </Reference>
+    <Reference Include="BlueStone.Utility.Web, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\00_ReferenceLib\Framework\BlueStone.Utility.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AuthCenter\MenuPermission.cs" />
+    <Compile Include="AuthCenter\QF_Role.cs" />
+    <Compile Include="AuthCenter\QF_SysFunction.cs" />
+    <Compile Include="AuthCenter\QF_SysMenu.cs" />
+    <Compile Include="AuthCenter\QF_SysPermission.cs" />
+    <Compile Include="AuthCenter\QF_SystemUser.cs" />
+    <Compile Include="AuthCenter\Role.cs" />
+    <Compile Include="AuthCenter\Role_SysPermission.cs" />
+    <Compile Include="AuthCenter\SysFunction.cs" />
+    <Compile Include="AuthCenter\SysMenu.cs" />
+    <Compile Include="AuthCenter\SysPermission.cs" />
+    <Compile Include="AuthCenter\SystemApplication.cs" />
+    <Compile Include="AuthCenter\SystemUser.cs" />
+    <Compile Include="AuthCenter\User_Role.cs" />
+    <Compile Include="AuthCenter\User_SysPermission.cs" />
+    <Compile Include="Base\ConstValue.cs" />
+    <Compile Include="Common\Area.cs" />
+    <Compile Include="Common\PickerParamObject.cs" />
+    <Compile Include="Common\TreeInfoModel.cs" />
+    <Compile Include="Common\WechatUser.cs" />
+    <Compile Include="Company\Company.cs" />
+    <Compile Include="CurrentUser.cs" />
+    <Compile Include="Enum\AuthEnum.cs" />
+    <Compile Include="Enum\BaseEnum.cs" />
+    <Compile Include="Enum\CompanyEnum.cs" />
+    <Compile Include="Enum\TopicEnum.cs" />
+    <Compile Include="FileInfo\FileInfo.cs" />
+    <Compile Include="Home\HomeMap.cs" />
+    <Compile Include="Category\Category.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Smoke\Address.cs" />
+    <Compile Include="Smoke\AddressManager.cs" />
+    <Compile Include="Smoke\AddressMap.cs" />
+    <Compile Include="Smoke\AddressWarn.cs" />
+    <Compile Include="Smoke\MapData.cs" />
+    <Compile Include="Smoke\SmokeDetectorMessage.cs" />
+    <Compile Include="Smoke\SmokeMap.cs" />
+    <Compile Include="Smoke\Client.cs" />
+    <Compile Include="Smoke\ClientSmokeDetector.cs" />
+    <Compile Include="Smoke\CompanyInstaller.cs" />
+    <Compile Include="Smoke\QR_SmokeDetector.cs" />
+    <Compile Include="Smoke\SmokeDetector.cs" />
+    <Compile Include="Smoke\SmokeDetectorDayReport.cs" />
+    <Compile Include="Smoke\SmokeDetectorStatusLog.cs" />
+    <Compile Include="Topic\QF_Topic.cs" />
+    <Compile Include="Topic\TopicCategoryRef.cs" />
+    <Compile Include="Topic\TopicCategory.cs" />
+    <Compile Include="Topic\TopicInfo.cs" />
+    <Compile Include="VerifyCode\VerifyCodeModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Framework\BlueStone.Utility\BlueStone.Utility.csproj">
+      <Project>{7307629b-4833-4085-b81f-db9b3bd308f9}</Project>
+      <Name>BlueStone.Utility</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

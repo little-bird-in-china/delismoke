@@ -1,0 +1,108 @@
+﻿@{
+    Layout = null;
+    string returnUrl = "";
+    if (!string.IsNullOrWhiteSpace(Request.QueryString["ReturnUrl"]))
+    {
+        returnUrl = Request.QueryString["ReturnUrl"];
+    }
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>权限中心登录页面</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    @System.Web.Optimization.Styles.Render("~/Content/css/login_css")
+    @System.Web.Optimization.Scripts.Render("~/Content/script/login_js")
+</head>
+<body class="hold-transition login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <a href="#">青石授权中心</a>
+        </div>
+        <div class="login-box-body">
+            <p class="login-box-msg">Sign in</p>
+            <div class="form-group has-feedback">
+                <input id="tbaccount" type="text" class="form-control" placeholder="LoginName">
+                <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+                <input id="tbpassword" type="password" class="form-control" placeholder="Password">
+                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+            </div>
+            <div class="row">
+                <div class="col-xs-8">
+                    <div class="checkbox icheck">
+                        <label>
+                            <input type="checkbox"> Remember Me
+                        </label>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <button type="submit" id="btnsubmit" class="btn btn-primary btn-block btn-flat">登录</button>
+                </div>
+            </div>
+            <div class="social-auth-links text-center">
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        $(function () {
+
+            $('input').iCheck({
+                checkboxClass: 'icheckbox_square-blue',
+                radioClass: 'iradio_square-blue',
+                increaseArea: '20%'
+            });
+
+            $("#btnsubmit").click(function () {
+                login();
+                return false;
+            })
+
+            function login() {
+                if ($.trim($("#tbaccount").val()).length == 0) {
+
+                    $.alert("请输入账号！");
+                    return false;
+                }
+                if ($.trim($("#tbpassword").val()).length == 0) {
+                    $.alert("请输入密码！");
+                    return false;
+                }
+
+                var returnUrl = '@(returnUrl)';
+                $.ajax({
+                    url: '@Url.Action("DoLogin")',
+                    type: "POST",
+                    data: { account: $("#tbaccount").val(), password:$("#tbpassword").val()},
+                    dataType: "json",
+                    beforeSend: function () {
+                        $("#btnsubmit").attr("disabled", "disabled");
+                        $("#btnsubmit").html('登录中...<i class="icon-long-arrow-right"></i>');
+                    },
+                    complete: function () {
+                        $("#btnsubmit").removeAttr("disabled");
+                        $("#btnsubmit").html('登录<i class="icon-long-arrow-right"></i>');
+                    },
+                    success: function (result) {
+                        if (result.Success) {
+                            if ($.trim(returnUrl).length > 0) {
+                                window.location.href = returnUrl;
+                            }
+                            else {
+                                window.location.href = "@Url.Action("Index", "Home")";
+                            }
+                        }
+                    }
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>
+
