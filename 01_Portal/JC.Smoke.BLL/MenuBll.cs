@@ -12,7 +12,7 @@ namespace SmartHealth.BLL
     public class MenuBll
     {
         public static Menu[] GetAllMenus()
-        {//先去掉state树状态,just
+        {//先去掉state树状态,just for test
             List<Menu> retValue = new List<Menu>();
             using (MySqlConnection conn = DBUtility.OpenConnection())
             {
